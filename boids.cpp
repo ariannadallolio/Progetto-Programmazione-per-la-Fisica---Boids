@@ -25,6 +25,18 @@ Position operator+(Position const& a, Position const& b) {
 
 Position operator*(double c, Position const& a) { return {c * a.x, c * a.y}; }
 
+
+Velocity operator-(Velocity const& a, Velocity const& b) {
+  return {a.v_x - b.v_x, a.v_y - b.v_y};
+}
+
+Velocity operator+(Velocity const& a, Velocity const& b) {
+  return {a.v_x + b.v_x, a.v_y + b.v_y};
+}
+
+Velocity operator*(double c, Velocity const& a) { return {c * a.v_x, c * a.v_y}; }
+
+
 double distance(Position const& a, Position const& b) {
   double dx = a.x - b.x;
   double dy = a.y - b.y;
@@ -64,18 +76,37 @@ std::vector<Position> generate_p(int n) {  // "cin n" in the main
 std::vector<Velocity> separation(double s, double d_s, int n,
                                  std::vector<Position> positions) {
   std::vector<Velocity> v1_sep;
-  for (int i = 0; i < n; ++i) {
+  for (int i = 0; i != n; ++i) {
     Position sum{0.0, 0.0};
-    for (int j = 0; j < n; ++j) {
-      if (i != j && distance(positions[i], positions[j]) < d_s)
+    for (int j = 0; j != n; ++j) {
+      if (i != j && distance(positions[i], positions[j]) <
+                        d_s)  ////////////algoritmo accumulate_if?
         sum = sum + (positions[j] - positions[i]);
     }
-    Position const& pos_v1 = -s * sum;
+    Position const pos_v1 = -s * sum; //perchè const??
     Velocity v1{pos_v1.x, pos_v1.y};
     v1_sep.push_back(v1);
   }
   return v1_sep;
 }
+
+std::vector<Velocity> alignment(double a, int n,
+                                std::vector<Velocity> velocities) {
+ std::vector<Velocity> v2_ali;
+ for (int i = 0; i!=n; ++i ) {
+ Velocity sum{0.0, 0.0};
+ for (int j = 0; i!=n; ++j) {
+    if (i!=j) {
+        sum = sum + (velocities[j]-velocities[i]);
+    }
+ }
+Velocity const v2 = a * (1/(n-1) * sum);
+v2_ali.push_back(v2);
+ }
+return v2_ali;
+}
+
+
 
 class boid {
   // valori da mettere in input
@@ -96,6 +127,7 @@ class boid {
       std::vector<Velocity> v1_vector = separation(s, d_s, n, positions);
     }
   }
+}
 
   // vettore posizione e vettore velocità
   // calcolo posizione del centro di massa stormo
@@ -103,6 +135,11 @@ class boid {
   // devono essere minori di d) ciclo for (su velocità) per il calcolo di v2 con
   // assert (a deve essere <1)
 
+ //forse anche una funzione che ogni volta mi trova i boid a distanza <d e per le 3 velocità mi usa nei calcoli solo 
+ //quei boid senza dover scorrerli tutti 
+
   // per ogni velocità si somma quella "attuale" con v1, v2, v3
   // ricalcolo posizioni
-};
+
+
+  //bisogna trovare un modo per trovare i boid a distanza <d

@@ -25,6 +25,12 @@ Position operator+(Position const& a, Position const& b) {
 
 Position operator*(double c, Position const& a) { return {c * a.x, c * a.y}; }
 
+bool operator==(Position const& a, Position const& b) {
+  return {a.x == b.x && a.y == b.y};
+}
+
+bool operator!=(Position const& a, Position const& b) { return {!(a == b)}; }
+
 
 Velocity operator-(Velocity const& a, Velocity const& b) {
   return {a.v_x - b.v_x, a.v_y - b.v_y};

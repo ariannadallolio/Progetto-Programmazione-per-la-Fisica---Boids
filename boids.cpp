@@ -55,9 +55,9 @@ std::vector<Velocity> generate_v(int n) {  // "cin n" in the main
 
   std::random_device r;  // seed
   std::default_random_engine eng{r()};
-  std::uniform_real_distribution<double> uniform{0.0, 0.01};  // max velocity?
+  std::uniform_real_distribution<double> uniform{-3.0, 3.0};  // max velocity?
 
-  std::generate_n(std::back_inserter(velocity), n, [eng, uniform]() mutable {
+  std::generate_n(std::back_inserter(velocity), n, [&]() {
     const Velocity v{uniform(eng), uniform(eng)};
     return v;
   });
@@ -70,10 +70,13 @@ std::vector<Position> generate_p(int n) {  // "cin n" in the main
 
   std::random_device r;  // seed
   std::default_random_engine eng{r()};
-  std::uniform_real_distribution<double> uniform{0.0, 0.2};  // max position?
+  std::uniform_real_distribution<double> x_uniform{0.0,
+                                                   800.0};  // max position?
+  std::uniform_real_distribution<double> y_uniform{
+      0.0, 600.0};  // grandezze in pixel di uno schermo
 
-  std::generate_n(std::back_inserter(position), n, [eng, uniform]() mutable {
-    const Position p{uniform(eng), uniform(eng)};
+  std::generate_n(std::back_inserter(position), n, [&]() {
+    const Position p{x_uniform(eng), y_uniform(eng)};
     return p;
   });
   return position;
@@ -90,10 +93,10 @@ std::vector<Position> generate_p(int n) {  // "cin n" in the main
 // dovrebbero essere i numeri di boids vicini che comunque vanno trovati in
 // qualche modo direi? Ho provato a fare una roba così.
 std::vector<int> neighbours_control(int boid_to_check, double d,
-                                    std::vector<Position> positions) {
+                                    std::vector<Position> const& positions) {
   std::vector<int> neighbours_positions{};
+  auto l = static_cast<std::size_t>(boid_to_check);
   for (auto i = 0; i != positions.size(); ++i) {
-    auto l = static_cast<std::size_t>(boid_to_check);
     if (positions[i] != positions[l] &&
         distance(positions[l], positions[i]) < d) {
       neighbours_positions.push_back(static_cast<int>(i));
@@ -104,15 +107,15 @@ std::vector<int> neighbours_control(int boid_to_check, double d,
 
 // da rivedere size_t
 Velocity separation(double s, double d_s, int boid_to_check,
-                    std::vector<int> neighbours_control,
-                    std::vector<Position> positions) {
+                    std::vector<int> const& neighbours_control,
+                    std::vector<Position>const& positions) {
   Position sum{0.0, 0.0};
+  auto l = static_cast<std::size_t>(boid_to_check);
   for (auto i = 0; i != neighbours_control.size(); ++i) {
-    auto l = static_cast<std::size_t>(boid_to_check);
     auto m = static_cast<std::size_t>(neighbours_control[i]);
     if (distance(positions[l], positions[m]) < d_s) {
       sum = sum +
-            (positions[l] - positions[m]);  ////////////algoritmo accumulate?
+            (positions[m] - positions[l]);  ////////////algoritmo accumulate?
     }
   }
   Position const pos_v1 = -s * sum;  // perchè const??
@@ -121,17 +124,20 @@ Velocity separation(double s, double d_s, int boid_to_check,
 }
 
 Velocity alignment(double a, int boid_to_check,
-                   std::vector<int> neighbours_control,
-                   std::vector<Velocity> velocities) {
-  Velocity sum{0.0, 0.0};
-  for (auto i = 0; i != neighbours_control.size(); ++i) {
-    auto l = static_cast<std::size_t>(boid_to_check);
-    auto m = static_cast<std::size_t>(neighbours_control[i]);
-    sum = sum + (velocities[l] - velocities[m]);
+                   std::vector<int> const& neighbours_control,
+                   std::vector<Velocity> const& velocities) {
+  Velocity v2{};
+  if (neighbours_control.empty()) {
+    return v2;
   }
-
-  Velocity const v2 = a * (1.0 / (static_cast<int>(neighbours_control.size())) *
-                           sum);  // const?
+  Velocity sum{0.0, 0.0};
+  auto l = static_cast<std::size_t>(boid_to_check);
+  for (auto i = 0; i != neighbours_control.size(); ++i) {
+    auto m = static_cast<std::size_t>(neighbours_control[i]);
+    sum = sum + (velocities[m] - velocities[l]);
+  }
+  v2 = a *
+       (1.0 / (static_cast<int>(neighbours_control.size())) * sum);  // const?
 
   return v2;
 }
@@ -139,6 +145,10 @@ Velocity alignment(double a, int boid_to_check,
 Velocity cohesion(double c, int boid_to_check,
                   std::vector<int> neighbours_control,
                   std::vector<Position> positions) {
+  Velocity v3{};
+  if (neighbours_control.empty()) {
+    return v3;
+  }
   Position sum{0.0, 0.0};
   auto l = static_cast<std::size_t>(boid_to_check);
   for (auto i = 0; i != neighbours_control.size(); ++i) {
@@ -147,29 +157,31 @@ Velocity cohesion(double c, int boid_to_check,
   }
   Position cm = (1.0 / static_cast<int>(neighbours_control.size()) * sum);
   Position v3_pos = c * (cm - positions[l]);
-  Velocity v3{v3_pos.x, v3_pos.y};
+  v3={v3_pos.x, v3_pos.y};
   return v3;
 }
-// mettere if affinchè divisione non sia 0!
+
 
 // si potrebbero mettere i valori di input non nella classe ma in un file txt da
-// dare in input, e metterci forse vettori positions, velocities, neighbours e i
-// 3 metodi per le velocità?
+// dare in input (non so se ha senso tenerli nel private? bo), bisogna vedere se
+// c'è qualche invariante che ci interessa (tipo limite velocità o posizioni) o
+// qualche dato da tenere nel private
 class boid {
   // valori da mettere in input
-  double a = 0.2;
-  double c = 0.3;
-  double d_s = 0.09;
-  double d = 0.2;
-  double s = 0.6;
-  int n = 3;  // numero di boids
+  // prove numeri
+  double a = 0.5;
+  double c = 0.5;
+  double d_s = 30.0;
+  double d = 100.0;
+  double s = 0.5;
+  int n;  // numero di boids
 
   // valori costanti
   int ngen = 10;  // numero di reiterazioni (serve anche per la parte grafica)
   double dt = 0.1;
 
-  // std::vector<Velocity> velocities = generate_v(n);
-  // std::vector<Position> positions = generate_p(n);
+  std::vector<Velocity> velocities = generate_v(n);
+  std::vector<Position> positions = generate_p(n);
 
   /*
   auto movimento() {
@@ -180,27 +192,30 @@ class boid {
     */
 
   auto print(std::vector<Velocity>& velocities,
-             std::vector<Position>& positions) {
+             std::vector<Position>& positions, int n) {
     for (int j = 0; j != n; ++j) {
+      std::cout << j << " boid: " << '\n';
       std::cout << "Velocity: " << velocities[j].v_x << "," << velocities[j].v_y
                 << '\n';
       std::cout << "Position: " << positions[j].x << "," << positions[j].y
-                << '\n';
+                << "\n \n \n";
     }
   }
 
  public:
   void movement(std::vector<Velocity>& velocities,
-                std::vector<Position>& positions) {
+                std::vector<Position>& positions, int n) {
     for (int k = 0; k <= ngen; ++k) {
-      std::vector<Velocity> updatedvelocity(n);
+      std::vector<Velocity> updatedvelocity{velocities};
       for (int j = 0; j != n; ++j) {
         std::vector<int> boidvicini = neighbours_control(j, d, positions);
-        Velocity v1 = separation(s, d_s, j, boidvicini, positions);
-        Velocity v2 = alignment(a, j, boidvicini, velocities);
-        Velocity v3 = cohesion(c, j, boidvicini, positions);
-        Velocity vtot = velocities[j] + v1 + v2 + v3;
-        updatedvelocity[j] = vtot;
+        if (!boidvicini.empty()) {
+          Velocity v1 = separation(s, d_s, j, boidvicini, positions);
+          Velocity v2 = alignment(a, j, boidvicini, velocities);
+          Velocity v3 = cohesion(c, j, boidvicini, positions);
+          Velocity vtot = velocities[j] + v1 + v2 + v3;
+          updatedvelocity[j] = vtot;
+        }
       }
       for (int j = 0; j != n; ++j) {
         velocities[j] = updatedvelocity[j];
@@ -209,7 +224,7 @@ class boid {
 
         positions[j] = newp;
       }
-      print(velocities, positions);
+      print(velocities, positions, n);
     }
   }
 };
@@ -222,7 +237,7 @@ int main() {
   std::vector<Position> positions = generate_p(n);
 
   boid boid_prova{};
-  boid_prova.movement(velocities, positions);
+  boid_prova.movement(velocities, positions, n);
 }
 
 // vettore posizione e vettore velocità
@@ -230,10 +245,6 @@ int main() {
 // ciclo for (su posizoni) per il calcolo di v1 e v3 con assert (distanze
 // devono essere minori di d) ciclo for (su velocità) per il calcolo di v2
 // con assert (a deve essere <1)
-
-// forse anche una funzione che ogni volta mi trova i boid a distanza <d e
-// per le 3 velocità mi usa nei calcoli solo quei boid senza dover scorrerli
-// tutti
 
 // per ogni velocità si somma quella "attuale" con v1, v2, v3
 // ricalcolo posizioni

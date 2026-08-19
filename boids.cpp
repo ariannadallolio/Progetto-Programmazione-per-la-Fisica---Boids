@@ -57,6 +57,8 @@ std::vector<Velocity> generate_v(int n) {  // "cin n" in the main
   std::default_random_engine eng{r()};
   std::uniform_real_distribution<double> uniform{-3.0, 3.0};  // max velocity?
 
+  std::generate_n(std::back_inserter(velocity), n,
+                  [&]() { Velocity v{uniform(eng), uniform(eng)}; });
   std::generate_n(std::back_inserter(velocity), n, [&]() {
     const Velocity v{uniform(eng), uniform(eng)};
     return v;
@@ -75,6 +77,8 @@ std::vector<Position> generate_p(int n) {  // "cin n" in the main
   std::uniform_real_distribution<double> y_uniform{
       0.0, 600.0};  // grandezze in pixel di uno schermo
 
+  std::generate_n(std::back_inserter(position), n,
+                  [&]() { return Position{uniform(eng), uniform(eng)}; });
   std::generate_n(std::back_inserter(position), n, [&]() {
     const Position p{x_uniform(eng), y_uniform(eng)};
     return p;
@@ -104,6 +108,7 @@ std::vector<int> neighbours_control(int boid_to_check, double d,
   }
   return neighbours_positions;
 }
+
 
 // da rivedere size_t
 Velocity separation(double s, double d_s, int boid_to_check,

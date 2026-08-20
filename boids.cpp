@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <random>
+#include <stdexcept>
 #include <vector>
 
 struct Velocity {
@@ -113,7 +114,7 @@ std::vector<int> neighbours_control(int boid_to_check, double d,
 // da rivedere size_t
 Velocity separation(double s, double d_s, int boid_to_check,
                     std::vector<int> const& neighbours_control,
-                    std::vector<Position>const& positions) {
+                    std::vector<Position> const& positions) {
   Position sum{0.0, 0.0};
   auto l = static_cast<std::size_t>(boid_to_check);
   for (auto i = 0; i != neighbours_control.size(); ++i) {
@@ -148,8 +149,8 @@ Velocity alignment(double a, int boid_to_check,
 }
 
 Velocity cohesion(double c, int boid_to_check,
-                  std::vector<int> neighbours_control,
-                  std::vector<Position> positions) {
+                  std::vector<int> const& neighbours_control,
+                  std::vector<Position> const& positions) {
   Velocity v3{};
   if (neighbours_control.empty()) {
     return v3;
@@ -162,44 +163,43 @@ Velocity cohesion(double c, int boid_to_check,
   }
   Position cm = (1.0 / static_cast<int>(neighbours_control.size()) * sum);
   Position v3_pos = c * (cm - positions[l]);
-  v3={v3_pos.x, v3_pos.y};
+  v3 = {v3_pos.x, v3_pos.y};
   return v3;
 }
 
 
-// si potrebbero mettere i valori di input non nella classe ma in un file txt da
-// dare in input (non so se ha senso tenerli nel private? bo), bisogna vedere se
-// c'è qualche invariante che ci interessa (tipo limite velocità o posizioni) o
-// qualche dato da tenere nel private
-class boid {
-  // valori da mettere in input
-  // prove numeri
-  double a = 0.5;
-  double c = 0.5;
-  double d_s = 30.0;
-  double d = 100.0;
-  double s = 0.5;
-  int n;  // numero di boids
+class Boids {
+  // valori da mettere in input, inizializzati nel private e riempiti col
+  // costruttore nel public (così da poter mettere le invarianti e poterli
+  // riempire nel main)
+ private:
+  int n_;     // numero di boids
+  double s_;  //<1
+  double a_;  //<1
+  double c_;  //<1
+  double d_;
+  double d_s_;  //<d
+  double dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
 
-  // valori costanti
-  int ngen = 10;  // numero di reiterazioni (serve anche per la parte grafica)
-  double dt = 0.1;
+  std::vector<Velocity> velocities;  // vettori da riempire con il costruttore
+  std::vector<Position> positions;
 
-  std::vector<Velocity> velocities = generate_v(n);
-  std::vector<Position> positions = generate_p(n);
+ public:
+  // costruttori, Member Initilisation List
+  Boids(int n, double s, double a, double c, double d, double d_s, double dt)
+      : n_{n}, a_{a}, c_{c}, s_{s}, d_{d}, d_s_{d_s}, dt_{dt}, 
+      velocities {generate_v(n)}, positions {generate_p(n)}  { //ora stabiliamo l'invariante di classe con exceptions
+        if (n <= 0){
+          throw std::runtime_error{"Errore: il numero di boids deve essere maggiore di zero"}; 
+        }
+        if (d_<=d_s_) {
+          throw std::runtime_error{"Errore: il raggio di separazione (d_s) deve essere minore del raggio visivo (d)"};
+        } //nel main try e catch(std::runtime_error& e){std::cerr << e.what() << '\n'; return EXIT_FAILURE;}
+      }
 
-  /*
-  auto movimento() {
-    for (int k = 0; k != ngen; ++k) {
-      std::vector<Velocity> v1_vector = separation(s, d_s, n, positions);
-    }
-  }
-    */
-
-  auto print(std::vector<Velocity>& velocities,
-             std::vector<Position>& positions, int n) {
-    for (int j = 0; j != n; ++j) {
-      std::cout << j << " boid: " << '\n';
+  auto const print() {
+    for (int j = 0; j != n_; ++j) {
+      std::cout << j << "° boid: " << '\n';
       std::cout << "Velocity: " << velocities[j].v_x << "," << velocities[j].v_y
                 << '\n';
       std::cout << "Position: " << positions[j].x << "," << positions[j].y
@@ -207,49 +207,40 @@ class boid {
     }
   }
 
- public:
-  void movement(std::vector<Velocity>& velocities,
-                std::vector<Position>& positions, int n) {
-    for (int k = 0; k <= ngen; ++k) {
-      std::vector<Velocity> updatedvelocity{velocities};
-      for (int j = 0; j != n; ++j) {
-        std::vector<int> boidvicini = neighbours_control(j, d, positions);
-        if (!boidvicini.empty()) {
-          Velocity v1 = separation(s, d_s, j, boidvicini, positions);
-          Velocity v2 = alignment(a, j, boidvicini, velocities);
-          Velocity v3 = cohesion(c, j, boidvicini, positions);
-          Velocity vtot = velocities[j] + v1 + v2 + v3;
-          updatedvelocity[j] = vtot;
-        }
+  void movement() {
+    std::vector<Velocity> updatedvelocity{velocities};
+    for (int j = 0; j != n_; ++j) {
+      std::vector<int> boidvicini = neighbours_control(j, d_, positions);
+      if (!boidvicini.empty()) {
+        Velocity v1 = separation(s_, d_s_, j, boidvicini, positions);
+        Velocity v2 = alignment(a_, j, boidvicini, velocities);
+        Velocity v3 = cohesion(c_, j, boidvicini, positions);
+        Velocity vtot = velocities[j] + v1 + v2 + v3;
+        updatedvelocity[j] = vtot;
       }
-      for (int j = 0; j != n; ++j) {
-        velocities[j] = updatedvelocity[j];
-        Position newp = {positions[j].x + dt * velocities[j].v_x,
-                         positions[j].y + dt * velocities[j].v_y};
-
-        positions[j] = newp;
-      }
-      print(velocities, positions, n);
     }
+    for (int j = 0; j != n_; ++j) {
+      velocities[j] = updatedvelocity[j];
+      Position newp = {positions[j].x + dt_ * velocities[j].v_x,
+                       positions[j].y + dt_ * velocities[j].v_y};
+
+      positions[j] = newp;
+    }
+    print();
   }
 };
 
 int main() {
   int n{};
+  int ngen{};
   std::cout << "Quanti boids?" << '\n';
   std::cin >> n;
-  std::vector<Velocity> velocities = generate_v(n);
-  std::vector<Position> positions = generate_p(n);
-
-  boid boid_prova{};
-  boid_prova.movement(velocities, positions, n);
+  std::cout << "Quante iterazioni?" << '\n';
+  std::cin >> ngen;
+  Boids boid_prova(n, 0.5, 0.5, 0.5, 100, 30, 0.1); //oppure da dare in input con txt
+  for (int i = 0; i != ngen; ++i){
+    boid_prova.movement();
+}
 }
 
-// vettore posizione e vettore velocità
-// calcolo posizione del centro di massa stormo
-// ciclo for (su posizoni) per il calcolo di v1 e v3 con assert (distanze
-// devono essere minori di d) ciclo for (su velocità) per il calcolo di v2
-// con assert (a deve essere <1)
 
-// per ogni velocità si somma quella "attuale" con v1, v2, v3
-// ricalcolo posizioni

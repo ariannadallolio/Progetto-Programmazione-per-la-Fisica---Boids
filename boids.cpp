@@ -1,10 +1,10 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdlib>  //per exit failure
 #include <iostream>
 #include <random>
 #include <stdexcept>
-#include <cstdlib> //per exit failure
 #include <vector>
 
 struct Velocity {
@@ -33,7 +33,6 @@ bool operator!=(Position const& a, Position const& b) { return {!(a == b)}; }
 
 Position operator*(double c, Position const& a) { return {c * a.x, c * a.y}; }
 
-
 Velocity operator-(Velocity const& a, Velocity const& b) {
   return {a.v_x - b.v_x, a.v_y - b.v_y};
 }
@@ -61,7 +60,7 @@ std::vector<Velocity> generate_v(int n) {  // "cin n" in the main
   std::uniform_real_distribution<double> uniform{-3.0, 3.0};  // max velocity?
 
   std::generate_n(std::back_inserter(velocity), n,
-                  [&]() {return Velocity {uniform(eng), uniform(eng)}; });
+                  [&]() { return Velocity{uniform(eng), uniform(eng)}; });
   return velocity;
 }
 
@@ -91,6 +90,7 @@ std::vector<Position> generate_p(int n) {  // "cin n" in the main
 // singolo boid, per poi fare un ciclo, anche perchè gli n che avevate messo
 // dovrebbero essere i numeri di boids vicini che comunque vanno trovati in
 // qualche modo direi? Ho provato a fare una roba così.
+/*
 std::vector<int> neighbours_control(int boid_to_check, double d,
                                     std::vector<Position> const& positions) {
   std::vector<int> neighbours_positions{};
@@ -103,9 +103,23 @@ std::vector<int> neighbours_control(int boid_to_check, double d,
   }
   return neighbours_positions;
 }
+  */
 
+std::vector<int> neighbours_control(int boid_to_check, double d,
+                                    std::vector<Position> const& positions) {
+  std::vector<int> neighbours_positions{};
+  int n = static_cast<int>(positions.size());
+  for (int i = 0; i != n; ++i) {
+    if (i != boid_to_check &&
+        distance(positions[static_cast<std::size_t>(boid_to_check)],
+                 positions[static_cast<std::size_t>(i)]) < d) {
+      neighbours_positions.push_back(i);
+    }
+  }
+  return neighbours_positions;
+}
 
-// da rivedere size_t
+/*
 Velocity separation(double s, double d_s, int boid_to_check,
                     std::vector<int> const& neighbours_control,
                     std::vector<Position> const& positions) {
@@ -122,7 +136,26 @@ Velocity separation(double s, double d_s, int boid_to_check,
   Velocity v1{pos_v1.x, pos_v1.y};
   return v1;
 }
+  */
 
+Velocity separation(double s, double d_s, int boid_to_check,
+                    std::vector<int> const& neighbours_control,
+                    std::vector<Position> const& positions) {
+  Position sum{0.0, 0.0};
+  Position const pos_check = positions[static_cast<std::size_t>(boid_to_check)];
+  for (int m : neighbours_control) {  // range for loop che itera direttamente
+                                      // sugli elementi
+    Position const pos_m = positions[static_cast<std::size_t>(m)];
+    if (distance(pos_check, pos_m) < d_s) {
+      sum = sum + (pos_m - pos_check);  ////////////algoritmo accumulate?
+    }
+  }
+  Position const pos_v1 = -s * sum;  // perchè const??
+  Velocity v1{pos_v1.x, pos_v1.y};
+  return v1;
+}
+
+/*
 Velocity alignment(double a, int boid_to_check,
                    std::vector<int> const& neighbours_control,
                    std::vector<Velocity> const& velocities) {
@@ -141,7 +174,28 @@ Velocity alignment(double a, int boid_to_check,
 
   return v2;
 }
+*/
 
+Velocity alignment(double a, int boid_to_check,
+                   std::vector<int> const& neighbours_control,
+                   std::vector<Velocity> const& velocities) {
+  Velocity v2{};
+  if (neighbours_control.empty()) {
+    return v2;
+  }
+  Velocity sum{0.0, 0.0};
+  for (int m : neighbours_control) {
+    sum = sum + (velocities[static_cast<std::size_t>(m)] -
+                 velocities[static_cast<std::size_t>(boid_to_check)]);
+  }
+  int n = static_cast<int>(neighbours_control.size());
+  ;
+  v2 = a * ((1.0 / n) * sum);  // const?
+
+  return v2;
+}
+
+/*
 Velocity cohesion(double c, int boid_to_check,
                   std::vector<int> const& neighbours_control,
                   std::vector<Position> const& positions) {
@@ -160,7 +214,27 @@ Velocity cohesion(double c, int boid_to_check,
   v3 = {v3_pos.x, v3_pos.y};
   return v3;
 }
+*/
 
+Velocity cohesion(double c, int boid_to_check,
+                  std::vector<int> const& neighbours_control,
+                  std::vector<Position> const& positions) {
+  Velocity v3{};
+  if (neighbours_control.empty()) {
+    return v3;
+  }
+  Position sum{0.0, 0.0};
+  for (int m : neighbours_control) {
+    sum = sum + positions[static_cast<std::size_t>(m)];
+  }
+  int n = static_cast<int>(neighbours_control.size());
+  ;
+  Position cm = ((1.0 / n) * sum);
+  Position v3_pos =
+      c * (cm - positions[static_cast<std::size_t>(boid_to_check)]);
+  v3 = {v3_pos.x, v3_pos.y};
+  return v3;
+}
 
 class Boids {
   // valori da mettere in input, inizializzati nel private e riempiti col
@@ -173,7 +247,8 @@ class Boids {
   double c_;  //<1
   double d_;
   double d_s_;  //<d
-  double dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
+  double
+      dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
 
   std::vector<Velocity> velocities;  // vettori da riempire con il costruttore
   std::vector<Position> positions;
@@ -181,22 +256,38 @@ class Boids {
  public:
   // costruttori, Member Initilisation List
   Boids(int n, double s, double a, double c, double d, double d_s, double dt)
-      : n_{n}, a_{a}, c_{c}, s_{s}, d_{d}, d_s_{d_s}, dt_{dt}, 
-      velocities {generate_v(n)}, positions {generate_p(n)}  { //ora stabiliamo l'invariante di classe con exceptions
-        if (n <= 0){
-          throw std::runtime_error{"Errore: il numero di boids deve essere maggiore di zero"}; 
-        }
-        if (d_<=d_s_) {
-          throw std::runtime_error{"Errore: il raggio di separazione (d_s) deve essere minore del raggio visivo (d)"};
-        } //nel main try e catch(std::runtime_error& e){std::cerr << e.what() << '\n'; return EXIT_FAILURE;}
-      }
+      : n_{n},
+        s_{s},
+        a_{a},
+        c_{c},
+        d_{d},
+        d_s_{d_s},
+        dt_{dt},
+        velocities{generate_v(n)},
+        positions{generate_p(
+            n)} {  // ora stabiliamo l'invariante di classe con exceptions
+    if (n <= 0) {
+      throw std::runtime_error{
+          "Errore: il numero di boids deve essere maggiore di zero"};
+    }
+    if (d_ <= d_s_) {
+      throw std::runtime_error{
+          "Errore: il raggio di separazione (d_s) deve essere minore del "
+          "raggio visivo (d)"};
+    }
+    if (s_ <= 0 || a_ <= 0 || c_ <= 0) {
+      throw std::runtime_error{"Errore: i parametri devono essere positivi"};
+    }  // nel main try e catch(std::runtime_error& e){std::cerr << e.what() <<
+       // '\n'; return EXIT_FAILURE;}
+  }
 
   auto print() const {
     for (int j = 0; j != n_; ++j) {
       std::cout << j << "° boid: " << '\n';
-      std::cout << "Velocity: " << velocities[j].v_x << "," << velocities[j].v_y
-                << '\n';
-      std::cout << "Position: " << positions[j].x << "," << positions[j].y
+      auto j_sz = static_cast<std::size_t>(j);
+      std::cout << "Velocity: " << velocities[j_sz].v_x << ","
+                << velocities[j_sz].v_y << '\n';
+      std::cout << "Position: " << positions[j_sz].x << "," << positions[j_sz].y
                 << "\n \n \n";
     }
   }
@@ -209,16 +300,18 @@ class Boids {
         Velocity v1 = separation(s_, d_s_, j, boidvicini, positions);
         Velocity v2 = alignment(a_, j, boidvicini, velocities);
         Velocity v3 = cohesion(c_, j, boidvicini, positions);
-        Velocity vtot = velocities[j] + v1 + v2 + v3;
-        updatedvelocity[j] = vtot;
+        auto j_sz = static_cast<std::size_t>(j);
+        Velocity vtot = velocities[j_sz] + v1 + v2 + v3;
+        updatedvelocity[j_sz] = vtot;
       }
     }
     for (int j = 0; j != n_; ++j) {
-      velocities[j] = updatedvelocity[j];
-      Position newp = {positions[j].x + dt_ * velocities[j].v_x,
-                       positions[j].y + dt_ * velocities[j].v_y};
+      auto j_sz = static_cast<std::size_t>(j);
+      velocities[j_sz] = updatedvelocity[j_sz];
+      Position newp = {positions[j_sz].x + dt_ * velocities[j_sz].v_x,
+                       positions[j_sz].y + dt_ * velocities[j_sz].v_y};
 
-      positions[j] = newp;
+      positions[j_sz] = newp;
     }
     print();
   }
@@ -226,27 +319,24 @@ class Boids {
 
 int main() {
   try {
-  int n{};
-  int ngen{};
-  std::cout << "Quanti boids?" << '\n';
-  std::cin >> n;
-  std::cout << "Quante iterazioni?" << '\n';
-  std::cin >> ngen;
-  Boids boid_prova(n, 0.5, 0.5, 0.5, 100, 30, 0.1); //oppure da dare in input con txt
-  for (int i = 0; i != ngen; ++i){
-    boid_prova.movement();
-}
-  } 
-  catch (std::exception const& e) { // Cattura runtime_error
+    int n{};
+    int ngen{};
+    std::cout << "Quanti boids?" << '\n';
+    std::cin >> n;
+    std::cout << "Quante iterazioni?" << '\n';
+    std::cin >> ngen;
+    Boids boid_prova(n, 0.5, 0.5, 0.5, 100, 30,
+                     0.1);  // oppure da dare in input con txt
+    for (int i = 0; i != ngen; ++i) {
+      boid_prova.movement();
+    }
+  } catch (std::exception const& e) {  // Cattura runtime_error
     std::cerr << e.what() << '\n';
-    return EXIT_FAILURE; // (Ricordati di includere  in cima al file!)
+    return EXIT_FAILURE;  // (Ricordati di includere  in cima al file!)
   } catch (...) {
     std::cerr << "Eccezione sconosciuta\n";
     return EXIT_FAILURE;
   }
-  
+
   return EXIT_SUCCESS;
-} 
-
-
-
+}

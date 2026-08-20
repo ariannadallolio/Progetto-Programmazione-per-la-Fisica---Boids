@@ -73,7 +73,6 @@ std::vector<Boid> generate_n(int n) {  // "cin n" in the main
   return boids;
 }
 
-
 // la funzione neighbours_control vale per un boid solo, ritorna un vettore di
 // interi che corrispondono alle posizioni dei boids vicini al boid_to_check nel
 // vettore positions (quello con tutti i boids). Si potrebbe dare in input alle
@@ -102,7 +101,7 @@ std::vector<int> neighbours_control(int boid_to_check, double d,
 std::vector<int> neighbours_control(int boid_to_check, double d,
                                     std::vector<Boid> const& boids) {
   std::vector<int> neighbours{};
-  int n = static_cast<int>(boids.size());
+  int const n = static_cast<int>(boids.size());
   for (int i = 0; i != n; ++i) {
     if (i != boid_to_check &&
         distance(boids[static_cast<std::size_t>(boid_to_check)].pos,
@@ -138,7 +137,7 @@ Velocity separation(double s, double d_s, int boid_to_check,
   Position sum{0.0, 0.0};
   Position const pos_check = boids[static_cast<std::size_t>(boid_to_check)].pos;
   for (int m : neighbours) {  // range for loop che itera direttamente
-                                      // sugli elementi
+                              // sugli elementi
     Position const pos_m = boids[static_cast<std::size_t>(m)].pos;
     if (distance(pos_check, pos_m) < d_s) {
       sum = sum + (pos_m - pos_check);  ////////////algoritmo accumulate?
@@ -182,8 +181,7 @@ Velocity alignment(double a, int boid_to_check,
     sum = sum + (boids[static_cast<std::size_t>(m)].vel -
                  boids[static_cast<std::size_t>(boid_to_check)].vel);
   }
-  int n = static_cast<int>(neighbours.size());
-  ;
+  int const n = static_cast<int>(neighbours.size());
   v2 = a * ((1.0 / n) * sum);  // const?
 
   return v2;
@@ -221,10 +219,9 @@ Velocity cohesion(double c, int boid_to_check,
   for (int m : neighbours) {
     sum = sum + boids[static_cast<std::size_t>(m)].pos;
   }
-  int n = static_cast<int>(neighbours.size());
-  ;
-  Position cm = ((1.0 / n) * sum);
-  Position v3_pos =
+  int const n = static_cast<int>(neighbours.size());
+  Position const cm = ((1.0 / n) * sum);
+  Position const v3_pos =
       c * (cm - boids[static_cast<std::size_t>(boid_to_check)].pos);
   v3 = {v3_pos.x, v3_pos.y};
   return v3;
@@ -245,7 +242,6 @@ class Flock {
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
 
   std::vector<Boid> boids;  // vettore da riempire con il costruttore
-  
 
  public:
   // costruttori, Member Initilisation List
@@ -258,8 +254,8 @@ class Flock {
         d_s_{d_s},
         dt_{dt},
         boids{generate_n(n)}
-    
-           {  // ora stabiliamo l'invariante di classe con exceptions
+
+  {  // ora stabiliamo l'invariante di classe con exceptions
     if (n <= 0) {
       throw std::runtime_error{
           "Errore: il numero di boids deve essere maggiore di zero"};
@@ -275,7 +271,7 @@ class Flock {
        // '\n'; return EXIT_FAILURE;}
   }
 
-  auto print() const {
+  void print() const {
     for (int j = 0; j != n_; ++j) {
       std::cout << j << "° boid: " << '\n';
       auto j_sz = static_cast<std::size_t>(j);
@@ -294,14 +290,14 @@ class Flock {
         Velocity v1 = separation(s_, d_s_, j, neighbours, boids);
         Velocity v2 = alignment(a_, j, neighbours, boids);
         Velocity v3 = cohesion(c_, j, neighbours, boids);
-        auto j_sz = static_cast<std::size_t>(j);
+        auto const j_sz = static_cast<std::size_t>(j);
         Velocity vtot = boids[j_sz].vel + v1 + v2 + v3;
         updatedboids[j_sz].vel = vtot;
       }
     }
     for (int j = 0; j != n_; ++j) {
-      auto j_sz = static_cast<std::size_t>(j);
-      boids[j_sz].vel = boids[j_sz].vel;
+      auto const j_sz = static_cast<std::size_t>(j);
+      boids[j_sz].vel = updatedboids[j_sz].vel;
       Position newp = {boids[j_sz].pos.x + dt_ * boids[j_sz].vel.v_x,
                        boids[j_sz].pos.y + dt_ * boids[j_sz].vel.v_y};
 

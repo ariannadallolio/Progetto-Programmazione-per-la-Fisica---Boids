@@ -4,6 +4,7 @@
 #include <iostream>
 #include <random>
 #include <stdexcept>
+#include <cstdlib> //per exit failure
 #include <vector>
 
 struct Velocity {
@@ -31,12 +32,6 @@ bool operator==(Position const& a, Position const& b) {
 bool operator!=(Position const& a, Position const& b) { return {!(a == b)}; }
 
 Position operator*(double c, Position const& a) { return {c * a.x, c * a.y}; }
-
-bool operator==(Position const& a, Position const& b) {
-  return {a.x == b.x && a.y == b.y};
-}
-
-bool operator!=(Position const& a, Position const& b) { return {!(a == b)}; }
 
 
 Velocity operator-(Velocity const& a, Velocity const& b) {
@@ -66,11 +61,7 @@ std::vector<Velocity> generate_v(int n) {  // "cin n" in the main
   std::uniform_real_distribution<double> uniform{-3.0, 3.0};  // max velocity?
 
   std::generate_n(std::back_inserter(velocity), n,
-                  [&]() { Velocity v{uniform(eng), uniform(eng)}; });
-  std::generate_n(std::back_inserter(velocity), n, [&]() {
-    const Velocity v{uniform(eng), uniform(eng)};
-    return v;
-  });
+                  [&]() {return Velocity {uniform(eng), uniform(eng)}; });
   return velocity;
 }
 
@@ -87,10 +78,6 @@ std::vector<Position> generate_p(int n) {  // "cin n" in the main
 
   std::generate_n(std::back_inserter(position), n,
                   [&]() { return Position{x_uniform(eng), y_uniform(eng)}; });
-  std::generate_n(std::back_inserter(position), n, [&]() {
-    const Position p{x_uniform(eng), y_uniform(eng)};
-    return p;
-  });
   return position;
 }
 
@@ -204,7 +191,7 @@ class Boids {
         } //nel main try e catch(std::runtime_error& e){std::cerr << e.what() << '\n'; return EXIT_FAILURE;}
       }
 
-  auto const print() {
+  auto print() const {
     for (int j = 0; j != n_; ++j) {
       std::cout << j << "° boid: " << '\n';
       std::cout << "Velocity: " << velocities[j].v_x << "," << velocities[j].v_y
@@ -238,6 +225,7 @@ class Boids {
 };
 
 int main() {
+  try {
   int n{};
   int ngen{};
   std::cout << "Quanti boids?" << '\n';
@@ -248,6 +236,17 @@ int main() {
   for (int i = 0; i != ngen; ++i){
     boid_prova.movement();
 }
-}
+  } 
+  catch (std::exception const& e) { // Cattura runtime_error
+    std::cerr << e.what() << '\n';
+    return EXIT_FAILURE; // (Ricordati di includere  in cima al file!)
+  } catch (...) {
+    std::cerr << "Eccezione sconosciuta\n";
+    return EXIT_FAILURE;
+  }
+  
+  return EXIT_SUCCESS;
+} 
+
 
 

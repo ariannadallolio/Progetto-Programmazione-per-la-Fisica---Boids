@@ -86,7 +86,7 @@ std::vector<Position> generate_p(int n) {  // "cin n" in the main
       0.0, 600.0};  // grandezze in pixel di uno schermo
 
   std::generate_n(std::back_inserter(position), n,
-                  [&]() { return Position{uniform(eng), uniform(eng)}; });
+                  [&]() { return Position{x_uniform(eng), y_uniform(eng)}; });
   std::generate_n(std::back_inserter(position), n, [&]() {
     const Position p{x_uniform(eng), y_uniform(eng)};
     return p;

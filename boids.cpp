@@ -17,6 +17,11 @@ struct Position {
   double y;
 };
 
+struct Boid {
+  Velocity vel;
+  Position pos;
+};
+
 Position operator-(Position const& a, Position const& b) {
   return {a.x - b.x, a.y - b.y};
 }
@@ -52,33 +57,22 @@ double distance(Position const& a, Position const& b) {
 }
 
 // velocity vector: n entires, each with two coordinates (x, y)
-std::vector<Velocity> generate_v(int n) {  // "cin n" in the main
-  std::vector<Velocity> velocity;
+std::vector<Boid> generate_n(int n) {  // "cin n" in the main
+  std::vector<Boid> boids;
 
   std::random_device r;  // seed
   std::default_random_engine eng{r()};
-  std::uniform_real_distribution<double> uniform{-3.0, 3.0};  // max velocity?
-
-  std::generate_n(std::back_inserter(velocity), n,
-                  [&]() { return Velocity{uniform(eng), uniform(eng)}; });
-  return velocity;
+  std::uniform_real_distribution<double> uniform_v{-3.0, 3.0};
+  // max velocity?
+  std::uniform_real_distribution<double> uniform_px{0.0, 800.0};
+  std::uniform_real_distribution<double> uniform_py{0.0, 600.0};
+  std::generate_n(std::back_inserter(boids), n, [&]() {
+    return Boid{{uniform_v(eng), uniform_v(eng)},
+                {uniform_px(eng), uniform_py(eng)}};
+  });
+  return boids;
 }
 
-// positions vector: n entries, each with two coordinates (x, y)
-std::vector<Position> generate_p(int n) {  // "cin n" in the main
-  std::vector<Position> position;
-
-  std::random_device r;  // seed
-  std::default_random_engine eng{r()};
-  std::uniform_real_distribution<double> x_uniform{0.0,
-                                                   800.0};  // max position?
-  std::uniform_real_distribution<double> y_uniform{
-      0.0, 600.0};  // grandezze in pixel di uno schermo
-
-  std::generate_n(std::back_inserter(position), n,
-                  [&]() { return Position{x_uniform(eng), y_uniform(eng)}; });
-  return position;
-}
 
 // la funzione neighbours_control vale per un boid solo, ritorna un vettore di
 // interi che corrispondono alle posizioni dei boids vicini al boid_to_check nel
@@ -106,17 +100,17 @@ std::vector<int> neighbours_control(int boid_to_check, double d,
   */
 
 std::vector<int> neighbours_control(int boid_to_check, double d,
-                                    std::vector<Position> const& positions) {
-  std::vector<int> neighbours_positions{};
-  int n = static_cast<int>(positions.size());
+                                    std::vector<Boid> const& boids) {
+  std::vector<int> neighbours{};
+  int n = static_cast<int>(boids.size());
   for (int i = 0; i != n; ++i) {
     if (i != boid_to_check &&
-        distance(positions[static_cast<std::size_t>(boid_to_check)],
-                 positions[static_cast<std::size_t>(i)]) < d) {
-      neighbours_positions.push_back(i);
+        distance(boids[static_cast<std::size_t>(boid_to_check)].pos,
+                 boids[static_cast<std::size_t>(i)].pos) < d) {
+      neighbours.push_back(i);
     }
   }
-  return neighbours_positions;
+  return neighbours;
 }
 
 /*
@@ -139,13 +133,13 @@ Velocity separation(double s, double d_s, int boid_to_check,
   */
 
 Velocity separation(double s, double d_s, int boid_to_check,
-                    std::vector<int> const& neighbours_control,
-                    std::vector<Position> const& positions) {
+                    std::vector<int> const& neighbours,
+                    std::vector<Boid> const& boids) {
   Position sum{0.0, 0.0};
-  Position const pos_check = positions[static_cast<std::size_t>(boid_to_check)];
-  for (int m : neighbours_control) {  // range for loop che itera direttamente
+  Position const pos_check = boids[static_cast<std::size_t>(boid_to_check)].pos;
+  for (int m : neighbours) {  // range for loop che itera direttamente
                                       // sugli elementi
-    Position const pos_m = positions[static_cast<std::size_t>(m)];
+    Position const pos_m = boids[static_cast<std::size_t>(m)].pos;
     if (distance(pos_check, pos_m) < d_s) {
       sum = sum + (pos_m - pos_check);  ////////////algoritmo accumulate?
     }
@@ -177,18 +171,18 @@ Velocity alignment(double a, int boid_to_check,
 */
 
 Velocity alignment(double a, int boid_to_check,
-                   std::vector<int> const& neighbours_control,
-                   std::vector<Velocity> const& velocities) {
+                   std::vector<int> const& neighbours,
+                   std::vector<Boid> const& boids) {
   Velocity v2{};
-  if (neighbours_control.empty()) {
+  if (neighbours.empty()) {
     return v2;
   }
   Velocity sum{0.0, 0.0};
-  for (int m : neighbours_control) {
-    sum = sum + (velocities[static_cast<std::size_t>(m)] -
-                 velocities[static_cast<std::size_t>(boid_to_check)]);
+  for (int m : neighbours) {
+    sum = sum + (boids[static_cast<std::size_t>(m)].vel -
+                 boids[static_cast<std::size_t>(boid_to_check)].vel);
   }
-  int n = static_cast<int>(neighbours_control.size());
+  int n = static_cast<int>(neighbours.size());
   ;
   v2 = a * ((1.0 / n) * sum);  // const?
 
@@ -217,26 +211,26 @@ Velocity cohesion(double c, int boid_to_check,
 */
 
 Velocity cohesion(double c, int boid_to_check,
-                  std::vector<int> const& neighbours_control,
-                  std::vector<Position> const& positions) {
+                  std::vector<int> const& neighbours,
+                  std::vector<Boid> const& boids) {
   Velocity v3{};
-  if (neighbours_control.empty()) {
+  if (neighbours.empty()) {
     return v3;
   }
   Position sum{0.0, 0.0};
-  for (int m : neighbours_control) {
-    sum = sum + positions[static_cast<std::size_t>(m)];
+  for (int m : neighbours) {
+    sum = sum + boids[static_cast<std::size_t>(m)].pos;
   }
-  int n = static_cast<int>(neighbours_control.size());
+  int n = static_cast<int>(neighbours.size());
   ;
   Position cm = ((1.0 / n) * sum);
   Position v3_pos =
-      c * (cm - positions[static_cast<std::size_t>(boid_to_check)]);
+      c * (cm - boids[static_cast<std::size_t>(boid_to_check)].pos);
   v3 = {v3_pos.x, v3_pos.y};
   return v3;
 }
 
-class Boids {
+class Flock {
   // valori da mettere in input, inizializzati nel private e riempiti col
   // costruttore nel public (così da poter mettere le invarianti e poterli
   // riempire nel main)
@@ -250,12 +244,12 @@ class Boids {
   double
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
 
-  std::vector<Velocity> velocities;  // vettori da riempire con il costruttore
-  std::vector<Position> positions;
+  std::vector<Boid> boids;  // vettore da riempire con il costruttore
+  
 
  public:
   // costruttori, Member Initilisation List
-  Boids(int n, double s, double a, double c, double d, double d_s, double dt)
+  Flock(int n, double s, double a, double c, double d, double d_s, double dt)
       : n_{n},
         s_{s},
         a_{a},
@@ -263,9 +257,9 @@ class Boids {
         d_{d},
         d_s_{d_s},
         dt_{dt},
-        velocities{generate_v(n)},
-        positions{generate_p(
-            n)} {  // ora stabiliamo l'invariante di classe con exceptions
+        boids{generate_n(n)}
+    
+           {  // ora stabiliamo l'invariante di classe con exceptions
     if (n <= 0) {
       throw std::runtime_error{
           "Errore: il numero di boids deve essere maggiore di zero"};
@@ -285,33 +279,33 @@ class Boids {
     for (int j = 0; j != n_; ++j) {
       std::cout << j << "° boid: " << '\n';
       auto j_sz = static_cast<std::size_t>(j);
-      std::cout << "Velocity: " << velocities[j_sz].v_x << ","
-                << velocities[j_sz].v_y << '\n';
-      std::cout << "Position: " << positions[j_sz].x << "," << positions[j_sz].y
+      std::cout << "Velocity: " << boids[j_sz].vel.v_x << ","
+                << boids[j_sz].vel.v_y << '\n';
+      std::cout << "Position: " << boids[j_sz].pos.x << "," << boids[j_sz].pos.y
                 << "\n \n \n";
     }
   }
 
   void movement() {
-    std::vector<Velocity> updatedvelocity{velocities};
+    std::vector<Boid> updatedboids{boids};
     for (int j = 0; j != n_; ++j) {
-      std::vector<int> boidvicini = neighbours_control(j, d_, positions);
-      if (!boidvicini.empty()) {
-        Velocity v1 = separation(s_, d_s_, j, boidvicini, positions);
-        Velocity v2 = alignment(a_, j, boidvicini, velocities);
-        Velocity v3 = cohesion(c_, j, boidvicini, positions);
+      std::vector<int> neighbours = neighbours_control(j, d_, boids);
+      if (!neighbours.empty()) {
+        Velocity v1 = separation(s_, d_s_, j, neighbours, boids);
+        Velocity v2 = alignment(a_, j, neighbours, boids);
+        Velocity v3 = cohesion(c_, j, neighbours, boids);
         auto j_sz = static_cast<std::size_t>(j);
-        Velocity vtot = velocities[j_sz] + v1 + v2 + v3;
-        updatedvelocity[j_sz] = vtot;
+        Velocity vtot = boids[j_sz].vel + v1 + v2 + v3;
+        updatedboids[j_sz].vel = vtot;
       }
     }
     for (int j = 0; j != n_; ++j) {
       auto j_sz = static_cast<std::size_t>(j);
-      velocities[j_sz] = updatedvelocity[j_sz];
-      Position newp = {positions[j_sz].x + dt_ * velocities[j_sz].v_x,
-                       positions[j_sz].y + dt_ * velocities[j_sz].v_y};
+      boids[j_sz].vel = boids[j_sz].vel;
+      Position newp = {boids[j_sz].pos.x + dt_ * boids[j_sz].vel.v_x,
+                       boids[j_sz].pos.y + dt_ * boids[j_sz].vel.v_y};
 
-      positions[j_sz] = newp;
+      boids[j_sz].pos = newp;
     }
     print();
   }
@@ -325,10 +319,10 @@ int main() {
     std::cin >> n;
     std::cout << "Quante iterazioni?" << '\n';
     std::cin >> ngen;
-    Boids boid_prova(n, 0.5, 0.5, 0.5, 100, 30,
-                     0.1);  // oppure da dare in input con txt
+    Flock prova(n, 0.5, 0.5, 0.5, 100, 30,
+                0.1);  // oppure da dare in input con txt
     for (int i = 0; i != ngen; ++i) {
-      boid_prova.movement();
+      prova.movement();
     }
   } catch (std::exception const& e) {  // Cattura runtime_error
     std::cerr << e.what() << '\n';

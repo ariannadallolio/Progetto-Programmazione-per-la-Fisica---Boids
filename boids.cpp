@@ -150,7 +150,7 @@ Velocity cohesion(double c, int boid_to_check,
 }
 
 class Flock {
-  // valori da mettere in input, inizializzati nel private e riempiti col
+  // valori da mettere in input, inizializzati nel private e definiti col
   // costruttore nel public (così da poter mettere le invarianti e poterli
   // riempire nel main)
  private:
@@ -164,7 +164,7 @@ class Flock {
   double
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
 
-  std::vector<Boid> boids;  // vettore da riempire con il costruttore
+  std::vector<Boid> boids;  // vettore da riempire con il costruttore e generate_n
 
   //dimensioni schermo in pixel
   double const x_min = 0.0;
@@ -195,7 +195,7 @@ class Flock {
           "Errore: il raggio di separazione (d_s) deve essere minore del "
           "raggio visivo (d)"};
     }
-    if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0) {
+    if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ || v_max_<=0 || dt_ <= 0) {
       throw std::runtime_error{"Errore: i parametri devono essere positivi"};
     }  // nel main try e catch(std::runtime_error& e){std::cerr << e.what() <<
     // '\n'; return EXIT_FAILURE;}
@@ -220,13 +220,14 @@ class Flock {
       newp.y = y_max + newp.y;
     }
     if (x_max < newp.x) {
-      newp.x = x_min + newp.x;
+      newp.x = newp.x - x_max;
     }
     if (y_max < newp.y) {
-      newp.y = y_min + newp.y;
+      newp.y = newp.y - y_max;
     }
     return newp;
   }
+
 
   void print() const {
     for (int j = 0; j != n_; ++j) {

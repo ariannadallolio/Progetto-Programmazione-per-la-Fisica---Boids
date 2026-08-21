@@ -50,22 +50,27 @@ Velocity operator*(double c, Velocity const& a) {
   return {c * a.v_x, c * a.v_y};
 }
 
-double distance(Position const& a, Position const& b) {
+double distance_squared(Position const& a, Position const& b) {
   double dx = a.x - b.x;
   double dy = a.y - b.y;
-  return std::sqrt(dx * dx + dy * dy);
+  return dx * dx + dy * dy; //così evitiamo std::sqrt che è più impegnativo, tanto è uguale
+}
+
+double speed_modulus(Velocity const& a) {
+  return std::sqrt(a.v_x * a.v_x + a.v_y * a.v_y);
 }
 
 // velocity vector: n entires, each with two coordinates (x, y)
-std::vector<Boid> generate_n(int n) {  // "cin n" in the main
+std::vector<Boid> generate_n(int n, double x_min, double x_max, double y_min,
+                             double y_max) {  // "cin n" in the main
   std::vector<Boid> boids;
 
   std::random_device r;  // seed
   std::default_random_engine eng{r()};
-  std::uniform_real_distribution<double> uniform_v{-3.0, 3.0};
+  std::uniform_real_distribution<double> uniform_v{-3.0, 3.0}; //da riguardare se includere v_max?
   // max velocity?
-  std::uniform_real_distribution<double> uniform_px{0.0, 800.0};
-  std::uniform_real_distribution<double> uniform_py{0.0, 600.0};
+  std::uniform_real_distribution<double> uniform_px{x_min, x_max};
+  std::uniform_real_distribution<double> uniform_py{y_min, y_max};
   std::generate_n(std::back_inserter(boids), n, [&]() {
     return Boid{{uniform_v(eng), uniform_v(eng)},
                 {uniform_px(eng), uniform_py(eng)}};
@@ -73,73 +78,32 @@ std::vector<Boid> generate_n(int n) {  // "cin n" in the main
   return boids;
 }
 
-// la funzione neighbours_control vale per un boid solo, ritorna un vettore di
-// interi che corrispondono alle posizioni dei boids vicini al boid_to_check nel
-// vettore positions (quello con tutti i boids). Si potrebbe dare in input alle
-// 3 funzioni delle velocità questo vettore così da non far scorrere tutte e 3
-// le volte tutti i boid per trovarne i vicini. Poi (nel main?) si può fare un
-// ciclo che fa neighbours_control e le 3 funzioni per le velocità per ogni
-// boid. Quindi anche le 3 funzioni per le velocità possono essere rese per un
-// singolo boid, per poi fare un ciclo, anche perchè gli n che avevate messo
-// dovrebbero essere i numeri di boids vicini che comunque vanno trovati in
-// qualche modo direi? Ho provato a fare una roba così.
-/*
-std::vector<int> neighbours_control(int boid_to_check, double d,
-                                    std::vector<Position> const& positions) {
-  std::vector<int> neighbours_positions{};
-  auto l = static_cast<std::size_t>(boid_to_check);
-  for (auto i = 0; i != positions.size(); ++i) {
-    if (positions[i] != positions[l] &&
-        distance(positions[l], positions[i]) < d) {
-      neighbours_positions.push_back(static_cast<int>(i));
-    }
-  }
-  return neighbours_positions;
-}
-  */
 
 std::vector<int> neighbours_control(int boid_to_check, double d,
                                     std::vector<Boid> const& boids) {
   std::vector<int> neighbours{};
+  double d_squared = d*d;
   int const n = static_cast<int>(boids.size());
   for (int i = 0; i != n; ++i) {
     if (i != boid_to_check &&
-        distance(boids[static_cast<std::size_t>(boid_to_check)].pos,
-                 boids[static_cast<std::size_t>(i)].pos) < d) {
+        distance_squared(boids[static_cast<std::size_t>(boid_to_check)].pos,
+                         boids[static_cast<std::size_t>(i)].pos) < d_squared) {
       neighbours.push_back(i);
     }
   }
   return neighbours;
 }
 
-/*
-Velocity separation(double s, double d_s, int boid_to_check,
-                    std::vector<int> const& neighbours_control,
-                    std::vector<Position> const& positions) {
-  Position sum{0.0, 0.0};
-  auto l = static_cast<std::size_t>(boid_to_check);
-  for (auto i = 0; i != neighbours_control.size(); ++i) {
-    auto m = static_cast<std::size_t>(neighbours_control[i]);
-    if (distance(positions[l], positions[m]) < d_s) {
-      sum = sum +
-            (positions[m] - positions[l]);  ////////////algoritmo accumulate?
-    }
-  }
-  Position const pos_v1 = -s * sum;  // perchè const??
-  Velocity v1{pos_v1.x, pos_v1.y};
-  return v1;
-}
-  */
-
 Velocity separation(double s, double d_s, int boid_to_check,
                     std::vector<int> const& neighbours,
                     std::vector<Boid> const& boids) {
   Position sum{0.0, 0.0};
+  double d_s_squared = d_s * d_s;
   Position const pos_check = boids[static_cast<std::size_t>(boid_to_check)].pos;
   for (int m : neighbours) {  // range for loop che itera direttamente
                               // sugli elementi
     Position const pos_m = boids[static_cast<std::size_t>(m)].pos;
-    if (distance(pos_check, pos_m) < d_s) {
+    if (distance_squared(pos_check, pos_m) < d_s_squared) {
       sum = sum + (pos_m - pos_check);  ////////////algoritmo accumulate?
     }
   }
@@ -147,27 +111,6 @@ Velocity separation(double s, double d_s, int boid_to_check,
   Velocity v1{pos_v1.x, pos_v1.y};
   return v1;
 }
-
-/*
-Velocity alignment(double a, int boid_to_check,
-                   std::vector<int> const& neighbours_control,
-                   std::vector<Velocity> const& velocities) {
-  Velocity v2{};
-  if (neighbours_control.empty()) {
-    return v2;
-  }
-  Velocity sum{0.0, 0.0};
-  auto l = static_cast<std::size_t>(boid_to_check);
-  for (auto i = 0; i != neighbours_control.size(); ++i) {
-    auto m = static_cast<std::size_t>(neighbours_control[i]);
-    sum = sum + (velocities[m] - velocities[l]);
-  }
-  v2 = a *
-       (1.0 / (static_cast<int>(neighbours_control.size())) * sum);  // const?
-
-  return v2;
-}
-*/
 
 Velocity alignment(double a, int boid_to_check,
                    std::vector<int> const& neighbours,
@@ -186,27 +129,6 @@ Velocity alignment(double a, int boid_to_check,
 
   return v2;
 }
-
-/*
-Velocity cohesion(double c, int boid_to_check,
-                  std::vector<int> const& neighbours_control,
-                  std::vector<Position> const& positions) {
-  Velocity v3{};
-  if (neighbours_control.empty()) {
-    return v3;
-  }
-  Position sum{0.0, 0.0};
-  auto l = static_cast<std::size_t>(boid_to_check);
-  for (auto i = 0; i != neighbours_control.size(); ++i) {
-    auto m = static_cast<std::size_t>(neighbours_control[i]);
-    sum = sum + positions[m];
-  }
-  Position cm = (1.0 / static_cast<int>(neighbours_control.size()) * sum);
-  Position v3_pos = c * (cm - positions[l]);
-  v3 = {v3_pos.x, v3_pos.y};
-  return v3;
-}
-*/
 
 Velocity cohesion(double c, int boid_to_check,
                   std::vector<int> const& neighbours,
@@ -238,22 +160,30 @@ class Flock {
   double c_;  //<1
   double d_;
   double d_s_;  //<d
+  double v_max_;
   double
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
 
   std::vector<Boid> boids;  // vettore da riempire con il costruttore
 
+  //dimensioni schermo in pixel
+  double const x_min = 0.0;
+  double const x_max = 800;
+  double const y_min = 0.0;
+  double const y_max = 600;
+
  public:
-  // costruttori, Member Initilisation List
-  Flock(int n, double s, double a, double c, double d, double d_s, double dt)
+  // costruttore, Member Initilisation List
+  Flock(int n, double s, double a, double c, double d, double d_s, double v_max,
+        double dt)
       : n_{n},
         s_{s},
         a_{a},
         c_{c},
         d_{d},
         d_s_{d_s},
-        dt_{dt},
-        boids{generate_n(n)}
+        v_max_{v_max},
+        dt_{dt}
 
   {  // ora stabiliamo l'invariante di classe con exceptions
     if (n <= 0) {
@@ -265,10 +195,37 @@ class Flock {
           "Errore: il raggio di separazione (d_s) deve essere minore del "
           "raggio visivo (d)"};
     }
-    if (s_ <= 0 || a_ <= 0 || c_ <= 0) {
+    if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0) {
       throw std::runtime_error{"Errore: i parametri devono essere positivi"};
     }  // nel main try e catch(std::runtime_error& e){std::cerr << e.what() <<
-       // '\n'; return EXIT_FAILURE;}
+    // '\n'; return EXIT_FAILURE;}
+
+    boids = generate_n(n, x_min, x_max, y_min, y_max);
+  }
+
+  Velocity limit_speed(double v_max, Velocity v_tot, double speed_tot) {
+    v_tot.v_x = (v_tot.v_x / speed_tot) *
+                v_max;  // creo versore modulo 1 e direzione uguale a
+                         // v_tot, poi lo moltiplico per v_max così da
+                         // avere modulo v_max e direzione v_tot
+    v_tot.v_y = (v_tot.v_y / speed_tot) * v_max;
+    return v_tot;
+  }
+
+  Position toroidal_space(Position newp) {
+    if (newp.x < x_min) {
+      newp.x = x_max + newp.x;
+    }
+    if (newp.y < y_min) {
+      newp.y = y_max + newp.y;
+    }
+    if (x_max < newp.x) {
+      newp.x = x_min + newp.x;
+    }
+    if (y_max < newp.y) {
+      newp.y = y_min + newp.y;
+    }
+    return newp;
   }
 
   void print() const {
@@ -291,8 +248,13 @@ class Flock {
         Velocity v2 = alignment(a_, j, neighbours, boids);
         Velocity v3 = cohesion(c_, j, neighbours, boids);
         auto const j_sz = static_cast<std::size_t>(j);
-        Velocity vtot = boids[j_sz].vel + v1 + v2 + v3;
-        updatedboids[j_sz].vel = vtot;
+        Velocity v_tot = boids[j_sz].vel + v1 + v2 + v3;
+        double speed_tot = speed_modulus(v_tot);
+        // condizione velocità massima
+        if (v_max_ < speed_tot) {
+         v_tot = limit_speed(v_max_, v_tot, speed_tot);
+        }
+        updatedboids[j_sz].vel = v_tot;
       }
     }
     for (int j = 0; j != n_; ++j) {
@@ -300,10 +262,10 @@ class Flock {
       boids[j_sz].vel = updatedboids[j_sz].vel;
       Position newp = {boids[j_sz].pos.x + dt_ * boids[j_sz].vel.v_x,
                        boids[j_sz].pos.y + dt_ * boids[j_sz].vel.v_y};
-
+      //controllo spazio toroidale
+      newp = toroidal_space(newp);
       boids[j_sz].pos = newp;
     }
-    print();
   }
 };
 
@@ -315,14 +277,15 @@ int main() {
     std::cin >> n;
     std::cout << "Quante iterazioni?" << '\n';
     std::cin >> ngen;
-    Flock prova(n, 0.5, 0.5, 0.5, 100, 30,
+    Flock prova(n, 0.5, 0.5, 0.5, 100, 30, 10,
                 0.1);  // oppure da dare in input con txt
     for (int i = 0; i != ngen; ++i) {
       prova.movement();
+      prova.print();
     }
   } catch (std::exception const& e) {  // Cattura runtime_error
     std::cerr << e.what() << '\n';
-    return EXIT_FAILURE;  // (Ricordati di includere  in cima al file!)
+    return EXIT_FAILURE; 
   } catch (...) {
     std::cerr << "Eccezione sconosciuta\n";
     return EXIT_FAILURE;

@@ -117,7 +117,7 @@ std::vector<Boid> generate_boid(int n, double v_max, double x_min, double x_max,
   std::random_device r;  // seed
   std::default_random_engine eng{r()};
   std::uniform_real_distribution<double> uniform_v{
-      -3.0, 3.0};  // da riguardare se includere v_max?
+      -v_max, v_max};  // da riguardare se includere v_max?
   //  max velocity?
   std::uniform_real_distribution<double> uniform_px{x_min, x_max};
   std::uniform_real_distribution<double> uniform_py{y_min, y_max};

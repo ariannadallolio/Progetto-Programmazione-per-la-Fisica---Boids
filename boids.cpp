@@ -51,11 +51,21 @@ Velocity operator*(double c, Velocity const& a) {
   return {c * a.v_x, c * a.v_y};
 }
 
+Velocity operator*(Velocity const& a, double c) {
+  return {a.v_x * c, a.v_y * c};
+}
+
 double distance_squared(Position const& a, Position const& b) {
   double dx = a.x - b.x;
   double dy = a.y - b.y;
   return dx * dx + dy * dy;  // così evitiamo std::sqrt che è più impegnativo,
                              // tanto è uguale
+}
+
+double distance(Position const& a, Position const& b) {
+  double dx = a.x - b.x;
+  double dy = a.y - b.y;
+  return std::sqrt(dx * dx + dy * dy);
 }
 
 double speed_modulus(Velocity const& a) {
@@ -68,8 +78,9 @@ double speed_modulus(Velocity const& a) {
 // v_min a v_max, lo consiglia anche nel sito
 std::vector<Boid> generate_boid(int n, double v_max, double x_min, double x_max,
                                 double y_min,
-                                double y_max) {  // "cin n" in the main
-  assert(n > 0);
+                                double y_max) {  // v_max serve? controlla
+  assert(n > 0);  // dici che serve questo? non facciamo già il controllo nel
+                  // costruttore?
   std::vector<Boid> boids;
 
   std::random_device r;  // seed
@@ -156,6 +167,40 @@ Velocity cohesion(double c, int boid_to_check,
   return v3;
 }
 
+ // cose da stampare effettivamente -> CHIEDE DISTANZA MEDIA TRA BOIDS NON
+  // POSIZIONE MEDIA
+  double mean_distance(std::vector<Boid> boids_) {
+    int n = static_cast<int>(boids_.size());
+    double sum{};
+    for (int j = 0; j != n; ++j){
+    for (int k = j +1; k!= n; ++k ) {
+      sum = sum + distance(boids_[static_cast<std::size_t>(j)].pos, boids_[static_cast<std::size_t>(k)].pos) ;
+    }}
+    double mean_distance_ = sum * (n*(n-1) / 2.0);
+    return mean_distance_;
+  };
+
+
+  double std_dev_distance() {};
+
+
+  // deve tornarmi il modulo perchè dobbiamo verificare vadano tutti veloci
+  // uguali circa
+  double mean_velocity(std::vector<Boid> boids_) {
+    int n = static_cast<int>(boids_.size());
+    Velocity sum{0.0, 0.0};
+    for (int i = 0; i != n; ++i) {
+      sum = sum + boids_[static_cast<std::size_t>(i)].vel;
+    }
+    Velocity mean_velocity_ = sum * (1.0 / n);
+    double mean_velocity_modulus = speed_modulus(mean_velocity_);
+    return mean_velocity_modulus;
+  };
+
+
+  double std_dev_velocity() {};
+
+
 class Flock {
   // valori da mettere in input, inizializzati nel private e definiti col
   // costruttore nel public (così da poter mettere le invarianti e poterli
@@ -171,8 +216,8 @@ class Flock {
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
 
   std::vector<Boid>
-      boids;  // vettore da riempire con il costruttore e generate_n
-  
+      boids_;  // vettore da riempire con il costruttore e generate_n
+
   double const v_max_{10.0};
 
   // dimensioni schermo in pixel
@@ -183,8 +228,7 @@ class Flock {
 
  public:
   // costruttore, Member Initilisation List
-  Flock(int n, double s, double a, double c, double d, double d_s,
-        double dt)
+  Flock(int n, double s, double a, double c, double d, double d_s, double dt)
       : n_{n},
         s_{s},
         a_{a},
@@ -203,18 +247,21 @@ class Flock {
           "Errore: il raggio di separazione (d_s) deve essere minore del "
           "raggio visivo (d)"};
     }
-    if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0 ||
-        dt_ <= 0) {
+    if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0 || dt_ <= 0) {
       throw std::runtime_error{"Errore: i parametri devono essere positivi"};
     }  // nel main try e catch(std::runtime_error& e){std::cerr << e.what() <<
     // '\n'; return EXIT_FAILURE;}
 
-    boids = generate_boid(n, v_max, x_min, x_max, y_min, y_max);
+    boids_ = generate_boid(n, v_max_, x_min, x_max, y_min, y_max);
   }
 
-  Velocity limit_speed(double v_max, Velocity v_tot, double speed_tot) {
-    assert(speed_tot != 0);  // ha senso metterlo?
-    v_tot.v_x = (v_tot.v_x / speed_tot) *
+  //getter per prendere il vettore di boid e usarlo x esempio per media e dev std
+  std::vector<Boid> bois(){
+    return boids_;
+  }
+
+  Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
+    v_tot.v_x = (v_tot.v_x / speed_modulus_) *
                 v_max;  // creo versore modulo 1 e direzione uguale a
                         // v_tot, poi lo moltiplico per v_max così da
                         // avere modulo v_max e direzione v_tot
@@ -238,46 +285,28 @@ class Flock {
     return newp;
   }
 
-  // stampa coordinate e velocità boid
+  // stampa coordinate e velocità boid, inutile
   void print() const {
     for (int j = 0; j != n_; ++j) {
       std::cout << j << "° boid: " << '\n';
       auto j_sz = static_cast<std::size_t>(j);
-      std::cout << "Velocity: " << boids[j_sz].vel.v_x << ","
-                << boids[j_sz].vel.v_y << '\n';
-      std::cout << "Position: " << boids[j_sz].pos.x << "," << boids[j_sz].pos.y
+      std::cout << "Velocity: " << boids_[j_sz].vel.v_x << ","
+                << boids_[j_sz].vel.v_y << '\n';
+      std::cout << "Position: " << boids_[j_sz].pos.x << "," << boids_[j_sz].pos.y
                 << "\n \n \n";
     }
   }
 
-  // cose da stampare effettivamente, per x e y???
-  Position mean_position() const {
-    int n = static_cast<int>(
-        boids.size());  // penso si possa fare senza definire x e y
-    // double sum_x{};
-    // double sum_y{};
-    Position sum{0.0, 0.0};
-    for (int i = 0; i != n; ++i) {
-      sum = sum + boids.pos;
-    }
-    Position mean_distance_{sum_x / n, sum_y / n};
-    return mean_distance_;
-  }
-
-  double std_dev_distance() {};
-  double mean_velocity() {};
-  double std_dev_velocity() {};
-
   void movement() {
-    std::vector<Boid> updatedboids{boids};
+    std::vector<Boid> updatedboids{boids_};
     for (int j = 0; j != n_; ++j) {
-      std::vector<int> neighbours = neighbours_control(j, d_, boids);
+      std::vector<int> neighbours = neighbours_control(j, d_, boids_);
       if (!neighbours.empty()) {
-        Velocity v1 = separation(s_, d_s_, j, neighbours, boids);
-        Velocity v2 = alignment(a_, j, neighbours, boids);
-        Velocity v3 = cohesion(c_, j, neighbours, boids);
+        Velocity v1 = separation(s_, d_s_, j, neighbours, boids_);
+        Velocity v2 = alignment(a_, j, neighbours, boids_);
+        Velocity v3 = cohesion(c_, j, neighbours, boids_);
         auto const j_sz = static_cast<std::size_t>(j);
-        Velocity v_tot = boids[j_sz].vel + v1 + v2 + v3;
+        Velocity v_tot = boids_[j_sz].vel + v1 + v2 + v3;
         double speed_modulus_ = speed_modulus(v_tot);
         // condizione velocità massima
         if (v_max_ < speed_modulus_) {
@@ -288,12 +317,12 @@ class Flock {
     }
     for (int j = 0; j != n_; ++j) {
       auto const j_sz = static_cast<std::size_t>(j);
-      boids[j_sz].vel = updatedboids[j_sz].vel;
-      Position newp = {boids[j_sz].pos.x + dt_ * boids[j_sz].vel.v_x,
-                       boids[j_sz].pos.y + dt_ * boids[j_sz].vel.v_y};
+      boids_[j_sz].vel = updatedboids[j_sz].vel;
+      Position newp = {boids_[j_sz].pos.x + dt_ * boids_[j_sz].vel.v_x,
+                       boids_[j_sz].pos.y + dt_ * boids_[j_sz].vel.v_y};
       // controllo spazio toroidale
       newp = toroidal_space(newp);
-      boids[j_sz].pos = newp;
+      boids_[j_sz].pos = newp;
     }
   }
 };

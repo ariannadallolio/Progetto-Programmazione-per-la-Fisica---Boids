@@ -161,12 +161,13 @@ class Flock {
   double c_;  //<1
   double d_;
   double d_s_;  //<d
-  double v_max_;
   double
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
 
   std::vector<Boid>
       boids;  // vettore da riempire con il costruttore e generate_n
+  
+  double const v_max_{10.0};
 
   // dimensioni schermo in pixel
   double const x_min = 0.0;
@@ -176,7 +177,7 @@ class Flock {
 
  public:
   // costruttore, Member Initilisation List
-  Flock(int n, double s, double a, double c, double d, double d_s, double v_max,
+  Flock(int n, double s, double a, double c, double d, double d_s,
         double dt)
       : n_{n},
         s_{s},
@@ -184,7 +185,6 @@ class Flock {
         c_{c},
         d_{d},
         d_s_{d_s},
-        v_max_{v_max},
         dt_{dt}
 
   {  // ora stabiliamo l'invariante di classe con exceptions
@@ -197,7 +197,7 @@ class Flock {
           "Errore: il raggio di separazione (d_s) deve essere minore del "
           "raggio visivo (d)"};
     }
-    if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0 || v_max_ <= 0 ||
+    if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0 ||
         dt_ <= 0) {
       throw std::runtime_error{"Errore: i parametri devono essere positivi"};
     }  // nel main try e catch(std::runtime_error& e){std::cerr << e.what() <<
@@ -206,12 +206,12 @@ class Flock {
     boids = generate_n(n, x_min, x_max, y_min, y_max);
   }
 
-  Velocity limit_speed(double v_max, Velocity v_tot, double speed_tot) {
-    v_tot.v_x = (v_tot.v_x / speed_tot) *
+  Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
+    v_tot.v_x = (v_tot.v_x / speed_modulus_) *
                 v_max;  // creo versore modulo 1 e direzione uguale a
                         // v_tot, poi lo moltiplico per v_max così da
                         // avere modulo v_max e direzione v_tot
-    v_tot.v_y = (v_tot.v_y / speed_tot) * v_max;
+    v_tot.v_y = (v_tot.v_y / speed_modulus_) * v_max;
     return v_tot;
   }
 
@@ -270,10 +270,10 @@ class Flock {
         Velocity v3 = cohesion(c_, j, neighbours, boids);
         auto const j_sz = static_cast<std::size_t>(j);
         Velocity v_tot = boids[j_sz].vel + v1 + v2 + v3;
-        double speed_tot = speed_modulus(v_tot);
+        double speed_modulus_ = speed_modulus(v_tot);
         // condizione velocità massima
-        if (v_max_ < speed_tot) {
-          v_tot = limit_speed(v_max_, v_tot, speed_tot);
+        if (v_max_ < speed_modulus_) {
+          v_tot = limit_speed(v_max_, v_tot, speed_modulus_);
         }
         updatedboids[j_sz].vel = v_tot;
       }
@@ -298,7 +298,7 @@ int main() {
     std::cin >> n;
     std::cout << "Quante iterazioni?" << '\n';
     std::cin >> ngen;
-    Flock prova(n, 0.5, 0.5, 0.5, 100, 30, 10,
+    Flock prova(n, 0.5, 0.5, 0.5, 100, 30,
                 0.1);  // oppure da dare in input con txt
     for (int i = 0; i != ngen; ++i) {
       prova.movement();

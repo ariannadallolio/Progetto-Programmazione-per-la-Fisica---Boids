@@ -37,6 +37,7 @@ bool operator==(Position const& a, Position const& b) {
 bool operator!=(Position const& a, Position const& b) { return {!(a == b)}; }
 
 Position operator*(double c, Position const& a) { return {c * a.x, c * a.y}; }
+Position operator*(Position const& a, double c) { return {a.x * c, a.y * c}; }
 
 Velocity operator-(Velocity const& a, Velocity const& b) {
   return {a.v_x - b.v_x, a.v_y - b.v_y};
@@ -62,15 +63,20 @@ double speed_modulus(Velocity const& a) {
 }
 
 // velocity vector: n entires, each with two coordinates (x, y)
-std::vector<Boid> generate_n(int n, double x_min, double x_max, double y_min,
-                             double y_max) {  // "cin n" in the main
+// cambio il nome della funzione da generate_n a generate_boid perchè senno
+// sembra un algoritmo std aggiungerei anche dei limiti alla velocità, tipo da
+// v_min a v_max, lo consiglia anche nel sito
+std::vector<Boid> generate_boid(int n, double v_max, double x_min, double x_max,
+                                double y_min,
+                                double y_max) {  // "cin n" in the main
+  assert(n > 0);
   std::vector<Boid> boids;
 
   std::random_device r;  // seed
   std::default_random_engine eng{r()};
   std::uniform_real_distribution<double> uniform_v{
       -3.0, 3.0};  // da riguardare se includere v_max?
-  // max velocity?
+  //  max velocity?
   std::uniform_real_distribution<double> uniform_px{x_min, x_max};
   std::uniform_real_distribution<double> uniform_py{y_min, y_max};
   std::generate_n(std::back_inserter(boids), n, [&]() {
@@ -82,7 +88,7 @@ std::vector<Boid> generate_n(int n, double x_min, double x_max, double y_min,
 
 std::vector<int> neighbours_control(int boid_to_check, double d,
                                     std::vector<Boid> const& boids) {
-  std::vector<int> neighbours{};
+  std::vector<int> neighbours{};  // int restituisce indici boid vicini
   double d_squared = d * d;
   int const n = static_cast<int>(boids.size());
   for (int i = 0; i != n; ++i) {
@@ -160,8 +166,8 @@ class Flock {
   double a_;  //<1
   double c_;  //<1
   double d_;
-  double d_s_;  //<d
-  double v_max_;
+  double d_s_;    //<d
+  double v_max_;  // double v_max_;
   double
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
 
@@ -197,16 +203,17 @@ class Flock {
           "Errore: il raggio di separazione (d_s) deve essere minore del "
           "raggio visivo (d)"};
     }
-    if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0 || v_max_ <= 0 ||
+    if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0 || v_max <= 0 ||
         dt_ <= 0) {
       throw std::runtime_error{"Errore: i parametri devono essere positivi"};
     }  // nel main try e catch(std::runtime_error& e){std::cerr << e.what() <<
     // '\n'; return EXIT_FAILURE;}
 
-    boids = generate_n(n, x_min, x_max, y_min, y_max);
+    boids = generate_boid(n, v_max, x_min, x_max, y_min, y_max);
   }
 
   Velocity limit_speed(double v_max, Velocity v_tot, double speed_tot) {
+    assert(speed_tot != 0);  // ha senso metterlo?
     v_tot.v_x = (v_tot.v_x / speed_tot) *
                 v_max;  // creo versore modulo 1 e direzione uguale a
                         // v_tot, poi lo moltiplico per v_max così da
@@ -244,13 +251,14 @@ class Flock {
   }
 
   // cose da stampare effettivamente, per x e y???
-  Position mean_distance() const {
-    int n = static_cast<int>(boids.size());
-    double sum_x{};
-    double sum_y{};
+  Position mean_position() const {
+    int n = static_cast<int>(
+        boids.size());  // penso si possa fare senza definire x e y
+    // double sum_x{};
+    // double sum_y{};
+    Position sum{0.0, 0.0};
     for (int i = 0; i != n; ++i) {
-      sum_x = sum_x + boids[static_cast<std::size_t>(i)].pos.x;
-      sum_y = sum_y + boids[static_cast<std::size_t>(i)].pos.y;
+      sum = sum + boids.pos;
     }
     Position mean_distance_{sum_x / n, sum_y / n};
     return mean_distance_;
@@ -259,7 +267,7 @@ class Flock {
   double std_dev_distance() {};
   double mean_velocity() {};
   double std_dev_velocity() {};
-  
+
   void movement() {
     std::vector<Boid> updatedboids{boids};
     for (int j = 0; j != n_; ++j) {

@@ -81,6 +81,8 @@ std::vector<Boid> generate_boid(int n, double v_max, double x_min, double x_max,
                                 double y_max) {  // v_max serve? controlla
   assert(n > 0);  // dici che serve questo? non facciamo già il controllo nel
                   // costruttore?
+  assert(x_min < x_max);
+  assert(y_min < y_max);
   std::vector<Boid> boids;
 
   std::random_device r;  // seed
@@ -167,39 +169,37 @@ Velocity cohesion(double c, int boid_to_check,
   return v3;
 }
 
- // cose da stampare effettivamente -> CHIEDE DISTANZA MEDIA TRA BOIDS NON
-  // POSIZIONE MEDIA
-  double mean_distance(std::vector<Boid> boids_) {
-    int n = static_cast<int>(boids_.size());
-    double sum{};
-    for (int j = 0; j != n; ++j){
-    for (int k = j +1; k!= n; ++k ) {
-      sum = sum + distance(boids_[static_cast<std::size_t>(j)].pos, boids_[static_cast<std::size_t>(k)].pos) ;
-    }}
-    double mean_distance_ = sum * (n*(n-1) / 2.0);
-    return mean_distance_;
-  };
-
-
-  double std_dev_distance() {};
-
-
-  // deve tornarmi il modulo perchè dobbiamo verificare vadano tutti veloci
-  // uguali circa
-  double mean_velocity(std::vector<Boid> boids_) {
-    int n = static_cast<int>(boids_.size());
-    Velocity sum{0.0, 0.0};
-    for (int i = 0; i != n; ++i) {
-      sum = sum + boids_[static_cast<std::size_t>(i)].vel;
+// cose da stampare effettivamente -> CHIEDE DISTANZA MEDIA TRA BOIDS NON
+// POSIZIONE MEDIA
+double mean_distance(std::vector<Boid> boids_) {
+  int n = static_cast<int>(boids_.size());
+  double sum{};
+  for (int j = 0; j != n; ++j) {
+    for (int k = j + 1; k != n; ++k) {
+      sum = sum + distance(boids_[static_cast<std::size_t>(j)].pos,
+                           boids_[static_cast<std::size_t>(k)].pos);
     }
-    Velocity mean_velocity_ = sum * (1.0 / n);
-    double mean_velocity_modulus = speed_modulus(mean_velocity_);
-    return mean_velocity_modulus;
-  };
+  }
+  double mean_distance_ = sum * (n * (n - 1) / 2.0);
+  return mean_distance_;
+};
 
+double std_dev_distance() {};
 
-  double std_dev_velocity() {};
+// deve tornarmi il modulo perchè dobbiamo verificare vadano tutti veloci
+// uguali circa
+double mean_velocity(std::vector<Boid> boids_) {
+  int n = static_cast<int>(boids_.size());
+  Velocity sum{0.0, 0.0};
+  for (int i = 0; i != n; ++i) {
+    sum = sum + boids_[static_cast<std::size_t>(i)].vel;
+  }
+  Velocity mean_velocity_ = sum * (1.0 / n);
+  double mean_velocity_modulus = speed_modulus(mean_velocity_);
+  return mean_velocity_modulus;
+};
 
+double std_dev_velocity() {};
 
 class Flock {
   // valori da mettere in input, inizializzati nel private e definiti col
@@ -255,12 +255,12 @@ class Flock {
     boids_ = generate_boid(n, v_max_, x_min, x_max, y_min, y_max);
   }
 
-  //getter per prendere il vettore di boid e usarlo x esempio per media e dev std
-  std::vector<Boid> bois(){
-    return boids_;
-  }
+  // getter per prendere il vettore di boid e usarlo x esempio per media e dev
+  // std
+  std::vector<Boid> bois() { return boids_; }
 
   Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
+    assert(speed_modulus_ > 0.0);
     v_tot.v_x = (v_tot.v_x / speed_modulus_) *
                 v_max;  // creo versore modulo 1 e direzione uguale a
                         // v_tot, poi lo moltiplico per v_max così da
@@ -292,8 +292,8 @@ class Flock {
       auto j_sz = static_cast<std::size_t>(j);
       std::cout << "Velocity: " << boids_[j_sz].vel.v_x << ","
                 << boids_[j_sz].vel.v_y << '\n';
-      std::cout << "Position: " << boids_[j_sz].pos.x << "," << boids_[j_sz].pos.y
-                << "\n \n \n";
+      std::cout << "Position: " << boids_[j_sz].pos.x << ","
+                << boids_[j_sz].pos.y << "\n \n \n";
     }
   }
 

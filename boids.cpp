@@ -52,7 +52,6 @@ Velocity operator*(double c, Velocity const& a) {
 }
 Velocity operator*(Velocity const& a, double c) { return c * a; }
 
-
 double distance_squared(Position const& a, Position const& b) {
   double dx = a.x - b.x;
   double dy = a.y - b.y;
@@ -208,7 +207,8 @@ Velocity cohesion(double c, int boid_to_check,
 
 // cose da stampare effettivamente -> CHIEDE DISTANZA MEDIA TRA BOIDS NON
 // POSIZIONE MEDIA
-double mean_distance(std::vector<Boid> boid,double x_min,double x_max, double y_min, double y_max)  {  // distanza media tra boids
+double mean_distance(std::vector<Boid> boid, double x_min, double x_max,
+                     double y_min, double y_max) {  // distanza media tra boids
   int n = static_cast<int>(boid.size());
   double sum{0.0};
   for (int i = 0; i != n; ++i) {
@@ -216,175 +216,194 @@ double mean_distance(std::vector<Boid> boid,double x_min,double x_max, double y_
       auto const i_sz = static_cast<std::size_t>(i);
       auto const j_sz = static_cast<std::size_t>(j);
       sum = sum +
-            std::sqrt(toroidal_distance_squared(
-                boid[i_sz].pos, boid[j_sz].pos, x_min, x_max, y_min, y_max));
+            std::sqrt(toroidal_distance_squared(boid[i_sz].pos, boid[j_sz].pos,
+                                                x_min, x_max, y_min, y_max));
     }
   }
   double const n_pairs = n * (n - 1.0) / 2.0;
   return sum * (1.0 / n_pairs);
 }
 
-//double std_dev_distance() {}
-Velocity mean_velocity(std::vector<Boid> boid) {  // vogliamo riportarla come vettore o come double?
+double std_dev_distance(std::vector<Boid> boid, double x_min, double x_max,
+                        double y_min, double y_max) {
   int n = static_cast<int>(boid.size());
-  Velocity sum{0.0, 0.0};
+  assert(n >= 2);  // per avere la media sono necessari almeno 2 elementi
+  double const mean = mean_distance(boid, x_min, x_max, y_min, y_max);
+  double sum{0.0};
   for (int i = 0; i != n; ++i) {
-    sum = sum + boid[static_cast<std::size_t>(i)].vel;
-  }
-  Velocity mean_velocity{sum * (1.0 / n)};
-  return mean_velocity;
-}
-//double std_dev_velocity() {}
-
-
-class Flock {
-  // valori da mettere in input, inizializzati nel private e definiti col
-  // costruttore nel public (così da poter mettere le invarianti e poterli
-  // riempire nel main)
- private:
-  int n_;     // numero di boids
-  double s_;  //<1
-  double a_;  //<1
-  double c_;  //<1
-  double d_;
-  double d_s_;  //<d
-  double
-      dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
-
-  std::vector<Boid>
-      boids_;  // vettore da riempire con il costruttore e generate_n
-
-  double const v_max_{10.0};
-
-  // dimensioni schermo in pixel
-  double const x_min = 0.0;
-  double const x_max = 800;
-  double const y_min = 0.0;
-  double const y_max = 600;
-
- public:
-  // costruttore, Member Initilisation List
-  Flock(int n, double s, double a, double c, double d, double d_s, double dt)
-      : n_{n},
-        s_{s},
-        a_{a},
-        c_{c},
-        d_{d},
-        d_s_{d_s},
-        dt_{dt}
-
-  {  // ora stabiliamo l'invariante di classe con exceptions
-    if (n <= 0) {
-      throw std::runtime_error{
-          "Errore: il numero di boids deve essere maggiore di zero"};
+    for (int j = i + 1; j != n; j++) {
+      auto const i_sz = static_cast<std::size_t>(i);
+      auto const j_sz = static_cast<std::size_t>(j);
+      double const distance_ij = std::sqrt(toroidal_distance_squared(
+          boid[i_sz].pos, boid[j_sz].pos, x_min, x_max, y_min, y_max));
+      double const difference = distance_ij - mean;
+      sum += difference * difference;
     }
-    if (d_ <= d_s_) {
-      throw std::runtime_error{
-          "Errore: il raggio di separazione (d_s) deve essere minore del "
-          "raggio visivo (d)"};
-    }
-    if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0 || dt_ <= 0) {
-      throw std::runtime_error{"Errore: i parametri devono essere positivi"};
-    }  // nel main try e catch(std::runtime_error& e){std::cerr << e.what() <<
-    // '\n'; return EXIT_FAILURE;}
-
-    boids_ = generate_boid(n, v_max_, x_min, x_max, y_min, y_max);
+    double const n_pairs=n*(n-1.0)/2.0;
+    double const std=std::sqrt(sum/n_pairs);
   }
 
-  // getter per prendere il vettore di boid e usarlo x esempio per media e dev
-  // std
-  std::vector<Boid> bois() { return boids_; }
-
-  Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
-    v_tot.v_x = (v_tot.v_x / speed_modulus_) *
-                v_max;  // creo versore modulo 1 e direzione uguale a
-                        // v_tot, poi lo moltiplico per v_max così da
-                        // avere modulo v_max e direzione v_tot
-    v_tot.v_y = (v_tot.v_y / speed_modulus_) * v_max;
-    return v_tot;
+  Velocity mean_velocity(std::vector<Boid> boid) {  // vogliamo riportarla come
+                                                    // vettore o come double?
+    int n = static_cast<int>(boid.size());
+    Velocity sum{0.0, 0.0};
+    for (int i = 0; i != n; ++i) {
+      sum = sum + boid[static_cast<std::size_t>(i)].vel;
+    }
+    Velocity mean_velocity{sum * (1.0 / n)};
+    return mean_velocity;
   }
+  // double std_dev_velocity() {}
 
-  Position toroidal_space(Position newp) {
-    if (newp.x < x_min) {
-      newp.x = x_max + newp.x;
-    }
-    if (newp.y < y_min) {
-      newp.y = y_max + newp.y;
-    }
-    if (x_max < newp.x) {
-      newp.x = newp.x - x_max;
-    }
-    if (y_max < newp.y) {
-      newp.y = newp.y - y_max;
-    }
-    return newp;
-  }
+  class Flock {
+    // valori da mettere in input, inizializzati nel private e definiti col
+    // costruttore nel public (così da poter mettere le invarianti e poterli
+    // riempire nel main)
+   private:
+    int n_;     // numero di boids
+    double s_;  //<1
+    double a_;  //<1
+    double c_;  //<1
+    double d_;
+    double d_s_;  //<d
+    double dt_;   // istante di tempo ogni quanto si aggiornano velocità e
+                  // posizione
 
-  // stampa coordinate e velocità boid, inutile
-  void print() const {
-    for (int j = 0; j != n_; ++j) {
-      std::cout << j << "° boid: " << '\n';
-      auto j_sz = static_cast<std::size_t>(j);
-      std::cout << "Velocity: " << boids_[j_sz].vel.v_x << ","
-                << boids_[j_sz].vel.v_y << '\n';
-      std::cout << "Position: " << boids_[j_sz].pos.x << ","
-                << boids_[j_sz].pos.y << "\n \n \n";
-    }
-  }
+    std::vector<Boid>
+        boids_;  // vettore da riempire con il costruttore e generate_n
 
-  void movement() {
-    std::vector<Boid> updatedboids{boids_};
-    for (int j = 0; j != n_; ++j) {
-      std::vector<int> neighbours =
-          neighbours_control(j, d_, boids_, x_min, x_max, y_min, y_max);
-      if (!neighbours.empty()) {
-        Velocity v1 = separation(s_, d_s_, j, neighbours, boids_, x_min, x_max,
-                                 y_min, y_max);
-        Velocity v2 = alignment(a_, j, neighbours, boids_);
-        Velocity v3 = cohesion(c_, j, neighbours, boids_);
-        auto const j_sz = static_cast<std::size_t>(j);
-        Velocity v_tot = boids_[j_sz].vel + v1 + v2 + v3;
-        double speed_modulus_ = speed_modulus(v_tot);
-        // condizione velocità massima
-        if (v_max_ < speed_modulus_) {
-          v_tot = limit_speed(v_max_, v_tot, speed_modulus_);
-        }
-        updatedboids[j_sz].vel = v_tot;
+    double const v_max_{10.0};
+
+    // dimensioni schermo in pixel
+    double const x_min = 0.0;
+    double const x_max = 800;
+    double const y_min = 0.0;
+    double const y_max = 600;
+
+   public:
+    // costruttore, Member Initilisation List
+    Flock(int n, double s, double a, double c, double d, double d_s, double dt)
+        : n_{n},
+          s_{s},
+          a_{a},
+          c_{c},
+          d_{d},
+          d_s_{d_s},
+          dt_{dt}
+
+    {  // ora stabiliamo l'invariante di classe con exceptions
+      if (n <= 0) {
+        throw std::runtime_error{
+            "Errore: il numero di boids deve essere maggiore di zero"};
+      }
+      if (d_ <= d_s_) {
+        throw std::runtime_error{
+            "Errore: il raggio di separazione (d_s) deve essere minore del "
+            "raggio visivo (d)"};
+      }
+      if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0 || dt_ <= 0) {
+        throw std::runtime_error{"Errore: i parametri devono essere positivi"};
+      }  // nel main try e catch(std::runtime_error& e){std::cerr << e.what()
+         // <<
+      // '\n'; return EXIT_FAILURE;}
+
+      boids_ = generate_boid(n, v_max_, x_min, x_max, y_min, y_max);
+    }
+
+    // getter per prendere il vettore di boid e usarlo x esempio per media e
+    // dev std
+    std::vector<Boid> bois() { return boids_; }
+
+    Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
+      v_tot.v_x = (v_tot.v_x / speed_modulus_) *
+                  v_max;  // creo versore modulo 1 e direzione uguale a
+                          // v_tot, poi lo moltiplico per v_max così da
+                          // avere modulo v_max e direzione v_tot
+      v_tot.v_y = (v_tot.v_y / speed_modulus_) * v_max;
+      return v_tot;
+    }
+
+    Position toroidal_space(Position newp) {
+      if (newp.x < x_min) {
+        newp.x = x_max + newp.x;
+      }
+      if (newp.y < y_min) {
+        newp.y = y_max + newp.y;
+      }
+      if (x_max < newp.x) {
+        newp.x = newp.x - x_max;
+      }
+      if (y_max < newp.y) {
+        newp.y = newp.y - y_max;
+      }
+      return newp;
+    }
+
+    // stampa coordinate e velocità boid, inutile
+    void print() const {
+      for (int j = 0; j != n_; ++j) {
+        std::cout << j << "° boid: " << '\n';
+        auto j_sz = static_cast<std::size_t>(j);
+        std::cout << "Velocity: " << boids_[j_sz].vel.v_x << ","
+                  << boids_[j_sz].vel.v_y << '\n';
+        std::cout << "Position: " << boids_[j_sz].pos.x << ","
+                  << boids_[j_sz].pos.y << "\n \n \n";
       }
     }
-    for (int j = 0; j != n_; ++j) {
-      auto const j_sz = static_cast<std::size_t>(j);
-      boids_[j_sz].vel = updatedboids[j_sz].vel;
-      Position newp = {boids_[j_sz].pos.x + dt_ * boids_[j_sz].vel.v_x,
-                       boids_[j_sz].pos.y + dt_ * boids_[j_sz].vel.v_y};
-      // controllo spazio toroidale
-      newp = toroidal_space(newp);
-      boids_[j_sz].pos = newp;
-    }
-  }
-};
 
-int main() {
-  try {
-    int n{};
-    int ngen{};
-    std::cout << "Quanti boids?" << '\n';
-    std::cin >> n;
-    std::cout << "Quante iterazioni?" << '\n';
-    std::cin >> ngen;
-    Flock prova(n, 0.5, 0.5, 0.5, 100, 30,
-                0.1);  // oppure da dare in input con txt
-    for (int i = 0; i != ngen; ++i) {
-      prova.movement();
-      prova.print();
+    void movement() {
+      std::vector<Boid> updatedboids{boids_};
+      for (int j = 0; j != n_; ++j) {
+        std::vector<int> neighbours =
+            neighbours_control(j, d_, boids_, x_min, x_max, y_min, y_max);
+        if (!neighbours.empty()) {
+          Velocity v1 = separation(s_, d_s_, j, neighbours, boids_, x_min,
+                                   x_max, y_min, y_max);
+          Velocity v2 = alignment(a_, j, neighbours, boids_);
+          Velocity v3 = cohesion(c_, j, neighbours, boids_);
+          auto const j_sz = static_cast<std::size_t>(j);
+          Velocity v_tot = boids_[j_sz].vel + v1 + v2 + v3;
+          double speed_modulus_ = speed_modulus(v_tot);
+          // condizione velocità massima
+          if (v_max_ < speed_modulus_) {
+            v_tot = limit_speed(v_max_, v_tot, speed_modulus_);
+          }
+          updatedboids[j_sz].vel = v_tot;
+        }
+      }
+      for (int j = 0; j != n_; ++j) {
+        auto const j_sz = static_cast<std::size_t>(j);
+        boids_[j_sz].vel = updatedboids[j_sz].vel;
+        Position newp = {boids_[j_sz].pos.x + dt_ * boids_[j_sz].vel.v_x,
+                         boids_[j_sz].pos.y + dt_ * boids_[j_sz].vel.v_y};
+        // controllo spazio toroidale
+        newp = toroidal_space(newp);
+        boids_[j_sz].pos = newp;
+      }
     }
-  } catch (std::exception const& e) {  // Cattura runtime_error
-    std::cerr << e.what() << '\n';
-    return EXIT_FAILURE;
-  } catch (...) {
-    std::cerr << "Eccezione sconosciuta\n";
-    return EXIT_FAILURE;
-  }
+  };
 
-  return EXIT_SUCCESS;
-}
+  int main() {
+    try {
+      int n{};
+      int ngen{};
+      std::cout << "Quanti boids?" << '\n';
+      std::cin >> n;
+      std::cout << "Quante iterazioni?" << '\n';
+      std::cin >> ngen;
+      Flock prova(n, 0.5, 0.5, 0.5, 100, 30,
+                  0.1);  // oppure da dare in input con txt
+      for (int i = 0; i != ngen; ++i) {
+        prova.movement();
+        prova.print();
+      }
+    } catch (std::exception const& e) {  // Cattura runtime_error
+      std::cerr << e.what() << '\n';
+      return EXIT_FAILURE;
+    } catch (...) {
+      std::cerr << "Eccezione sconosciuta\n";
+      return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+  }

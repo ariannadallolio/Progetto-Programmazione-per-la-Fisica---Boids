@@ -22,6 +22,8 @@ struct Boid {
   Position pos;
 };
 
+// operatori posizione
+
 Position operator-(Position const& a, Position const& b) {
   return {a.x - b.x, a.y - b.y};
 }
@@ -30,14 +32,16 @@ Position operator+(Position const& a, Position const& b) {
   return {a.x + b.x, a.y + b.y};
 }
 
-bool operator==(Position const& a, Position const& b) {
-  return {a.x == b.x && a.y == b.y};
+Position& operator+=(Position& a, Position const& b) {
+  a.x += b.x;
+  a.y += b.y;
+  return a;
 }
-
-bool operator!=(Position const& a, Position const& b) { return {!(a == b)}; }
 
 Position operator*(double c, Position const& a) { return {c * a.x, c * a.y}; }
 Position operator*(Position const& a, double c) { return c * a; }
+
+// operatori velocità
 
 Velocity operator-(Velocity const& a, Velocity const& b) {
   return {a.v_x - b.v_x, a.v_y - b.v_y};
@@ -47,10 +51,22 @@ Velocity operator+(Velocity const& a, Velocity const& b) {
   return {a.v_x + b.v_x, a.v_y + b.v_y};
 }
 
+Velocity& operator+=(Velocity& a, Velocity const& b) {
+  a.v_x += b.v_x;
+  a.v_y += b.v_y;
+  return a;
+}
+
 Velocity operator*(double c, Velocity const& a) {
   return {c * a.v_x, c * a.v_y};
 }
 Velocity operator*(Velocity const& a, double c) { return c * a; }
+
+bool operator==(Position const& a, Position const& b) {
+  return {a.x == b.x && a.y == b.y};
+}
+
+bool operator!=(Position const& a, Position const& b) { return {!(a == b)}; }
 
 double distance_squared(Position const& a, Position const& b) {
   double dx = a.x - b.x;
@@ -59,16 +75,37 @@ double distance_squared(Position const& a, Position const& b) {
                              // tanto è uguale
 }
 
+// forse questa si può togliere
 double distance(Position const& a, Position const& b) {
   double dx = a.x - b.x;
   double dy = a.y - b.y;
   return std::sqrt(dx * dx + dy * dy);
 }
+
+Position toroidal_space(Position newp, double x_min, double x_max, double y_min,
+                        double y_max) {
+  if (newp.x < x_min) {
+    newp.x = x_max + newp.x;
+  }
+  if (newp.y < y_min) {
+    newp.y = y_max + newp.y;
+  }
+  if (x_max < newp.x) {
+    newp.x = newp.x - x_max;
+  }
+  if (y_max < newp.y) {
+    newp.y = newp.y - y_max;
+  }
+  return newp;
+}
+
 // questa funzione definisce la distanza tra due boids nello spazio toroidale,
 // calcola qual è la distanza minore, se quella a destra o a sinistra e utilizza
 // quella minore
 Position toroidal_difference(Position const& a, Position const& b, double x_min,
                              double x_max, double y_min, double y_max) {
+  assert(x_min < x_max);
+  assert(y_min < y_max);
   double const Lx = x_max - x_min;
   double const Ly = y_max - y_min;
   double dx = a.x - b.x;
@@ -132,6 +169,8 @@ std::vector<int> neighbours_control(int boid_to_check, double d,
                                     std::vector<Boid> const& boids,
                                     double x_min, double x_max, double y_min,
                                     double y_max) {
+  assert(boid_to_check >= 0);
+  assert(boid_to_check < static_cast<int>(boids.size()));
   std::vector<int> neighbours{};  // int restituisce indici boid vicini
   double d_squared = d * d;
   int const n = static_cast<int>(boids.size());
@@ -151,6 +190,8 @@ Velocity separation(double s, double d_s, int boid_to_check,
                     std::vector<int> const& neighbours,
                     std::vector<Boid> const& boids, double x_min, double x_max,
                     double y_min, double y_max) {
+  assert(boid_to_check >= 0);
+  assert(boid_to_check < static_cast<int>(boids.size()));
   Position sum{0.0, 0.0};
   double d_s_squared = d_s * d_s;
   Position const pos_check = boids[static_cast<std::size_t>(boid_to_check)].pos;
@@ -162,7 +203,7 @@ Velocity separation(double s, double d_s, int boid_to_check,
         d_s_squared) {  // qui si potrebbe usare la distanza toroidale
       Position const diff =
           toroidal_difference(pos_check, pos_m, x_min, x_max, y_min, y_max);
-      sum = sum + diff;  ////////////algoritmo accumulate?
+      sum += diff;  ////////////algoritmo accumulate?
     }
   }
   Position const pos_v1 = -s * sum;  // perchè const??
@@ -173,14 +214,16 @@ Velocity separation(double s, double d_s, int boid_to_check,
 Velocity alignment(double a, int boid_to_check,
                    std::vector<int> const& neighbours,
                    std::vector<Boid> const& boids) {
+  assert(boid_to_check >= 0);
+  assert(boid_to_check < static_cast<int>(boids.size()));
   Velocity v2{};
   if (neighbours.empty()) {
     return v2;
   }
   Velocity sum{0.0, 0.0};
   for (int m : neighbours) {
-    sum = sum + (boids[static_cast<std::size_t>(m)].vel -
-                 boids[static_cast<std::size_t>(boid_to_check)].vel);
+    sum += (boids[static_cast<std::size_t>(m)].vel -
+            boids[static_cast<std::size_t>(boid_to_check)].vel);
   }
   int const n = static_cast<int>(neighbours.size());
   v2 = a * ((1.0 / n) * sum);  // const?
@@ -191,13 +234,15 @@ Velocity alignment(double a, int boid_to_check,
 Velocity cohesion(double c, int boid_to_check,
                   std::vector<int> const& neighbours,
                   std::vector<Boid> const& boids) {
+  assert(boid_to_check >= 0);
+  assert(boid_to_check < static_cast<int>(boids.size()));
   Velocity v3{};
   if (neighbours.empty()) {
     return v3;
   }
   Position sum{0.0, 0.0};
   for (int m : neighbours) {
-    sum = sum + boids[static_cast<std::size_t>(m)].pos;
+    sum += boids[static_cast<std::size_t>(m)].pos;
   }
   int const n = static_cast<int>(neighbours.size());
   Position const cm = ((1.0 / n) * sum);
@@ -209,23 +254,26 @@ Velocity cohesion(double c, int boid_to_check,
 
 double mean_distance(std::vector<Boid> boid, double x_min, double x_max,
                      double y_min, double y_max) {  // distanza media tra boids
+  assert(!boid.empty());
   int n = static_cast<int>(boid.size());
   double sum{0.0};
   for (int i = 0; i != n; ++i) {
     for (int j = i + 1; j != n; j++) {
       auto const i_sz = static_cast<std::size_t>(i);
       auto const j_sz = static_cast<std::size_t>(j);
-      sum = sum +
-            std::sqrt(toroidal_distance_squared(boid[i_sz].pos, boid[j_sz].pos,
-                                                x_min, x_max, y_min, y_max));
+      sum += std::sqrt(toroidal_distance_squared(boid[i_sz].pos, boid[j_sz].pos,
+                                                 x_min, x_max, y_min, y_max));
     }
   }
   double const n_pairs = n * (n - 1.0) / 2.0;
   return sum * (1.0 / n_pairs);
 }
 
+// disperione che mi dice quando sono divere tra loro le distanze tra coppie,
+// vogliamo farla rispetto al centro i massa?
 double std_dev_distance(std::vector<Boid> boid, double x_min, double x_max,
                         double y_min, double y_max) {
+  assert(!boid.empty());
   int n = static_cast<int>(boid.size());
   assert(n >= 2);  // per avere la media sono necessari almeno 2 elementi
   double const mean = mean_distance(boid, x_min, x_max, y_min, y_max);
@@ -241,34 +289,58 @@ double std_dev_distance(std::vector<Boid> boid, double x_min, double x_max,
     }
   }
   double const n_pairs = n * (n - 1.0) / 2.0;
-  double const std = std::sqrt(sum / n_pairs);
-  return std;
+  return std::sqrt(sum / n_pairs);
 }
 
-Velocity mean_velocity(std::vector<Boid> boid) {  // vogliamo riportarla come
-                                                  // vettore o come double?
-  int n = static_cast<int>(boid.size());
+double mean_velocity(std::vector<Boid> boid) {
+  assert(!boid.empty());
   Velocity sum{0.0, 0.0};
+  int n = static_cast<int>(boid.size());
   for (int i = 0; i != n; ++i) {
-    sum = sum + boid[static_cast<std::size_t>(i)].vel;
+    sum += boid[static_cast<std::size_t>(i)].vel;
   }
   Velocity mean_velocity{sum * (1.0 / n)};
-  return mean_velocity;
+  return speed_modulus(mean_velocity);
 }
-// double std_dev_velocity() {}
 
-Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
-  assert(speed_modulus_ > 0.0);
-  v_tot.v_x = (v_tot.v_x / speed_modulus_) *
+double std_dev_velocity(std::vector<Boid> boid, double x_min, double x_max,
+                        double y_min, double y_max) {
+  assert(!boid.empty());
+  int n = static_cast<int>(boid.size());
+  assert(n >= 2);  // per avere la media sono necessari almeno 2 elementi
+  double const mean = mean_velocity(boid);
+  double sum{0.0};
+  for (Boid const& m : boid) {
+    double const speed = speed_modulus(m.vel);
+    double const difference = speed - mean;
+    sum += difference * difference;
+  }
+  return std::sqrt(sum / n);
+}
+
+
+
+Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus) {
+  assert(speed_modulus > 0.0);
+  v_tot.v_x = (v_tot.v_x / speed_modulus) *
               v_max;  // creo versore modulo 1 e direzione uguale a
                       // v_tot, poi lo moltiplico per v_max così da
                       // avere modulo v_max e direzione v_tot
-  v_tot.v_y = (v_tot.v_y / speed_modulus_) * v_max;
+  v_tot.v_y = (v_tot.v_y / speed_modulus) * v_max;
   return v_tot;
 }
 
-
-
+void print(std::vector<Boid> const& boid) {
+  int n = static_cast<int>(boid.size());
+  for (int j = 0; j != n; ++j) {
+    std::cout << j << "° boid: " << '\n';
+    auto j_sz = static_cast<std::size_t>(j);
+    std::cout << "Velocity: " << boid[j_sz].vel.v_x << "," << boid[j_sz].vel.v_y
+              << '\n';
+    std::cout << "Position: " << boid[j_sz].pos.x << "," << boid[j_sz].pos.y
+              << "\n \n \n";
+  }
+}
 
 class Flock {
   // valori da mettere in input, inizializzati nel private e definiti col
@@ -280,7 +352,7 @@ class Flock {
   double a_;  //<1
   double c_;  //<1
   double d_;
-  double d_s_;    //<d
+  double d_s_;          //<d
   double v_max_{10.0};  // double v_max_;
   double
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
@@ -326,35 +398,7 @@ class Flock {
 
   // getter per prendere il vettore di boid e usarlo x esempio per media e
   // dev std
-  std::vector<Boid> boids() { return boids_; }
-
-  Position toroidal_space(Position newp) {
-    if (newp.x < x_min) {
-      newp.x = x_max + newp.x;
-    }
-    if (newp.y < y_min) {
-      newp.y = y_max + newp.y;
-    }
-    if (x_max < newp.x) {
-      newp.x = newp.x - x_max;
-    }
-    if (y_max < newp.y) {
-      newp.y = newp.y - y_max;
-    }
-    return newp;
-  }
-
-  // stampa coordinate e velocità boid, inutile
-  void print() const {
-    for (int j = 0; j != n_; ++j) {
-      std::cout << j << "° boid: " << '\n';
-      auto j_sz = static_cast<std::size_t>(j);
-      std::cout << "Velocity: " << boids_[j_sz].vel.v_x << ","
-                << boids_[j_sz].vel.v_y << '\n';
-      std::cout << "Position: " << boids_[j_sz].pos.x << ","
-                << boids_[j_sz].pos.y << "\n \n \n";
-    }
-  }
+  std::vector<Boid> const& boids() const { return boids_; }
 
   void movement() {
     std::vector<Boid> updatedboids{boids_};
@@ -382,7 +426,7 @@ class Flock {
       Position newp = {boids_[j_sz].pos.x + dt_ * boids_[j_sz].vel.v_x,
                        boids_[j_sz].pos.y + dt_ * boids_[j_sz].vel.v_y};
       // controllo spazio toroidale
-      newp = toroidal_space(newp);
+      newp = toroidal_space(newp, x_min, x_max, y_min, y_max);
       boids_[j_sz].pos = newp;
     }
   }
@@ -400,7 +444,8 @@ int main() {
                 0.1);  // oppure da dare in input con txt
     for (int i = 0; i != ngen; ++i) {
       prova.movement();
-      prova.print();
+      print(prova.boids());  // richiamo funzione esterna al flock e le passo
+                             // una funzione interna al flock
     }
   } catch (std::exception const& e) {  // Cattura runtime_error
     std::cerr << e.what() << '\n';

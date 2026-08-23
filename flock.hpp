@@ -125,9 +125,7 @@ Velocity cohesion(double c, int boid_to_check,
   int const n = static_cast<int>(neighbours.size());
   Position const cm = ((1.0 / n) * sum);
   Position const v3_pos =
-      c * toroidal_difference(
-              cm, boids[static_cast<std::size_t>(boid_to_check)].pos, x_min,
-              x_max, y_min, y_max);
+      c * cm;
   v3 = {v3_pos.x, v3_pos.y};
   return v3;
 }

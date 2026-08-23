@@ -136,7 +136,7 @@ Position toroidal_difference(Position const& a, Position const& b, double x_min,
 }
 
 // questa funzione calcola la distanza quadrata tra due boids, tenendo consto
-// della distanza minore calcolata da toridal_distance
+// della distanza minore calcolata da toroidal_distance
 double toroidal_distance_squared(Position const& a, Position const& b,
                                  double x_min, double x_max, double y_min,
                                  double y_max) {
@@ -148,7 +148,6 @@ double speed_modulus(Velocity const& a) {
   return std::sqrt(a.v_x * a.v_x + a.v_y * a.v_y);
 }
 
-// velocity vector: n entires, each with two coordinates (x, y)
 // cambio il nome della funzione da generate_n a generate_boid perchè senno
 // sembra un algoritmo std aggiungerei anche dei limiti alla velocità, tipo da
 // v_min a v_max, lo consiglia anche nel sito
@@ -202,6 +201,10 @@ Velocity separation(double s, double d_s, int boid_to_check,
                     double y_min, double y_max) {
   assert(boid_to_check >= 0);
   assert(boid_to_check < static_cast<int>(boids.size()));
+  Velocity v1{};
+  if (neighbours.empty()) {
+    return v1;
+  }
   Position sum{0.0, 0.0};
   double d_s_squared = d_s * d_s;
   Position const pos_check = boids[static_cast<std::size_t>(boid_to_check)].pos;
@@ -210,14 +213,14 @@ Velocity separation(double s, double d_s, int boid_to_check,
     Position const pos_m = boids[static_cast<std::size_t>(m)].pos;
     if (toroidal_distance_squared(pos_check, pos_m, x_min, x_max, y_min,
                                   y_max) <
-        d_s_squared) {  // qui si potrebbe usare la distanza toroidale
+        d_s_squared) { 
       Position const diff =
           toroidal_difference(pos_check, pos_m, x_min, x_max, y_min, y_max);
       sum += diff;  ////////////algoritmo accumulate?
     }
   }
-  Position const pos_v1 = -s * sum;  // perchè const??
-  Velocity v1{pos_v1.x, pos_v1.y};
+  Position const pos_v1 = -s * sum; 
+  Velocity v1 = {pos_v1.x, pos_v1.y};
   return v1;
 }
 
@@ -349,20 +352,6 @@ Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
   v_tot.v_y = (v_tot.v_y / speed_modulus_) * v_max;
   return v_tot;
 }
-
-/*
-void print(std::vector<Boid> const& boid) {
-  int n = static_cast<int>(boid.size());
-  for (int j = 0; j != n; ++j) {
-    std::cout << j << "° boid: " << '\n';
-    auto j_sz = static_cast<std::size_t>(j);
-    std::cout << "Velocity: " << boid[j_sz].vel.v_x << "," << boid[j_sz].vel.v_y
-              << '\n';
-    std::cout << "Position: " << boid[j_sz].pos.x << "," << boid[j_sz].pos.y
-              << "\n \n \n";
-  }
-}
-*/
 
 void print(std::vector<Boid> const& boid, double x_min, double x_max,
            double y_min, double y_max) {

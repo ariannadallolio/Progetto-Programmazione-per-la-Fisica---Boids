@@ -68,19 +68,23 @@ bool operator==(Position const& a, Position const& b) {
 
 bool operator!=(Position const& a, Position const& b) { return {!(a == b)}; }
 
+/*
 double distance_squared(Position const& a, Position const& b) {
   double dx = a.x - b.x;
   double dy = a.y - b.y;
   return dx * dx + dy * dy;  // così evitiamo std::sqrt che è più impegnativo,
                              // tanto è uguale
 }
+ */
 
 // forse questa si può togliere
+/*
 double distance(Position const& a, Position const& b) {
   double dx = a.x - b.x;
   double dy = a.y - b.y;
   return std::sqrt(dx * dx + dy * dy);
 }
+  */
 
 Position toroidal_space(Position newp, double x_min, double x_max, double y_min,
                         double y_max) {
@@ -110,6 +114,8 @@ Position toroidal_difference(Position const& a, Position const& b, double x_min,
   double const Ly = y_max - y_min;
   double dx = a.x - b.x;
   double dy = a.y - b.y;
+  // il segno + o - dipende da quanto vale la differenza di posizione tra i due
+  // boid
   if (dx > Lx / 2.0) {
     dx -= Lx;
   }
@@ -252,10 +258,13 @@ Velocity cohesion(double c, int boid_to_check,
   return v3;
 }
 
-double mean_distance(std::vector<Boid> boid, double x_min, double x_max,
+double mean_distance(std::vector<Boid> const& boid, double x_min, double x_max,
                      double y_min, double y_max) {  // distanza media tra boids
   assert(!boid.empty());
   int n = static_cast<int>(boid.size());
+  if (n == 1) {
+    return 0.0;
+  }
   double sum{0.0};
   for (int i = 0; i != n; ++i) {
     for (int j = i + 1; j != n; j++) {
@@ -271,12 +280,15 @@ double mean_distance(std::vector<Boid> boid, double x_min, double x_max,
 
 // disperione che mi dice quando sono divere tra loro le distanze tra coppie,
 // vogliamo farla rispetto al centro i massa?
-double std_dev_distance(std::vector<Boid> boid, double x_min, double x_max,
-                        double y_min, double y_max) {
+double std_dev_distance(std::vector<Boid> const& boid, double const& mean,
+                        double x_min, double x_max, double y_min,
+                        double y_max) {
   assert(!boid.empty());
   int n = static_cast<int>(boid.size());
-  assert(n >= 2);  // per avere la media sono necessari almeno 2 elementi
-  double const mean = mean_distance(boid, x_min, x_max, y_min, y_max);
+  if (n == 1) {
+    return 0.0;
+  }
+  // double const mean = mean_distance(boid, x_min, x_max, y_min, y_max);
   double sum{0.0};
   for (int i = 0; i != n; ++i) {
     for (int j = i + 1; j != n; j++) {
@@ -292,10 +304,13 @@ double std_dev_distance(std::vector<Boid> boid, double x_min, double x_max,
   return std::sqrt(sum / n_pairs);
 }
 
-double mean_velocity(std::vector<Boid> boid) {
+double mean_velocity(std::vector<Boid> const& boid) {
   assert(!boid.empty());
   Velocity sum{0.0, 0.0};
   int n = static_cast<int>(boid.size());
+  if (n == 1) {
+    return speed_modulus(boid[0].vel);
+  }
   for (int i = 0; i != n; ++i) {
     sum += boid[static_cast<std::size_t>(i)].vel;
   }
@@ -303,12 +318,12 @@ double mean_velocity(std::vector<Boid> boid) {
   return speed_modulus(mean_velocity);
 }
 
-double std_dev_velocity(std::vector<Boid> boid, double x_min, double x_max,
-                        double y_min, double y_max) {
+double std_dev_velocity(std::vector<Boid> const& boid, double const& mean) {
   assert(!boid.empty());
   int n = static_cast<int>(boid.size());
-  assert(n >= 2);  // per avere la media sono necessari almeno 2 elementi
-  double const mean = mean_velocity(boid);
+  if (n == 1) {
+    return 0.0;
+  }
   double sum{0.0};
   for (Boid const& m : boid) {
     double const speed = speed_modulus(m.vel);
@@ -317,8 +332,6 @@ double std_dev_velocity(std::vector<Boid> boid, double x_min, double x_max,
   }
   return std::sqrt(sum / n);
 }
-
-
 
 Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus) {
   assert(speed_modulus > 0.0);
@@ -330,6 +343,7 @@ Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus) {
   return v_tot;
 }
 
+/*
 void print(std::vector<Boid> const& boid) {
   int n = static_cast<int>(boid.size());
   for (int j = 0; j != n; ++j) {
@@ -340,6 +354,20 @@ void print(std::vector<Boid> const& boid) {
     std::cout << "Position: " << boid[j_sz].pos.x << "," << boid[j_sz].pos.y
               << "\n \n \n";
   }
+}
+*/
+
+void print(std::vector<Boid> const& boid, double x_min, double x_max, double y_min,
+           double y_max) {
+  double mean_distance_ = mean_distance(boid, x_min, x_max, y_min, y_max);
+  double std_dev_distance_ =
+      std_dev_distance(boid, mean_distance_, x_min, x_max, y_min, y_max);
+  std::cout << "Distanza media: " << mean_distance_ << " +/- "
+            << std_dev_distance_ << '\n';
+  double mean_velocity_ = mean_velocity(boid);
+  double std_dev_velocity_ = std_dev_velocity(boid, mean_velocity_);
+  std::cout << "Velocità media:" << mean_velocity_ << " +/- "
+            << std_dev_velocity_ << "\n \n \n";
 }
 
 class Flock {
@@ -356,26 +384,31 @@ class Flock {
   double v_max_{10.0};  // double v_max_;
   double
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
+  double x_min_;
+  double x_max_;
+  double y_min_;
+  double y_max_;
 
   std::vector<Boid>
       boids_;  // vettore da riempire con il costruttore e generate_n
 
   // dimensioni schermo in pixel
-  double const x_min = 0.0;
-  double const x_max = 800;
-  double const y_min = 0.0;
-  double const y_max = 600;
 
  public:
   // costruttore, Member Initilisation List
-  Flock(int n, double s, double a, double c, double d, double d_s, double dt)
+  Flock(int n, double s, double a, double c, double d, double d_s, double dt,
+        double x_min, double x_max, double y_min, double y_max)
       : n_{n},
         s_{s},
         a_{a},
         c_{c},
         d_{d},
         d_s_{d_s},
-        dt_{dt}
+        dt_{dt},
+        x_min_{x_min},
+        x_max_{x_max},
+        y_min_{y_min},
+        y_max_{y_max}
 
   {  // ora stabiliamo l'invariante di classe con exceptions
     if (n <= 0) {
@@ -404,10 +437,10 @@ class Flock {
     std::vector<Boid> updatedboids{boids_};
     for (int j = 0; j != n_; ++j) {
       std::vector<int> neighbours =
-          neighbours_control(j, d_, boids_, x_min, x_max, y_min, y_max);
+          neighbours_control(j, d_, boids_, x_min_, x_max_, y_min_, y_max_);
       if (!neighbours.empty()) {
-        Velocity v1 = separation(s_, d_s_, j, neighbours, boids_, x_min, x_max,
-                                 y_min, y_max);
+        Velocity v1 = separation(s_, d_s_, j, neighbours, boids_, x_min_,
+                                 x_max_, y_min_, y_max_);
         Velocity v2 = alignment(a_, j, neighbours, boids_);
         Velocity v3 = cohesion(c_, j, neighbours, boids_);
         auto const j_sz = static_cast<std::size_t>(j);
@@ -426,7 +459,7 @@ class Flock {
       Position newp = {boids_[j_sz].pos.x + dt_ * boids_[j_sz].vel.v_x,
                        boids_[j_sz].pos.y + dt_ * boids_[j_sz].vel.v_y};
       // controllo spazio toroidale
-      newp = toroidal_space(newp, x_min, x_max, y_min, y_max);
+      newp = toroidal_space(newp, x_min_, x_max_, y_min_, y_max_);
       boids_[j_sz].pos = newp;
     }
   }
@@ -434,6 +467,11 @@ class Flock {
 
 int main() {
   try {
+    double const x_min = 0.0;
+    double const x_max = 800;
+    double const y_min = 0.0;
+    double const y_max = 600;
+
     int n{};
     int ngen{};
     std::cout << "Quanti boids?" << '\n';
@@ -441,11 +479,12 @@ int main() {
     std::cout << "Quante iterazioni?" << '\n';
     std::cin >> ngen;
     Flock prova(n, 0.5, 0.5, 0.5, 100, 30,
-                0.1);  // oppure da dare in input con txt
+                5, x_min, x_max, y_min, y_max);  // oppure da dare in input con txt
     for (int i = 0; i != ngen; ++i) {
       prova.movement();
-      print(prova.boids());  // richiamo funzione esterna al flock e le passo
-                             // una funzione interna al flock
+      print(prova.boids(), x_min, x_max, y_min,
+            y_max);  // richiamo funzione esterna al flock e le passo
+                     // una funzione interna al flock
     }
   } catch (std::exception const& e) {  // Cattura runtime_error
     std::cerr << e.what() << '\n';

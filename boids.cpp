@@ -220,7 +220,7 @@ Velocity separation(double s, double d_s, int boid_to_check,
     }
   }
   Position const pos_v1 = -s * sum; 
-  Velocity v1 = {pos_v1.x, pos_v1.y};
+  v1 = {pos_v1.x, pos_v1.y};
   return v1;
 }
 

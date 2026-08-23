@@ -474,18 +474,16 @@ int main() {
 
     int n{};
     int ngen{};
-    std::cout << "Ho many boids?" << '\n';
-    std::cin >> n;
+    std::cout << "How many boids?" << '\n';
     if (!(std::cin >> n)) {
       throw std::runtime_error{
           "Error! The number of boids has to be an integer"};
     }
-    if (ngen <= 0) {
+    if (n <= 0) {
       throw std::runtime_error{
-          "Error! The number of iterations has to be positive."};
+          "Error! The number of boids has to be positive."};
     }
     std::cout << "How many iterations?" << '\n';
-    std::cin >> ngen;
 
     if (!(std::cin >> ngen)) {
       throw std::runtime_error{

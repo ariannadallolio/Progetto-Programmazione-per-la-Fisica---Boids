@@ -357,8 +357,8 @@ void print(std::vector<Boid> const& boid) {
 }
 */
 
-void print(std::vector<Boid> const& boid, double x_min, double x_max, double y_min,
-           double y_max) {
+void print(std::vector<Boid> const& boid, double x_min, double x_max,
+           double y_min, double y_max) {
   double mean_distance_ = mean_distance(boid, x_min, x_max, y_min, y_max);
   double std_dev_distance_ =
       std_dev_distance(boid, mean_distance_, x_min, x_max, y_min, y_max);
@@ -474,11 +474,31 @@ int main() {
 
     int n{};
     int ngen{};
-    std::cout << "Quanti boids?" << '\n';
+    std::cout << "Ho many boids?" << '\n';
     std::cin >> n;
-    std::cout << "Quante iterazioni?" << '\n';
+    if (!(std::cin >> n)) {
+      throw std::runtime_error{
+          "Error! The number of boids has to be an integer"};
+    }
+    if (ngen <= 0) {
+      throw std::runtime_error{
+          "Error! The number of iterations has to be positive."};
+    }
+    std::cout << "How many iterations?" << '\n';
     std::cin >> ngen;
-    Flock prova(n, 0.05, 0.05, 0.005, 100, 20, 1.0, x_min, x_max, y_min, y_max);  // oppure da dare in input con txt
+
+    if (!(std::cin >> ngen)) {
+      throw std::runtime_error{
+          "Error! The number of iterations has to be an integer."};
+    }
+    if (ngen <= 0) {
+      throw std::runtime_error{
+          "Error! The number of iterations has to be positive."};
+    }
+
+    Flock prova(n, 0.5, 0.5, 0.5, 100, 30, 5, x_min, x_max, y_min,
+                y_max);  // oppure da dare in input con txt
+
     for (int i = 0; i != ngen; ++i) {
       prova.movement();
       print(prova.boids(), x_min, x_max, y_min,

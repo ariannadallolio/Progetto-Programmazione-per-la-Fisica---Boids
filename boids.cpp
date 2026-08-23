@@ -303,8 +303,7 @@ double mean_velocity(std::vector<Boid> boid) {
   return speed_modulus(mean_velocity);
 }
 
-double std_dev_velocity(std::vector<Boid> boid, double x_min, double x_max,
-                        double y_min, double y_max) {
+double std_dev_velocity(std::vector<Boid> boid) {
   assert(!boid.empty());
   int n = static_cast<int>(boid.size());
   assert(n >= 2);  // per avere la media sono necessari almeno 2 elementi
@@ -317,8 +316,6 @@ double std_dev_velocity(std::vector<Boid> boid, double x_min, double x_max,
   }
   return std::sqrt(sum / n);
 }
-
-
 
 Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus) {
   assert(speed_modulus > 0.0);
@@ -436,11 +433,27 @@ int main() {
   try {
     int n{};
     int ngen{};
-    std::cout << "Quanti boids?" << '\n';
+    std::cout << "Ho many boids?" << '\n';
     std::cin >> n;
-    std::cout << "Quante iterazioni?" << '\n';
+    if (!(std::cin >> n)) {
+      throw std::runtime_error{
+          "Error! The number of boids has to be an integer"};
+    }
+    if (ngen <= 0) {
+      throw std::runtime_error{
+          "Error! The number of iterations has to be positive."};
+    }
+    std::cout << "How many iterations?" << '\n';
     std::cin >> ngen;
-    Flock prova(n, 0.5, 0.5, 0.5, 100, 30,
+    if (!(std::cin >> ngen)) {
+      throw std::runtime_error{
+          "Error! The number of iterations has to be an integer."};
+    }
+    if (ngen <= 0) {
+      throw std::runtime_error{
+          "Error! The number of iterations has to be positive."};
+    }
+    Flock prova(n, 0.5, 0.5, 0.5, 300, 30,
                 0.1);  // oppure da dare in input con txt
     for (int i = 0; i != ngen; ++i) {
       prova.movement();

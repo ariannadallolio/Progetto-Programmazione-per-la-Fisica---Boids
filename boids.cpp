@@ -88,17 +88,21 @@ double distance(Position const& a, Position const& b) {
 
 Position toroidal_space(Position newp, double x_min, double x_max, double y_min,
                         double y_max) {
+  assert(x_min < x_max);
+  assert(y_min < y_max);
+  double const Lx = x_max - x_min;
+  double const Ly = y_max - y_min;
   if (newp.x < x_min) {
-    newp.x = x_max + newp.x;
+    newp.x += Lx;
   }
   if (newp.y < y_min) {
-    newp.y = y_max + newp.y;
+    newp.y += Ly;
   }
   if (x_max < newp.x) {
-    newp.x = newp.x - x_max;
+    newp.x -= Lx;
   }
   if (y_max < newp.y) {
-    newp.y = newp.y - y_max;
+    newp.y -= Ly;
   }
   return newp;
 }
@@ -239,7 +243,8 @@ Velocity alignment(double a, int boid_to_check,
 
 Velocity cohesion(double c, int boid_to_check,
                   std::vector<int> const& neighbours,
-                  std::vector<Boid> const& boids) {
+                  std::vector<Boid> const& boids, double x_min, double x_max,
+                  double y_min, double y_max) {
   assert(boid_to_check >= 0);
   assert(boid_to_check < static_cast<int>(boids.size()));
   Velocity v3{};
@@ -248,12 +253,15 @@ Velocity cohesion(double c, int boid_to_check,
   }
   Position sum{0.0, 0.0};
   for (int m : neighbours) {
-    sum += boids[static_cast<std::size_t>(m)].pos;
+    sum +=
+        toroidal_difference(boids[static_cast<std::size_t>(m)].pos,
+                            boids[static_cast<std::size_t>(boid_to_check)].pos,
+                            x_min, x_max, y_min, y_max);
   }
   int const n = static_cast<int>(neighbours.size());
   Position const cm = ((1.0 / n) * sum);
   Position const v3_pos =
-      c * (cm - boids[static_cast<std::size_t>(boid_to_check)].pos);
+      c * toroidal_difference(cm, boids[static_cast<std::size_t>(boid_to_check)].pos, x_min, x_max, y_min, y_max);
   v3 = {v3_pos.x, v3_pos.y};
   return v3;
 }
@@ -306,16 +314,15 @@ double std_dev_distance(std::vector<Boid> const& boid, double const& mean,
 
 double mean_velocity(std::vector<Boid> const& boid) {
   assert(!boid.empty());
-  Velocity sum{0.0, 0.0};
+  double sum{};
   int n = static_cast<int>(boid.size());
   if (n == 1) {
     return speed_modulus(boid[0].vel);
   }
   for (int i = 0; i != n; ++i) {
-    sum += boid[static_cast<std::size_t>(i)].vel;
+    sum += speed_modulus(boid[static_cast<std::size_t>(i)].vel);
   }
-  Velocity mean_velocity{sum * (1.0 / n)};
-  return speed_modulus(mean_velocity);
+  return sum * (1.0 / n);
 }
 
 double std_dev_velocity(std::vector<Boid> const& boid, double const& mean) {
@@ -333,13 +340,13 @@ double std_dev_velocity(std::vector<Boid> const& boid, double const& mean) {
   return std::sqrt(sum / n);
 }
 
-Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus) {
-  assert(speed_modulus > 0.0);
-  v_tot.v_x = (v_tot.v_x / speed_modulus) *
+Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
+  assert(speed_modulus_ > 0.0);
+  v_tot.v_x = (v_tot.v_x / speed_modulus_) *
               v_max;  // creo versore modulo 1 e direzione uguale a
                       // v_tot, poi lo moltiplico per v_max così da
                       // avere modulo v_max e direzione v_tot
-  v_tot.v_y = (v_tot.v_y / speed_modulus) * v_max;
+  v_tot.v_y = (v_tot.v_y / speed_modulus_) * v_max;
   return v_tot;
 }
 
@@ -442,7 +449,7 @@ class Flock {
         Velocity v1 = separation(s_, d_s_, j, neighbours, boids_, x_min_,
                                  x_max_, y_min_, y_max_);
         Velocity v2 = alignment(a_, j, neighbours, boids_);
-        Velocity v3 = cohesion(c_, j, neighbours, boids_);
+        Velocity v3 = cohesion(c_, j, neighbours, boids_, x_min_, x_max_, y_min_, y_max_);
         auto const j_sz = static_cast<std::size_t>(j);
         Velocity v_tot = boids_[j_sz].vel + v1 + v2 + v3;
         double speed_modulus_ = speed_modulus(v_tot);

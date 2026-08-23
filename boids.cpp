@@ -478,8 +478,7 @@ int main() {
     std::cin >> n;
     std::cout << "Quante iterazioni?" << '\n';
     std::cin >> ngen;
-    Flock prova(n, 0.5, 0.5, 0.5, 100, 30,
-                5, x_min, x_max, y_min, y_max);  // oppure da dare in input con txt
+    Flock prova(n, 0.05, 0.05, 0.005, 100, 20, 1.0, x_min, x_max, y_min, y_max);  // oppure da dare in input con txt
     for (int i = 0; i != ngen; ++i) {
       prova.movement();
       print(prova.boids(), x_min, x_max, y_min,

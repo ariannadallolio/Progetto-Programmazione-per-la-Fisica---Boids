@@ -36,7 +36,7 @@ int main() {
           "Error! The number of iterations has to be positive."};
     }
 
-    pf::Flock prova(n, 0.05, 0.2, 0.001, 150, 20,10.0, 1.0, x_min, x_max, y_min,
+    pf::Flock prova(n, 0.6, 0.35, 0.03, 100, 50,90.0, 0.05, x_min, x_max, y_min,
                     y_max);  // oppure da dare in input con txt
 
     sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(x_max), static_cast<unsigned int>(y_max)), "Boids");

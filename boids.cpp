@@ -434,7 +434,6 @@ class Flock {
     for (int j = 0; j != n_; ++j) {
       std::vector<int> neighbours =
           neighbours_control(j, d_, boids_, x_min_, x_max_, y_min_, y_max_);
-      if (!neighbours.empty()) {
         Velocity v1 = separation(s_, d_s_, j, neighbours, boids_, x_min_,
                                  x_max_, y_min_, y_max_);
         Velocity v2 = alignment(a_, j, neighbours, boids_);

@@ -1,7 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <cstdlib>
 #include <iostream>
-#include <numbers>
 #include <stdexcept>
 #include "boids.hpp"
 #include "flock.hpp"
@@ -37,10 +36,13 @@ int main() {
           "Error! The number of iterations has to be positive."};
     }
 
-    pf::Flock prova(n, 0.05, 0.05, 0.005, 100, 20,10.0, 1.0, x_min, x_max, y_min,
+    pf::Flock prova(n, 0.05, 0.2, 0.001, 150, 20,10.0, 1.0, x_min, x_max, y_min,
                     y_max);  // oppure da dare in input con txt
 
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Boids");
+    sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(x_max), static_cast<unsigned int>(y_max)), "Boids");
+    if (!window.isOpen()) {
+    throw std::runtime_error{"Errore: impossibile aprire la finestra SFML"};
+}
     window.setFramerateLimit(60);
     std::vector<sf::ConvexShape> triangles;
     triangles.reserve(
@@ -84,7 +86,7 @@ int main() {
         // direzione del boid
 
         double const angle_rad = std::atan2(
-            -boid.vel.v_y,
+            boid.vel.v_y,
             boid.vel.v_x);  // il - perchè la y cresce verso il basso su SFML,
                             // così abbiamo la direzione giusta
 

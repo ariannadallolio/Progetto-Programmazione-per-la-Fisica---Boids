@@ -164,7 +164,7 @@ Flock::Flock(int n, double s, double a, double c, double d, double d_s,
         "Errore: il raggio di separazione (d_s) deve essere minore del "
         "raggio visivo (d)"};
   }
-  if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0 || dt_ <= 0) {
+  if (s_ < 0 || a_ < 0 || c_ < 0 || d_ <= 0 || d_s_ <= 0 || dt_ <= 0) {
     throw std::runtime_error{"Errore: i parametri devono essere positivi"};
   }  // nel main try e catch(std::runtime_error& e){std::cerr << e.what()
      // <<
@@ -182,7 +182,6 @@ void Flock::movement() {
   for (int j = 0; j != n_; ++j) {
     std::vector<int> neighbours =
         neighbours_control(j, d_, boids_, x_min_, x_max_, y_min_, y_max_);
-    assert(!neighbours.empty());
     Velocity v1 = separation(s_, d_s_, j, neighbours, boids_, x_min_, x_max_,
                              y_min_, y_max_);
     Velocity v2 = alignment(a_, j, neighbours, boids_);
@@ -207,4 +206,4 @@ void Flock::movement() {
     boids_[j_sz].pos = newp;
   }
 }
-};  // namespace pf
+}  // namespace pf

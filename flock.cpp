@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <numbers>
 #include <random>
 #include <stdexcept>
 #include <vector>
@@ -21,13 +22,14 @@ std::vector<Boid> generate_boid(int n, double v_max, double x_min, double x_max,
 
   std::random_device r;  // seed
   std::default_random_engine eng{r()};
-  std::uniform_real_distribution<double> uniform_v{
-      -v_max, v_max};  // da riguardare se includere v_max?
-  //  max velocity?
+  std::uniform_real_distribution<double> uniform_v_modulus{-0.0, v_max};
+  double const pi = std::acos(-1.0);  // funzione arcocoseno
+  std::uniform_real_distribution<double> uniform_v_angle{0.0, 2.0 * pi};
   std::uniform_real_distribution<double> uniform_px{x_min, x_max};
   std::uniform_real_distribution<double> uniform_py{y_min, y_max};
   std::generate_n(std::back_inserter(boids), n, [&]() {
-    return Boid{{uniform_v(eng), uniform_v(eng)},
+    return Boid{{uniform_v_modulus(eng) * std::cos(uniform_v_angle(eng)),
+                 uniform_v_modulus(eng) * std::sin(uniform_v_angle(eng))},
                 {uniform_px(eng), uniform_py(eng)}};
   });
   return boids;
@@ -70,10 +72,10 @@ Velocity separation(double s, double d_s, int boid_to_check,
   for (int m : neighbours) {  // range for loop che itera direttamente
                               // sugli elementi
     Position const pos_m = boids[static_cast<std::size_t>(m)].pos;
-    if (toroidal_distance_squared(pos_check, pos_m, x_min, x_max, y_min,
+    if (toroidal_distance_squared(pos_m, pos_check, x_min, x_max, y_min,
                                   y_max) < d_s_squared) {
       Position const diff =
-          toroidal_difference(pos_check, pos_m, x_min, x_max, y_min, y_max);
+          toroidal_difference(pos_m, pos_check, x_min, x_max, y_min, y_max);
       sum += diff;  ////////////algoritmo accumulate?
     }
   }
@@ -193,7 +195,7 @@ class Flock {
   double c_;  //<1
   double d_;
   double d_s_;          //<d
-  double v_max_{10.0};  // double v_max_;
+  double v_max_;  // double v_max_;
   double
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
   double x_min_;
@@ -208,7 +210,7 @@ class Flock {
 
  public:
   // costruttore, Member Initilisation List
-  Flock(int n, double s, double a, double c, double d, double d_s, double dt,
+  Flock(int n, double s, double a, double c, double d, double d_s, double v_max, double dt,
         double x_min, double x_max, double y_min, double y_max)
       : n_{n},
         s_{s},
@@ -216,6 +218,7 @@ class Flock {
         c_{c},
         d_{d},
         d_s_{d_s},
+        v_max_{v_max},
         dt_{dt},
         x_min_{x_min},
         x_max_{x_max},
@@ -238,7 +241,7 @@ class Flock {
        // <<
     // '\n'; return EXIT_FAILURE;}
 
-    boids_ = generate_boid(n, v_max_, x_min, x_max, y_min, y_max);
+    boids_ = generate_boid(n, v_max, x_min, x_max, y_min, y_max);
   }
 
   // getter per prendere il vettore di boid e usarlo x esempio per media e

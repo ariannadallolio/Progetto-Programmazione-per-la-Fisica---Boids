@@ -1,12 +1,9 @@
-#ifndef FLOCK_HPP
-#define FLOCK_HPP
-
 #include <algorithm>
 #include <random>
 #include <stdexcept>
 #include <vector>
 
-#include "boids.cpp"
+#include "boids.hpp"
 
 namespace pf {
 
@@ -281,5 +278,3 @@ class Flock {
 };
 
 }  // namespace pf
-
-#endif

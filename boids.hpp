@@ -212,14 +212,13 @@ Velocity separation(double s, double d_s, int boid_to_check,
                               // sugli elementi
     Position const pos_m = boids[static_cast<std::size_t>(m)].pos;
     if (toroidal_distance_squared(pos_check, pos_m, x_min, x_max, y_min,
-                                  y_max) <
-        d_s_squared) { 
+                                  y_max) < d_s_squared) {
       Position const diff =
           toroidal_difference(pos_check, pos_m, x_min, x_max, y_min, y_max);
       sum += diff;  ////////////algoritmo accumulate?
     }
   }
-  Position const pos_v1 = -s * sum; 
+  Position const pos_v1 = -s * sum;
   v1 = {pos_v1.x, pos_v1.y};
   return v1;
 }
@@ -263,8 +262,7 @@ Velocity cohesion(double c, int boid_to_check,
   }
   int const n = static_cast<int>(neighbours.size());
   Position const cm = ((1.0 / n) * sum);
-  Position const v3_pos =
-      c * cm;
+  Position const v3_pos = c * cm;
   v3 = {v3_pos.x, v3_pos.y};
   return v3;
 }
@@ -434,19 +432,19 @@ class Flock {
     for (int j = 0; j != n_; ++j) {
       std::vector<int> neighbours =
           neighbours_control(j, d_, boids_, x_min_, x_max_, y_min_, y_max_);
-        Velocity v1 = separation(s_, d_s_, j, neighbours, boids_, x_min_,
-                                 x_max_, y_min_, y_max_);
-        Velocity v2 = alignment(a_, j, neighbours, boids_);
-        Velocity v3 = cohesion(c_, j, neighbours, boids_, x_min_, x_max_, y_min_, y_max_);
-        auto const j_sz = static_cast<std::size_t>(j);
-        Velocity v_tot = boids_[j_sz].vel + v1 + v2 + v3;
-        double speed_modulus_ = speed_modulus(v_tot);
-        // condizione velocità massima
-        if (v_max_ < speed_modulus_) {
-          v_tot = limit_speed(v_max_, v_tot, speed_modulus_);
-        }
-        updatedboids[j_sz].vel = v_tot;
+      Velocity v1 = separation(s_, d_s_, j, neighbours, boids_, x_min_, x_max_,
+                               y_min_, y_max_);
+      Velocity v2 = alignment(a_, j, neighbours, boids_);
+      Velocity v3 =
+          cohesion(c_, j, neighbours, boids_, x_min_, x_max_, y_min_, y_max_);
+      auto const j_sz = static_cast<std::size_t>(j);
+      Velocity v_tot = boids_[j_sz].vel + v1 + v2 + v3;
+      double speed_modulus_ = speed_modulus(v_tot);
+      // condizione velocità massima
+      if (v_max_ < speed_modulus_) {
+        v_tot = limit_speed(v_max_, v_tot, speed_modulus_);
       }
+      updatedboids[j_sz].vel = v_tot;
     }
     for (int j = 0; j != n_; ++j) {
       auto const j_sz = static_cast<std::size_t>(j);

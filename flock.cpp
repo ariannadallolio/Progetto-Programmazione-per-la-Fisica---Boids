@@ -128,7 +128,6 @@ Velocity cohesion(double c, int boid_to_check,
   return v3;
 }
 
-
 Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
   assert(speed_modulus_ > 0.0);
   v_tot.v_x = (v_tot.v_x / speed_modulus_) *
@@ -139,100 +138,73 @@ Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
   return v_tot;
 }
 
-class Flock {
-  // valori da mettere in input, inizializzati nel private e definiti col
-  // costruttore nel public (così da poter mettere le invarianti e poterli
-  // riempire nel main)
- private:
-  int n_;     // numero di boids
-  double s_;  //<1
-  double a_;  //<1
-  double c_;  //<1
-  double d_;
-  double d_s_;    //<d
-  double v_max_;  // double v_max_;
-  double
-      dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
-  double x_min_;
-  double x_max_;
-  double y_min_;
-  double y_max_;
+Flock::Flock(int n, double s, double a, double c, double d, double d_s,
+             double v_max, double dt, double x_min, double x_max, double y_min,
+             double y_max)
+    : n_{n},
+      s_{s},
+      a_{a},
+      c_{c},
+      d_{d},
+      d_s_{d_s},
+      v_max_{v_max},
+      dt_{dt},
+      x_min_{x_min},
+      x_max_{x_max},
+      y_min_{y_min},
+      y_max_{y_max}
 
-  std::vector<Boid>
-      boids_;  // vettore da riempire con il costruttore e generate_n
-
-  // dimensioni schermo in pixel
-
- public:
-  // costruttore, Member Initilisation List
-  Flock(int n, double s, double a, double c, double d, double d_s, double v_max,
-        double dt, double x_min, double x_max, double y_min, double y_max)
-      : n_{n},
-        s_{s},
-        a_{a},
-        c_{c},
-        d_{d},
-        d_s_{d_s},
-        v_max_{v_max},
-        dt_{dt},
-        x_min_{x_min},
-        x_max_{x_max},
-        y_min_{y_min},
-        y_max_{y_max}
-
-  {  // ora stabiliamo l'invariante di classe con exceptions
-    if (n <= 0) {
-      throw std::runtime_error{
-          "Errore: il numero di boids deve essere maggiore di zero"};
-    }
-    if (d_ <= d_s_) {
-      throw std::runtime_error{
-          "Errore: il raggio di separazione (d_s) deve essere minore del "
-          "raggio visivo (d)"};
-    }
-    if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0 || dt_ <= 0) {
-      throw std::runtime_error{"Errore: i parametri devono essere positivi"};
-    }  // nel main try e catch(std::runtime_error& e){std::cerr << e.what()
-       // <<
-    // '\n'; return EXIT_FAILURE;}
-
-    boids_ = generate_boid(n, v_max, x_min, x_max, y_min, y_max);
+{  // ora stabiliamo l'invariante di classe con exceptions
+  if (n <= 0) {
+    throw std::runtime_error{
+        "Errore: il numero di boids deve essere maggiore di zero"};
   }
-
-  // getter per prendere il vettore di boid e usarlo x esempio per media e
-  // dev std
-  std::vector<Boid> const& boids() const { return boids_; }
-
-  void movement() {
-    std::vector<Boid> updatedboids{boids_};
-    for (int j = 0; j != n_; ++j) {
-      std::vector<int> neighbours =
-          neighbours_control(j, d_, boids_, x_min_, x_max_, y_min_, y_max_);
-      assert(!neighbours.empty());
-      Velocity v1 = separation(s_, d_s_, j, neighbours, boids_, x_min_, x_max_,
-                               y_min_, y_max_);
-      Velocity v2 = alignment(a_, j, neighbours, boids_);
-      Velocity v3 =
-          cohesion(c_, j, neighbours, boids_, x_min_, x_max_, y_min_, y_max_);
-      auto const j_sz = static_cast<std::size_t>(j);
-      Velocity v_tot = boids_[j_sz].vel + v1 + v2 + v3;
-      double speed_modulus_ = speed_modulus(v_tot);
-      // condizione velocità massima
-      if (v_max_ < speed_modulus_) {
-        v_tot = limit_speed(v_max_, v_tot, speed_modulus_);
-      }
-      updatedboids[j_sz].vel = v_tot;
-    }
-    for (int j = 0; j != n_; ++j) {
-      auto const j_sz = static_cast<std::size_t>(j);
-      boids_[j_sz].vel = updatedboids[j_sz].vel;
-      Position newp = {boids_[j_sz].pos.x + dt_ * boids_[j_sz].vel.v_x,
-                       boids_[j_sz].pos.y + dt_ * boids_[j_sz].vel.v_y};
-      // controllo spazio toroidale
-      newp = toroidal_space(newp, x_min_, x_max_, y_min_, y_max_);
-      boids_[j_sz].pos = newp;
-    }
+  if (d_ <= d_s_) {
+    throw std::runtime_error{
+        "Errore: il raggio di separazione (d_s) deve essere minore del "
+        "raggio visivo (d)"};
   }
-};
+  if (s_ <= 0 || a_ <= 0 || c_ <= 0 || d_ <= 0 || d_s_ <= 0 || dt_ <= 0) {
+    throw std::runtime_error{"Errore: i parametri devono essere positivi"};
+  }  // nel main try e catch(std::runtime_error& e){std::cerr << e.what()
+     // <<
+  // '\n'; return EXIT_FAILURE;}
 
-}  // namespace pf
+  boids_ = generate_boid(n, v_max, x_min, x_max, y_min, y_max);
+}
+
+// getter per prendere il vettore di boid e usarlo x esempio per media e
+// dev std
+std::vector<Boid> const& Flock::boids() const { return boids_; }
+
+void Flock::movement() {
+  std::vector<Boid> updatedboids{boids_};
+  for (int j = 0; j != n_; ++j) {
+    std::vector<int> neighbours =
+        neighbours_control(j, d_, boids_, x_min_, x_max_, y_min_, y_max_);
+    assert(!neighbours.empty());
+    Velocity v1 = separation(s_, d_s_, j, neighbours, boids_, x_min_, x_max_,
+                             y_min_, y_max_);
+    Velocity v2 = alignment(a_, j, neighbours, boids_);
+    Velocity v3 =
+        cohesion(c_, j, neighbours, boids_, x_min_, x_max_, y_min_, y_max_);
+    auto const j_sz = static_cast<std::size_t>(j);
+    Velocity v_tot = boids_[j_sz].vel + v1 + v2 + v3;
+    double speed_modulus_ = speed_modulus(v_tot);
+    // condizione velocità massima
+    if (v_max_ < speed_modulus_) {
+      v_tot = limit_speed(v_max_, v_tot, speed_modulus_);
+    }
+    updatedboids[j_sz].vel = v_tot;
+  }
+  for (int j = 0; j != n_; ++j) {
+    auto const j_sz = static_cast<std::size_t>(j);
+    boids_[j_sz].vel = updatedboids[j_sz].vel;
+    Position newp = {boids_[j_sz].pos.x + dt_ * boids_[j_sz].vel.v_x,
+                     boids_[j_sz].pos.y + dt_ * boids_[j_sz].vel.v_y};
+    // controllo spazio toroidale
+    newp = toroidal_space(newp, x_min_, x_max_, y_min_, y_max_);
+    boids_[j_sz].pos = newp;
+  }
+}
+};  // namespace pf

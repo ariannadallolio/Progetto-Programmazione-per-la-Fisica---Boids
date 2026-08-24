@@ -527,6 +527,78 @@ boids.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/boids.cpp.s
 .PHONY : boids.cpp.s
 
+flock.o: flock.cpp.o
+.PHONY : flock.o
+
+# target to build an object file
+flock.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/flock.cpp.o
+.PHONY : flock.cpp.o
+
+flock.i: flock.cpp.i
+.PHONY : flock.i
+
+# target to preprocess a source file
+flock.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/flock.cpp.i
+.PHONY : flock.cpp.i
+
+flock.s: flock.cpp.s
+.PHONY : flock.s
+
+# target to generate assembly for a file
+flock.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/flock.cpp.s
+.PHONY : flock.cpp.s
+
+main.o: main.cpp.o
+.PHONY : main.o
+
+# target to build an object file
+main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/main.cpp.o
+.PHONY : main.cpp.o
+
+main.i: main.cpp.i
+.PHONY : main.i
+
+# target to preprocess a source file
+main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/main.cpp.i
+.PHONY : main.cpp.i
+
+main.s: main.cpp.s
+.PHONY : main.s
+
+# target to generate assembly for a file
+main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/main.cpp.s
+.PHONY : main.cpp.s
+
+statistics.o: statistics.cpp.o
+.PHONY : statistics.o
+
+# target to build an object file
+statistics.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/statistics.cpp.o
+.PHONY : statistics.cpp.o
+
+statistics.i: statistics.cpp.i
+.PHONY : statistics.i
+
+# target to preprocess a source file
+statistics.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/statistics.cpp.i
+.PHONY : statistics.cpp.i
+
+statistics.s: statistics.cpp.s
+.PHONY : statistics.s
+
+# target to generate assembly for a file
+statistics.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/statistics.cpp.s
+.PHONY : statistics.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -568,6 +640,15 @@ help:
 	@echo "... boids.o"
 	@echo "... boids.i"
 	@echo "... boids.s"
+	@echo "... flock.o"
+	@echo "... flock.i"
+	@echo "... flock.s"
+	@echo "... main.o"
+	@echo "... main.i"
+	@echo "... main.s"
+	@echo "... statistics.o"
+	@echo "... statistics.i"
+	@echo "... statistics.s"
 .PHONY : help
 
 

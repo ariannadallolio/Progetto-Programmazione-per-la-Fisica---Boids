@@ -4,20 +4,6 @@
 #include <cmath>
 
 namespace pf {
-struct Velocity {
-  double v_x;
-  double v_y;
-};
-
-struct Position {
-  double x;
-  double y;
-};
-
-struct Boid {
-  Velocity vel;
-  Position pos;
-};
 
 // operatori posizione
 

@@ -3,9 +3,10 @@
 #include <iostream>
 #include <numbers>
 #include <stdexcept>
-#include <boids.cpp>
-#include "flock.cpp"
-#include "statistics.cpp"
+#include "boids.hpp"
+#include "flock.hpp"
+#include "statistics.hpp"
+#include <cmath>
 
 int main() {
   try {
@@ -44,7 +45,6 @@ int main() {
     std::vector<sf::ConvexShape> triangles;
     triangles.reserve(
         prova.boids().size());  // serve a preparare lo spazio nel vettore
-    int n = static_cast<int>(prova.boids().size());
     for (int i = 0; i != n; ++i) {
       sf::ConvexShape triangle;
       triangle.setPointCount(3);  // creazione 3 vertici

@@ -52,7 +52,7 @@ class Flock {
   public:
   Flock(int n, double s, double a, double c, double d, double d_s, double v_max,
         double dt, double x_min, double x_max, double y_min, double y_max);
-  std::vector<Boid> const& boids() const { return boids_; }
+  std::vector<Boid> const& boids() const;
   void movement();      
 };
 

@@ -2,8 +2,8 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "flock.hpp"
-#include "statistics.hpp"
+#include "flock.cpp"
+#include "statistics.cpp"
 
 int main() {
   try {

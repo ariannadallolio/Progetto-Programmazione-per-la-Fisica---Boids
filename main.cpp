@@ -36,7 +36,7 @@ int main() {
           "Error! The number of iterations has to be positive."};
     }
 
-    pf::Flock prova(n, 0.6, 0.35, 0.03, 100, 50,90.0, 0.05, x_min, x_max, y_min,
+    pf::Flock prova(n, 0.08, 0.15, 0.003, 100, 30, 3.0, 12.0, 1.0, x_min, x_max, y_min,
                     y_max);  // oppure da dare in input con txt
 
     sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(x_max), static_cast<unsigned int>(y_max)), "Boids");
@@ -56,7 +56,7 @@ int main() {
       triangle.setPoint(2, sf::Vector2f(-8.f, 6.f));  //  l'angolo
       // di 0 gradi corrisponde sempre alla direzione destra, conviene
       // disegnarlo già con la punta a dx così che segua la direzione
-      triangle.setFillColor(sf::Color::White);
+      triangle.setFillColor(sf::Color::Green);
       triangle.setOrigin(
           {0.f, 0.f});  // per come abbiamo costruito i vertici è comodo
       triangles.push_back(triangle);

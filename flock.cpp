@@ -22,7 +22,7 @@ std::vector<Boid> generate_boid(int n, double v_max, double x_min, double x_max,
 
   std::random_device r;  // seed
   std::default_random_engine eng{r()};
-  std::uniform_real_distribution<double> uniform_v_modulus{-0.0, v_max};
+  std::uniform_real_distribution<double> uniform_v_modulus{0.0, v_max};
   double const pi = std::acos(-1.0);  // funzione arcocoseno
   std::uniform_real_distribution<double> uniform_v_angle{0.0, 2.0 * pi};
   std::uniform_real_distribution<double> uniform_px{x_min, x_max};
@@ -128,25 +128,30 @@ Velocity cohesion(double c, int boid_to_check,
   return v3;
 }
 
-Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
-  assert(speed_modulus_ > 0.0);
-  v_tot.v_x = (v_tot.v_x / speed_modulus_) *
-              v_max;  // creo versore modulo 1 e direzione uguale a
-                      // v_tot, poi lo moltiplico per v_max così da
-                      // avere modulo v_max e direzione v_tot
-  v_tot.v_y = (v_tot.v_y / speed_modulus_) * v_max;
+Velocity limit_speed(double v_min, double v_max, Velocity v_tot) {
+  double const modulus = speed_modulus(v_tot);
+  if (modulus == 0.0) {
+    return v_tot;
+  }
+  if (v_max < modulus) {
+    return (v_max / modulus) * v_tot;
+  }
+  if (modulus < v_min) {
+    return (v_min / modulus) * v_tot;
+  }
   return v_tot;
 }
 
 Flock::Flock(int n, double s, double a, double c, double d, double d_s,
-             double v_max, double dt, double x_min, double x_max, double y_min,
-             double y_max)
+             double v_min, double v_max, double dt, double x_min, double x_max,
+             double y_min, double y_max)
     : n_{n},
       s_{s},
       a_{a},
       c_{c},
       d_{d},
       d_s_{d_s},
+      v_min_{v_min},
       v_max_{v_max},
       dt_{dt},
       x_min_{x_min},
@@ -189,11 +194,7 @@ void Flock::movement() {
         cohesion(c_, j, neighbours, boids_, x_min_, x_max_, y_min_, y_max_);
     auto const j_sz = static_cast<std::size_t>(j);
     Velocity v_tot = boids_[j_sz].vel + v1 + v2 + v3;
-    double speed_modulus_ = speed_modulus(v_tot);
-    // condizione velocità massima
-    if (v_max_ < speed_modulus_) {
-      v_tot = limit_speed(v_max_, v_tot, speed_modulus_);
-    }
+    v_tot = limit_speed(v_min_, v_max_, v_tot);
     updatedboids[j_sz].vel = v_tot;
   }
   for (int j = 0; j != n_; ++j) {

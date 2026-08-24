@@ -26,7 +26,7 @@ Velocity cohesion(double c, int boid_to_check,
                   std::vector<Boid> const& boids, double x_min, double x_max,
                   double y_min, double y_max);
 
-Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_);
+Velocity limit_speed(double v_min, double v_max, Velocity v_tot);
 
 class Flock {
   // valori da mettere in input, inizializzati nel private e definiti col
@@ -39,6 +39,7 @@ class Flock {
   double c_;  //<1
   double d_;
   double d_s_;    //<d
+  double v_min_;
   double v_max_;  // double v_max_;
   double
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
@@ -50,7 +51,7 @@ class Flock {
   std::vector<Boid> boids_;
 
   public:
-  Flock(int n, double s, double a, double c, double d, double d_s, double v_max,
+  Flock(int n, double s, double a, double c, double d, double d_s, double v_min, double v_max,
         double dt, double x_min, double x_max, double y_min, double y_max);
   std::vector<Boid> const& boids() const;
   void movement();      

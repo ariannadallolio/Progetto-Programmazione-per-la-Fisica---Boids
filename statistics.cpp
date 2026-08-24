@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-#include "boids.hpp"
+#include "boids.cpp"
 
 namespace pf {
 

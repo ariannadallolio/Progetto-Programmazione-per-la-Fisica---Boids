@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "boids.hpp"
+#include "boids.cpp"
 
 namespace pf {
 

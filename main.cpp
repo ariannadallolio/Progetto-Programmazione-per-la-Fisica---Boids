@@ -34,7 +34,7 @@ int main() {
           "Error! The number of iterations has to be positive."};
     }
 
-    pf::Flock prova(n, 0.05, 0.05, 0.005, 100, 20, 1.0, x_min, x_max, y_min,
+    pf::Flock prova(n, 0.05, 0.05, 0.005, 100, 20,10.0, 1.0, x_min, x_max, y_min,
                     y_max);  // oppure da dare in input con txt
 
     for (int i = 0; i != ngen; ++i) {

@@ -161,7 +161,7 @@ TEST_CASE("Testing Flight Rules") {
 
 TEST_CASE("Testing Speed Limit") {
   pf::Velocity v_fast{30.0, 40.0};
-  pf::Velocity v_lim = pf::limit_speed(10.0, v_fast, 50.0);
+  pf::Velocity v_lim = pf::limit_speed(3.0, 10.0, v_fast);
 
   CHECK(pf::speed_modulus(v_lim) == doctest::Approx(10.0));
   CHECK((v_lim.v_x / v_lim.v_y) == doctest::Approx(30.0 / 40.0));
@@ -174,20 +174,23 @@ TEST_CASE("Testing Speed Limit") {
 
 TEST_CASE("Testing Flock Invariants (Exceptions)") {
   CHECK_THROWS_AS(
-      pf::Flock(-5, 0.05, 0.05, 0.005, 100, 20, 30.0, 1.0, 0, 800, 0, 600),
+      pf::Flock(-5, 0.05, 0.05, 0.005, 100, 20, 3.0, 30.0, 1.0, 0, 800, 0, 600),
       std::runtime_error);
 
   CHECK_THROWS_AS(
-      pf::Flock(10, 0.05, 0.05, 0.005, 10, 20, 30.0, 1.0, 0, 800, 0, 600),
+      pf::Flock(10, -0.05, 0.05, 0.005, 10, 20, 3.0, 30.0, 1.0, 0, 800, 0, 600),
       std::runtime_error);
 
-  CHECK_THROWS_AS(
-      pf::Flock(10, -0.05, 0.05, 0.005, 100, 20, 30.0, 1.0, 0, 800, 0, 600),
-      std::runtime_error);
+  CHECK_THROWS_AS(pf::Flock(10, 0.05, -0.05, 0.005, 100, 20, 3.0, 30.0, 1.0, 0,
+                            800, 0, 600),
+                  std::runtime_error);
 
-  CHECK_THROWS_AS(
-      pf::Flock(10, 0.05, 0.05, 0.005, 100, 20, 30.0, -1.0, 0, 800, 0, 600),
-      std::runtime_error);
+  CHECK_THROWS_AS(pf::Flock(10, 0.05, 0.05, -0.005, 100, 20, 3.0, 30.0, 1.0, 0,
+                            800, 0, 600),
+                  std::runtime_error);
+  CHECK_THROWS_AS(pf::Flock(10, 0.05, 0.05, 0.005, 100, 20, 3.0, 30.0, -1.0, 0,
+                            800, 0, 600),
+                  std::runtime_error);
 }
 
 // TEST 7: Statistiche dello Stormo
@@ -241,8 +244,8 @@ TEST_CASE("Testing Time Evolution (Delta t)") {
   double x_min = 0.0, x_max = 100.0;
   double y_min = 0.0, y_max = 100.0;
 
-  pf::Flock flock(2, 0.1, 0.1, 0.1, 200.0, 5.0, 10.0, 1.0, x_min, x_max, y_min,
-                  y_max);
+  pf::Flock flock(2, 0.1, 0.1, 0.1, 200.0, 5.0, 3.0, 10.0, 1.0, x_min, x_max,
+                  y_min, y_max);
 
   flock.movement();
 

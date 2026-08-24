@@ -159,7 +159,7 @@ TEST_CASE("Testing Flight Rules") {
 // TEST 5: Limite di Velocità (per garantire l'incontro dei boid)
 // Funzioni testate: limit_speed, speed_modulus.
 
-TEST_CASE("Testing Speed Limit") {
+TEST_CASE("Testing Maximum Speed Limit") {
   pf::Velocity v_fast{30.0, 40.0};
   pf::Velocity v_lim = pf::limit_speed(3.0, 10.0, v_fast);
 
@@ -167,6 +167,25 @@ TEST_CASE("Testing Speed Limit") {
   CHECK((v_lim.v_x / v_lim.v_y) == doctest::Approx(30.0 / 40.0));
   CHECK(v_lim.v_x == doctest::Approx(6.0));
   CHECK(v_lim.v_y == doctest::Approx(8.0));
+}
+
+TEST_CASE("Testing Minimum Speed Limit") {
+  pf::Velocity v_slow{1.2, 1.6};
+  pf::Velocity v_lim = pf::limit_speed(3.0, 10.0, v_slow);
+
+  CHECK(pf::speed_modulus(v_lim) == doctest::Approx(3.0));
+  CHECK((v_lim.v_x / v_lim.v_y) == doctest::Approx(1.2 / 1.6));
+  CHECK(v_lim.v_x == doctest::Approx(1.8));
+  CHECK(v_lim.v_y == doctest::Approx(2.4));
+}
+
+TEST_CASE("Testing Null Modulus") {
+  pf::Velocity v_null{0.0, 0.0};
+  pf::Velocity v_lim = pf::limit_speed(3.0, 2.0, v_null);
+
+  CHECK(pf::speed_modulus(v_lim) == doctest::Approx(0.0));
+  CHECK(v_lim.v_x == doctest::Approx(0.0));
+  CHECK(v_lim.v_y == doctest::Approx(0.0));
 }
 
 // TEST 6: Invarianti della Classe (d_s << d per avere lo stormo)

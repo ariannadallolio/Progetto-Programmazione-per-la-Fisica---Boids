@@ -1,5 +1,7 @@
-#include "doctest.h"
+#include <stdexcept>
+
 #include "boids.hpp"
+#include "doctest.h"
 #include "flock.hpp"
 #include "statistics.hpp"
 
@@ -10,7 +12,8 @@ TEST_CASE("Testing Vector Operators") {
   pf::Position p1{10.0, 20.0};
   pf::Position p2{5.0, 5.0};
 
-  // Verifica che la sottrazione e la somma componente per componente siano corrette.
+  // Verifica che la sottrazione e la somma componente per componente siano
+  // corrette.
   SUBCASE("Position Addition & Subtraction") {
     pf::Position res_sub = p1 - p2;
     CHECK(res_sub.x == doctest::Approx(5.0));
@@ -22,7 +25,6 @@ TEST_CASE("Testing Vector Operators") {
   }
 }
 
-
 // TEST 2: Geometria Toroidale (gestione dei bordi nello spazio toroidale)
 // Funzioni testate: toroidal_space e toroidal_difference.
 
@@ -30,7 +32,8 @@ TEST_CASE("Testing Toroidal Geometry") {
   double x_min = 0.0, x_max = 100.0;
   double y_min = 0.0, y_max = 100.0;
 
-  // Verifica che un boid che supera un bordo venga teletrasportato al lato opposto.
+  // Verifica che un boid che supera un bordo venga teletrasportato al lato
+  // opposto.
   SUBCASE("Toroidal Space Wrap-Around") {
     pf::Position out_right{105.0, 50.0};
     pf::Position wrapped_r =
@@ -43,7 +46,8 @@ TEST_CASE("Testing Toroidal Geometry") {
     CHECK(wrapped_l.x == doctest::Approx(95.0));
   }
 
-  // Verifica che la distanza calcolata scelga sempre il percorso più breve attraverso i bordi.
+  // Verifica che la distanza calcolata scelga sempre il percorso più breve
+  // attraverso i bordi.
   SUBCASE("Toroidal Difference (Shortest Distance)") {
     pf::Position p_left{5.0, 50.0};
     pf::Position p_right{95.0, 50.0};
@@ -54,7 +58,6 @@ TEST_CASE("Testing Toroidal Geometry") {
   }
 }
 
-
 // TEST 3: Rilevamento dei Vicini
 // Funzione testata: neighbours_control.
 
@@ -64,10 +67,8 @@ TEST_CASE("Testing Neighbours Detection") {
   // Verifica che due boid ai lati opposti della mappa si riconoscano
   // come vicini calcolando la distanza minima attraverso il bordo toroidale.
   SUBCASE("Neighbours found across the toroidal border") {
-    std::vector<pf::Boid> boids = {
-        {{0, 0}, {98.0, 50.0}},
-        {{0, 0}, {2.0, 50.0}}
-    };
+    std::vector<pf::Boid> boids = {{{0, 0}, {98.0, 50.0}},
+                                   {{0, 0}, {2.0, 50.0}}};
 
     std::vector<int> neighbours =
         pf::neighbours_control(0, 10.0, boids, x_min, x_max, y_min, y_max);
@@ -76,7 +77,6 @@ TEST_CASE("Testing Neighbours Detection") {
     CHECK(neighbours[0] == 1);
   }
 }
-
 
 // TEST 4: Regole di Volo di Reynolds
 // Funzioni testate: separation, alignment, cohesion.
@@ -87,42 +87,36 @@ TEST_CASE("Testing Flight Rules") {
 
   // Verifica che la regola induca un allontanamento progressivo dai vicini.
   SUBCASE("Rule 1: Separation (Basic Repulsion)") {
-    std::vector<pf::Boid> boids = {
-        {{0, 0}, {10.0, 10.0}},
-        {{0, 0}, {11.0, 10.0}}
-    };
+    std::vector<pf::Boid> boids = {{{0, 0}, {10.0, 10.0}},
+                                   {{0, 0}, {11.0, 10.0}}};
     std::vector<int> neighbours = {1};
 
-    pf::Velocity v1 =
-        pf::separation(1.0, 5.0, 0, neighbours, boids,
-                       x_min, x_max, y_min, y_max);
+    pf::Velocity v1 = pf::separation(1.0, 5.0, 0, neighbours, boids, x_min,
+                                     x_max, y_min, y_max);
 
     CHECK(v1.v_x == doctest::Approx(-1.0));
     CHECK(v1.v_y == doctest::Approx(0.0));
   }
 
-  // Verifica che i boids ignorino la separazione se la loro distanza è maggiore di d_s.
+  // Verifica che i boids ignorino la separazione se la loro distanza è maggiore
+  // di d_s.
   SUBCASE("Rule 1: Separation ignores neighbours beyond d_s") {
-    std::vector<pf::Boid> boids = {
-        {{0, 0}, {10.0, 10.0}},
-        {{0, 0}, {18.0, 10.0}}
-    };
+    std::vector<pf::Boid> boids = {{{0, 0}, {10.0, 10.0}},
+                                   {{0, 0}, {18.0, 10.0}}};
     std::vector<int> neighbours = {1};
 
-    pf::Velocity v1 =
-        pf::separation(1.0, 5.0, 0, neighbours, boids,
-                       x_min, x_max, y_min, y_max);
+    pf::Velocity v1 = pf::separation(1.0, 5.0, 0, neighbours, boids, x_min,
+                                     x_max, y_min, y_max);
 
     CHECK(v1.v_x == doctest::Approx(0.0));
     CHECK(v1.v_y == doctest::Approx(0.0));
   }
 
-  // Verifica che il boid sterzi per allinearsi alla media delle velocità dei compagni.
+  // Verifica che il boid sterzi per allinearsi alla media delle velocità dei
+  // compagni.
   SUBCASE("Rule 2: Alignment") {
-    std::vector<pf::Boid> boids = {
-        {{0.0, 0.0}, {10.0, 10.0}},
-        {{10.0, 0.0}, {12.0, 10.0}}
-    };
+    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
+                                   {{10.0, 0.0}, {12.0, 10.0}}};
     std::vector<int> neighbours = {1};
 
     pf::Velocity v2 = pf::alignment(0.5, 0, neighbours, boids);
@@ -131,28 +125,24 @@ TEST_CASE("Testing Flight Rules") {
     CHECK(v2.v_y == doctest::Approx(0.0));
   }
 
-  // Verifica che il boid modifichi la traiettoria per volare verso il centro di massa.
+  // Verifica che il boid modifichi la traiettoria per volare verso il centro di
+  // massa.
   SUBCASE("Rule 3: Cohesion") {
     std::vector<pf::Boid> boids = {
-        {{0, 0}, {0.0, 0.0}},
-        {{0, 0}, {10.0, 0.0}},
-        {{0, 0}, {10.0, 10.0}}
-    };
+        {{0, 0}, {0.0, 0.0}}, {{0, 0}, {10.0, 0.0}}, {{0, 0}, {10.0, 10.0}}};
     std::vector<int> neighbours = {1, 2};
 
     pf::Velocity v3 =
-        pf::cohesion(0.1, 0, neighbours, boids,
-                     x_min, x_max, y_min, y_max);
+        pf::cohesion(0.1, 0, neighbours, boids, x_min, x_max, y_min, y_max);
 
     CHECK(v3.v_x == doctest::Approx(1.0));
     CHECK(v3.v_y == doctest::Approx(0.5));
   }
 
-  // Verifica il comportamento di sicurezza: se non ci sono vicini, non c'è variazione di velocità.
+  // Verifica il comportamento di sicurezza: se non ci sono vicini, non c'è
+  // variazione di velocità.
   SUBCASE("Alignment and cohesion with no neighbours return zero") {
-    std::vector<pf::Boid> boids = {
-        {{5.0, 5.0}, {10.0, 10.0}}
-    };
+    std::vector<pf::Boid> boids = {{{5.0, 5.0}, {10.0, 10.0}}};
     std::vector<int> neighbours = {};
 
     pf::Velocity v2 = pf::alignment(0.5, 0, neighbours, boids);
@@ -160,13 +150,11 @@ TEST_CASE("Testing Flight Rules") {
     CHECK(v2.v_y == doctest::Approx(0.0));
 
     pf::Velocity v3 =
-        pf::cohesion(0.1, 0, neighbours, boids,
-                     x_min, x_max, y_min, y_max);
+        pf::cohesion(0.1, 0, neighbours, boids, x_min, x_max, y_min, y_max);
     CHECK(v3.v_x == doctest::Approx(0.0));
     CHECK(v3.v_y == doctest::Approx(0.0));
   }
 }
-
 
 // TEST 5: Limite di Velocità (per garantire l'incontro dei boid)
 // Funzioni testate: limit_speed, speed_modulus.
@@ -181,32 +169,26 @@ TEST_CASE("Testing Speed Limit") {
   CHECK(v_lim.v_y == doctest::Approx(8.0));
 }
 
-
 // TEST 6: Invarianti della Classe (d_s << d per avere lo stormo)
 // Funzioni testate: Costruttore principale di Flock.
 
 TEST_CASE("Testing Flock Invariants (Exceptions)") {
   CHECK_THROWS_AS(
-      pf::Flock(-5, 0.05, 0.05, 0.005, 100, 20, 1.0,
-                0, 800, 0, 600),
+      pf::Flock(-5, 0.05, 0.05, 0.005, 100, 20, 30.0, 1.0, 0, 800, 0, 600),
       std::runtime_error);
 
   CHECK_THROWS_AS(
-      pf::Flock(10, 0.05, 0.05, 0.005, 10, 20, 1.0,
-                0, 800, 0, 600),
+      pf::Flock(10, 0.05, 0.05, 0.005, 10, 20, 30.0, 1.0, 0, 800, 0, 600),
       std::runtime_error);
 
   CHECK_THROWS_AS(
-      pf::Flock(10, -0.05, 0.05, 0.005, 100, 20, 1.0,
-                0, 800, 0, 600),
+      pf::Flock(10, -0.05, 0.05, 0.005, 100, 20, 30.0, 1.0, 0, 800, 0, 600),
       std::runtime_error);
 
   CHECK_THROWS_AS(
-      pf::Flock(10, 0.05, 0.05, 0.005, 100, 20, -1.0,
-                0, 800, 0, 600),
+      pf::Flock(10, 0.05, 0.05, 0.005, 100, 20, 30.0, -1.0, 0, 800, 0, 600),
       std::runtime_error);
 }
-
 
 // TEST 7: Statistiche dello Stormo
 // Funzioni testate: pf::mean_distance, pf::mean_velocity e deviazioni standard.
@@ -216,10 +198,8 @@ TEST_CASE("Testing Flock Statistics") {
 
   // Verifica i calcoli statistici per i moduli delle velocità.
   SUBCASE("Speed mean and standard deviation") {
-    std::vector<pf::Boid> boids = {
-        {{0.0, 0.0}, {3.0, 4.0}},
-        {{0.0, 0.0}, {0.0, 12.0}}
-    };
+    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {3.0, 4.0}},
+                                   {{0.0, 0.0}, {0.0, 12.0}}};
 
     double m_vel = pf::mean_velocity(boids);
     CHECK(m_vel == doctest::Approx(8.5));
@@ -228,41 +208,31 @@ TEST_CASE("Testing Flock Statistics") {
 
   // Verifica i calcoli statistici per le distanze spaziali inter-boid.
   SUBCASE("Distance mean and standard deviation") {
-    std::vector<pf::Boid> boids = {
-        {{0.0, 0.0}, {0.0, 0.0}},
-        {{3.0, 4.0}, {0.0, 0.0}}
-    };
+    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {0.0, 0.0}},
+                                   {{3.0, 4.0}, {0.0, 0.0}}};
 
-    double m_dist =
-        pf::mean_distance(boids, x_min, x_max, y_min, y_max);
+    double m_dist = pf::mean_distance(boids, x_min, x_max, y_min, y_max);
 
     CHECK(m_dist == doctest::Approx(5.0));
-    CHECK(pf::std_dev_distance(
-              boids, m_dist, x_min, x_max, y_min, y_max)
-          == doctest::Approx(0.0));
+    CHECK(pf::std_dev_distance(boids, m_dist, x_min, x_max, y_min, y_max) ==
+          doctest::Approx(0.0));
   }
 
   // Edge case: handling a single boid without division by zero.
   SUBCASE("Edge cases: handling 1 boid without crashing") {
-    std::vector<pf::Boid> single_boid = {
-        {{10.0, 10.0}, {3.0, 4.0}}
-    };
+    std::vector<pf::Boid> single_boid = {{{10.0, 10.0}, {3.0, 4.0}}};
 
-    double m_dist =
-        pf::mean_distance(single_boid, x_min, x_max, y_min, y_max);
+    double m_dist = pf::mean_distance(single_boid, x_min, x_max, y_min, y_max);
 
     CHECK(m_dist == doctest::Approx(0.0));
-    CHECK(pf::std_dev_distance(
-              single_boid, m_dist, x_min, x_max, y_min, y_max)
-          == doctest::Approx(0.0));
+    CHECK(pf::std_dev_distance(single_boid, m_dist, x_min, x_max, y_min,
+                               y_max) == doctest::Approx(0.0));
 
     double m_vel = pf::mean_velocity(single_boid);
     CHECK(m_vel == doctest::Approx(5.0));
-    CHECK(pf::std_dev_velocity(single_boid, m_vel)
-          == doctest::Approx(0.0));
+    CHECK(pf::std_dev_velocity(single_boid, m_vel) == doctest::Approx(0.0));
   }
 }
-
 
 // TEST 8: Evoluzione Temporale (Delta t)
 // Funzione testata: Flock::movement.
@@ -271,9 +241,8 @@ TEST_CASE("Testing Time Evolution (Delta t)") {
   double x_min = 0.0, x_max = 100.0;
   double y_min = 0.0, y_max = 100.0;
 
-  pf::Flock flock(
-      2, 0.1, 0.1, 0.1, 200.0, 5.0, 1.0,
-      x_min, x_max, y_min, y_max);
+  pf::Flock flock(2, 0.1, 0.1, 0.1, 200.0, 5.0, 10.0, 1.0, x_min, x_max, y_min,
+                  y_max);
 
   flock.movement();
 
@@ -295,7 +264,6 @@ TEST_CASE("Testing Time Evolution (Delta t)") {
     CHECK(pf::speed_modulus(b.vel) <= doctest::Approx(10.0));
   }
 }
-
 
 // TEST 9: Generazione dei Boid
 // Funzione testata: generate_boid.
@@ -326,7 +294,6 @@ TEST_CASE("Testing Boid Generation") {
   }
 }
 
-
 // TEST 10: Controllo dei Vicini
 // Funzione testata: neighbours_control.
 
@@ -335,33 +302,26 @@ TEST_CASE("Testing Neighbours Control") {
   double y_min = 0.0, y_max = 100.0;
 
   SUBCASE("The boid does not count itself as a neighbour") {
-    std::vector<pf::Boid> boids = {
-        {{0.0, 0.0}, {50.0, 50.0}},
-        {{0.0, 0.0}, {55.0, 50.0}}
-    };
+    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {50.0, 50.0}},
+                                   {{0.0, 0.0}, {55.0, 50.0}}};
 
     std::vector<int> neighbours =
-        pf::neighbours_control(0, 10.0, boids,
-                               x_min, x_max, y_min, y_max);
+        pf::neighbours_control(0, 10.0, boids, x_min, x_max, y_min, y_max);
 
     CHECK(neighbours.size() == 1);
     CHECK(neighbours[0] == 1);
   }
 
   SUBCASE("No neighbours are found outside the visual range") {
-    std::vector<pf::Boid> boids = {
-        {{0.0, 0.0}, {10.0, 10.0}},
-        {{0.0, 0.0}, {50.0, 50.0}}
-    };
+    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
+                                   {{0.0, 0.0}, {50.0, 50.0}}};
 
     std::vector<int> neighbours =
-        pf::neighbours_control(0, 10.0, boids,
-                               x_min, x_max, y_min, y_max);
+        pf::neighbours_control(0, 10.0, boids, x_min, x_max, y_min, y_max);
 
     CHECK(neighbours.empty());
   }
 }
-
 
 // TEST 11: Casi particolari delle statistiche
 // Funzioni testate: mean_distance, std_dev_distance,
@@ -371,24 +331,19 @@ TEST_CASE("Testing Statistics with Identical Values") {
   double x_min = 0.0, x_max = 100.0;
   double y_min = 0.0, y_max = 100.0;
 
-  std::vector<pf::Boid> boids = {
-      {{3.0, 4.0}, {10.0, 10.0}},
-      {{3.0, 4.0}, {10.0, 10.0}},
-      {{3.0, 4.0}, {10.0, 10.0}}
-  };
+  std::vector<pf::Boid> boids = {{{3.0, 4.0}, {10.0, 10.0}},
+                                 {{3.0, 4.0}, {10.0, 10.0}},
+                                 {{3.0, 4.0}, {10.0, 10.0}}};
 
   double m_vel = pf::mean_velocity(boids);
   CHECK(m_vel == doctest::Approx(5.0));
 
-  CHECK(pf::std_dev_velocity(boids, m_vel)
-        == doctest::Approx(0.0));
+  CHECK(pf::std_dev_velocity(boids, m_vel) == doctest::Approx(0.0));
 
-  double m_dist =
-      pf::mean_distance(boids, x_min, x_max, y_min, y_max);
+  double m_dist = pf::mean_distance(boids, x_min, x_max, y_min, y_max);
 
   CHECK(m_dist == doctest::Approx(0.0));
 
-  CHECK(pf::std_dev_distance(
-            boids, m_dist, x_min, x_max, y_min, y_max)
-        == doctest::Approx(0.0));
+  CHECK(pf::std_dev_distance(boids, m_dist, x_min, x_max, y_min, y_max) ==
+        doctest::Approx(0.0));
 }

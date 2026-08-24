@@ -1,11 +1,12 @@
 #include <SFML/Graphics.hpp>
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
+
 #include "boids.hpp"
 #include "flock.hpp"
 #include "statistics.hpp"
-#include <cmath>
 
 int main() {
   try {
@@ -15,7 +16,6 @@ int main() {
     double const y_max = 600;
 
     int n{};
-    int ngen{};
     std::cout << "How many boids?" << '\n';
     if (!(std::cin >> n)) {
       throw std::runtime_error{
@@ -25,24 +25,17 @@ int main() {
       throw std::runtime_error{
           "Error! The number of boids has to be positive."};
     }
-    std::cout << "How many iterations?" << '\n';
 
-    if (!(std::cin >> ngen)) {
-      throw std::runtime_error{
-          "Error! The number of iterations has to be an integer."};
-    }
-    if (ngen <= 0) {
-      throw std::runtime_error{
-          "Error! The number of iterations has to be positive."};
-    }
-
-    pf::Flock prova(n, 0.08, 0.15, 0.003, 100, 30, 3.0, 12.0, 1.0, x_min, x_max, y_min,
+    pf::Flock prova(n, 0.08, 0.15, 0.003, 100, 30, 3.0, 12.0, 1.0, x_min, x_max,
+                    y_min,
                     y_max);  // oppure da dare in input con txt
 
-    sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(x_max), static_cast<unsigned int>(y_max)), "Boids");
+    sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(x_max),
+                                          static_cast<unsigned int>(y_max)),
+                            "Boids");
     if (!window.isOpen()) {
-    throw std::runtime_error{"Errore: impossibile aprire la finestra SFML"};
-}
+      throw std::runtime_error{"Errore: impossibile aprire la finestra SFML"};
+    }
     window.setFramerateLimit(60);
     std::vector<sf::ConvexShape> triangles;
     triangles.reserve(
@@ -63,6 +56,8 @@ int main() {
     }
 
     // GAME LOOP
+    int frame_count = 0;
+    int const print_every = 60;  // con 60 fps, equivale a "una volta al secondo"
 
     while (window.isOpen()) {
       sf::Event event;
@@ -74,6 +69,12 @@ int main() {
       }
       // aggiorna simulazione
       prova.movement();
+      //aggiorna contatore frame e quando raggiunge multipli di 60 stampa media e dev 
+      ++frame_count;
+      if (frame_count%(print_every) == 0){
+      print(prova.boids(), x_min, x_max, y_min, y_max);
+      }
+
       // aggiorna triangoli
       std::vector<pf::Boid> const& boids = prova.boids();
 
@@ -90,14 +91,17 @@ int main() {
             boid.vel.v_x);  // il - perchè la y cresce verso il basso su SFML,
                             // così abbiamo la direzione giusta
 
-        double const angle_deg = angle_rad * 180.0 / std::acos(-1.0); //pi greco
+        double const angle_deg =
+            angle_rad * 180.0 / std::acos(-1.0);  // pi greco
 
         triangles[i].setRotation(static_cast<float>(angle_deg));
       }
 
       // disegno
 
-      window.clear(sf::Color(20, 20, 30)); //crea un colore usando il modello RGB (questo è molto scuro)
+      window.clear(sf::Color(
+          20, 20,
+          30));  // crea un colore usando il modello RGB (questo è molto scuro)
 
       for (sf::ConvexShape const& triangle : triangles) {
         window.draw(triangle);

@@ -1,10 +1,9 @@
-#ifndef statistics_HPP
-#define statistics_HPP
+#include "statistics.hpp"
 
+#include <cassert>
+#include <cmath>
 #include <iostream>
-#include <vector>
 
-#include "boids.cpp"
 
 namespace pf {
 
@@ -94,5 +93,3 @@ void print(std::vector<Boid> const& boid, double x_min, double x_max,
             << std_dev_velocity_ << "\n \n \n";
 }
 }  // namespace pf
-
-#endif

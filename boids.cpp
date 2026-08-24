@@ -1,8 +1,7 @@
-#ifndef BOIDS_HPP
-#define BOIDS_HPP
+#include "boids.hpp"
 
-#include <cmath>
 #include <cassert>
+#include <cmath>
 
 namespace pf {
 struct Velocity {
@@ -146,5 +145,3 @@ double speed_modulus(Velocity const& a) {
   return std::sqrt(a.v_x * a.v_x + a.v_y * a.v_y);
 }
 }  // namespace pf
-
-#endif

@@ -8,6 +8,9 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/boids.cpp" "CMakeFiles/boids.t.dir/boids.cpp.o" "gcc" "CMakeFiles/boids.t.dir/boids.cpp.o.d"
+  "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/flock.cpp" "CMakeFiles/boids.t.dir/flock.cpp.o" "gcc" "CMakeFiles/boids.t.dir/flock.cpp.o.d"
+  "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/statistics.cpp" "CMakeFiles/boids.t.dir/statistics.cpp.o" "gcc" "CMakeFiles/boids.t.dir/statistics.cpp.o.d"
   "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/test.t.cpp" "CMakeFiles/boids.t.dir/test.t.cpp.o" "gcc" "CMakeFiles/boids.t.dir/test.t.cpp.o.d"
   )
 

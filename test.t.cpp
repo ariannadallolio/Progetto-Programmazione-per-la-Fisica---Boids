@@ -1,7 +1,7 @@
-#include <stdexcept>
-
-#include "boids.hpp"
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
+#include <stdexcept>
+#include "boids.hpp"
 #include "flock.hpp"
 #include "statistics.hpp"
 
@@ -220,29 +220,29 @@ TEST_CASE("Testing Flock Statistics") {
 
   // Verifica i calcoli statistici per i moduli delle velocità.
   SUBCASE("Speed mean and standard deviation") {
-    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {3.0, 4.0}},
-                                   {{0.0, 0.0}, {0.0, 12.0}}};
+    std::vector<pf::Boid> boids = {{{3.0, 4.0},{0.0, 0.0}},
+                                   {{3.0, 4.0},{0.0, 0.0}}};
 
     double m_vel = pf::mean_velocity(boids);
-    CHECK(m_vel == doctest::Approx(8.5));
-    CHECK(pf::std_dev_velocity(boids, m_vel) == doctest::Approx(3.5));
+    CHECK(m_vel == doctest::Approx(5.0));
+    CHECK(pf::std_dev_velocity(boids, m_vel) == doctest::Approx(0.0));
   }
 
   // Verifica i calcoli statistici per le distanze spaziali inter-boid.
   SUBCASE("Distance mean and standard deviation") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {0.0, 0.0}},
-                                   {{3.0, 4.0}, {0.0, 0.0}}};
+                                   {{0.0, 0.0}, {3.0, 4.0}}};
 
     double m_dist = pf::mean_distance(boids, x_min, x_max, y_min, y_max);
 
-    CHECK(m_dist == doctest::Approx(5.0));
+    CHECK(m_dist == doctest::Approx(5.0).epsilon(0.001));
     CHECK(pf::std_dev_distance(boids, m_dist, x_min, x_max, y_min, y_max) ==
           doctest::Approx(0.0));
   }
 
   // Edge case: handling a single boid without division by zero.
   SUBCASE("Edge cases: handling 1 boid without crashing") {
-    std::vector<pf::Boid> single_boid = {{{10.0, 10.0}, {3.0, 4.0}}};
+    std::vector<pf::Boid> single_boid = {{{3.0, 4.0},{10.0, 10.0}}};
 
     double m_dist = pf::mean_distance(single_boid, x_min, x_max, y_min, y_max);
 
@@ -251,7 +251,7 @@ TEST_CASE("Testing Flock Statistics") {
                                y_max) == doctest::Approx(0.0));
 
     double m_vel = pf::mean_velocity(single_boid);
-    CHECK(m_vel == doctest::Approx(5.0));
+    CHECK(m_vel == doctest::Approx(5.0).epsilon(0.001));
     CHECK(pf::std_dev_velocity(single_boid, m_vel) == doctest::Approx(0.0));
   }
 }

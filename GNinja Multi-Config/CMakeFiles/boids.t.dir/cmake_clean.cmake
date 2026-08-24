@@ -1,4 +1,10 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/boids.t.dir/boids.cpp.o"
+  "CMakeFiles/boids.t.dir/boids.cpp.o.d"
+  "CMakeFiles/boids.t.dir/flock.cpp.o"
+  "CMakeFiles/boids.t.dir/flock.cpp.o.d"
+  "CMakeFiles/boids.t.dir/statistics.cpp.o"
+  "CMakeFiles/boids.t.dir/statistics.cpp.o.d"
   "CMakeFiles/boids.t.dir/test.t.cpp.o"
   "CMakeFiles/boids.t.dir/test.t.cpp.o.d"
   "boids.t"

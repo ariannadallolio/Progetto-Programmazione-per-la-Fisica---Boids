@@ -52,7 +52,7 @@ target_link_libraries(boids PRIVATE sfml-graphics)
 if (BUILD_TESTING)
 
   # aggiungi l'eseguibile progetto.t
-add_executable(boids.t test.t.cpp)
+add_executable(boids.t test.t.cpp boids.cpp flock.cpp statistics.cpp)
   # aggiungi l'eseguibile progetto.t alla lista dei test
   add_test(NAME boids.t COMMAND boids.t)
 

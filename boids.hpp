@@ -61,10 +61,10 @@ Velocity operator*(double c, Velocity const& a) {
 Velocity operator*(Velocity const& a, double c) { return c * a; }
 
 bool operator==(Position const& a, Position const& b) {
-  return {a.x == b.x && a.y == b.y};
+  return (a.x == b.x && a.y == b.y);
 }
 
-bool operator!=(Position const& a, Position const& b) { return {!(a == b)}; }
+bool operator!=(Position const& a, Position const& b) { return (!(a == b)); }
 
 /*
 double distance_squared(Position const& a, Position const& b) {

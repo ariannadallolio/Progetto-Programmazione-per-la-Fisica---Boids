@@ -1,10 +1,10 @@
+#include "flock.hpp"
+
 #include <algorithm>
-#include <numbers>
+#include <cassert>
+#include <cmath>
 #include <random>
 #include <stdexcept>
-#include <vector>
-
-#include "boids.hpp"
 
 namespace pf {
 
@@ -128,51 +128,6 @@ Velocity cohesion(double c, int boid_to_check,
   return v3;
 }
 
-double mean_distance(std::vector<Boid> const& boid, double x_min, double x_max,
-                     double y_min, double y_max) {  // distanza media tra boids
-  assert(!boid.empty());
-  int n = static_cast<int>(boid.size());
-  if (n == 1) {
-    return 0.0;
-  }
-  double sum{0.0};
-  for (int i = 0; i != n; ++i) {
-    for (int j = i + 1; j != n; j++) {
-      auto const i_sz = static_cast<std::size_t>(i);
-      auto const j_sz = static_cast<std::size_t>(j);
-      sum += std::sqrt(toroidal_distance_squared(boid[i_sz].pos, boid[j_sz].pos,
-                                                 x_min, x_max, y_min, y_max));
-    }
-  }
-  double const n_pairs = n * (n - 1.0) / 2.0;
-  return sum * (1.0 / n_pairs);
-}
-
-// disperione che mi dice quando sono divere tra loro le distanze tra coppie,
-// vogliamo farla rispetto al centro i massa?
-double std_dev_distance(std::vector<Boid> const& boid, double const& mean,
-                        double x_min, double x_max, double y_min,
-                        double y_max) {
-  assert(!boid.empty());
-  int n = static_cast<int>(boid.size());
-  if (n == 1) {
-    return 0.0;
-  }
-  // double const mean = mean_distance(boid, x_min, x_max, y_min, y_max);
-  double sum{0.0};
-  for (int i = 0; i != n; ++i) {
-    for (int j = i + 1; j != n; j++) {
-      auto const i_sz = static_cast<std::size_t>(i);
-      auto const j_sz = static_cast<std::size_t>(j);
-      double const distance_ij = std::sqrt(toroidal_distance_squared(
-          boid[i_sz].pos, boid[j_sz].pos, x_min, x_max, y_min, y_max));
-      double const difference = distance_ij - mean;
-      sum += difference * difference;
-    }
-  }
-  double const n_pairs = n * (n - 1.0) / 2.0;
-  return std::sqrt(sum / n_pairs);
-}
 
 Velocity limit_speed(double v_max, Velocity v_tot, double speed_modulus_) {
   assert(speed_modulus_ > 0.0);
@@ -194,7 +149,7 @@ class Flock {
   double a_;  //<1
   double c_;  //<1
   double d_;
-  double d_s_;          //<d
+  double d_s_;    //<d
   double v_max_;  // double v_max_;
   double
       dt_;  // istante di tempo ogni quanto si aggiornano velocità e posizione
@@ -210,8 +165,8 @@ class Flock {
 
  public:
   // costruttore, Member Initilisation List
-  Flock(int n, double s, double a, double c, double d, double d_s, double v_max, double dt,
-        double x_min, double x_max, double y_min, double y_max)
+  Flock(int n, double s, double a, double c, double d, double d_s, double v_max,
+        double dt, double x_min, double x_max, double y_min, double y_max)
       : n_{n},
         s_{s},
         a_{a},

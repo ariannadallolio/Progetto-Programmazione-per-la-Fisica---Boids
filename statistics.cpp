@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 
+
 namespace pf {
 
 double mean_distance(std::vector<Boid> const& boid, double x_min, double x_max,

@@ -1,12 +1,13 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.h"
 #include <stdexcept>
+
 #include "boids.hpp"
+#include "doctest.h"
 #include "flock.hpp"
 #include "statistics.hpp"
 
 // TEST 1: Operatori Vettoriali
-// Funzioni testate: operator+ e operator- della struct Position.
+// Funzioni testate: operator+ e operator- della struct Position. !!SI POSSONO TESTARE GLI ALTRI
 
 TEST_CASE("Testing Vector Operators") {
   pf::Position p1{10.0, 20.0};
@@ -26,7 +27,7 @@ TEST_CASE("Testing Vector Operators") {
 }
 
 // TEST 2: Geometria Toroidale (gestione dei bordi nello spazio toroidale)
-// Funzioni testate: toroidal_space e toroidal_difference.
+// Funzioni testate: toroidal_space e toroidal_difference. !!TESTARE ANCHE OUT SOPRA E SOTTO
 
 TEST_CASE("Testing Toroidal Geometry") {
   double x_min = 0.0, x_max = 100.0;
@@ -47,7 +48,7 @@ TEST_CASE("Testing Toroidal Geometry") {
   }
 
   // Verifica che la distanza calcolata scelga sempre il percorso più breve
-  // attraverso i bordi.
+  // attraverso i bordi. !!TESTARE ANCHE SOPRA E SOTTO
   SUBCASE("Toroidal Difference (Shortest Distance)") {
     pf::Position p_left{5.0, 50.0};
     pf::Position p_right{95.0, 50.0};
@@ -61,7 +62,7 @@ TEST_CASE("Testing Toroidal Geometry") {
 // TEST 3: Rilevamento dei Vicini
 // Funzione testata: neighbours_control.
 
-TEST_CASE("Testing Neighbours Detection") {
+TEST_CASE("Testing Neighbours Detection") { //TESTARE ANCHE IL CASO NORMALE
   double x_min = 0.0, x_max = 100.0, y_min = 0.0, y_max = 100.0;
 
   // Verifica che due boid ai lati opposti della mappa si riconoscano
@@ -215,13 +216,13 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
 // TEST 7: Statistiche dello Stormo
 // Funzioni testate: pf::mean_distance, pf::mean_velocity e deviazioni standard.
 
-TEST_CASE("Testing Flock Statistics") {
+TEST_CASE("Testing Flock Statistics") { //!!TESTA ANCHE UN CALCOLO DI DEV STD NON SOLO 0
   double x_min = 0.0, x_max = 100.0, y_min = 0.0, y_max = 100.0;
 
   // Verifica i calcoli statistici per i moduli delle velocità.
   SUBCASE("Speed mean and standard deviation") {
-    std::vector<pf::Boid> boids = {{{3.0, 4.0},{0.0, 0.0}},
-                                   {{3.0, 4.0},{0.0, 0.0}}};
+    std::vector<pf::Boid> boids = {{{3.0, 4.0}, {0.0, 0.0}},
+                                   {{3.0, 4.0}, {0.0, 0.0}}};
 
     double m_vel = pf::mean_velocity(boids);
     CHECK(m_vel == doctest::Approx(5.0));
@@ -242,7 +243,7 @@ TEST_CASE("Testing Flock Statistics") {
 
   // Edge case: handling a single boid without division by zero.
   SUBCASE("Edge cases: handling 1 boid without crashing") {
-    std::vector<pf::Boid> single_boid = {{{3.0, 4.0},{10.0, 10.0}}};
+    std::vector<pf::Boid> single_boid = {{{3.0, 4.0}, {10.0, 10.0}}};
 
     double m_dist = pf::mean_distance(single_boid, x_min, x_max, y_min, y_max);
 
@@ -349,6 +350,8 @@ TEST_CASE("Testing Neighbours Control") {
 // Funzioni testate: mean_distance, std_dev_distance,
 // mean_velocity e std_dev_velocity.
 
+
+/* FORSE NON SERVE! NON DOVREBBE SUCCEDERE CHE I BOID SI SOVRAPPONGANO
 TEST_CASE("Testing Statistics with Identical Values") {
   double x_min = 0.0, x_max = 100.0;
   double y_min = 0.0, y_max = 100.0;
@@ -369,3 +372,4 @@ TEST_CASE("Testing Statistics with Identical Values") {
   CHECK(pf::std_dev_distance(boids, m_dist, x_min, x_max, y_min, y_max) ==
         doctest::Approx(0.0));
 }
+        */

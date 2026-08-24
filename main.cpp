@@ -60,7 +60,7 @@ int main() {
     int const print_every = 60;  // con 60 fps, equivale a "una volta al secondo"
 
     while (window.isOpen()) {
-      sf::Event event;
+      sf::Event event{};
 
       while (window.pollEvent(event)) {
         if (event.type == sf::Event::Closed) {

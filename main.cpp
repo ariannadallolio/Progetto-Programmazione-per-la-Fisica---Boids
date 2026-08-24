@@ -1,7 +1,9 @@
+#include <SFML/Graphics.hpp>
 #include <cstdlib>
 #include <iostream>
+#include <numbers>
 #include <stdexcept>
-
+#include <boids.cpp>
 #include "flock.cpp"
 #include "statistics.cpp"
 
@@ -9,7 +11,7 @@ int main() {
   try {
     double const x_min = 0.0;
     double const x_max = 800;
-    double const y_min = 0.0; 
+    double const y_min = 0.0;
     double const y_max = 600;
 
     int n{};
@@ -34,16 +36,83 @@ int main() {
           "Error! The number of iterations has to be positive."};
     }
 
-    pf::Flock prova(n, 0.05, 0.05, 0.005, 100, 20, 1.0, x_min, x_max, y_min,
+    pf::Flock prova(n, 0.05, 0.05, 0.005, 100, 20, 10, 1.0, x_min, x_max, y_min,
                     y_max);  // oppure da dare in input con txt
 
-    for (int i = 0; i != ngen; ++i) {
-      prova.movement();
-      pf::print(prova.boids(), x_min, x_max, y_min,
-                y_max);  // richiamo funzione esterna al flock e le passo
-                         // una funzione interna al flock
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Boids");
+    window.setFramerateLimit(60);
+    std::vector<sf::ConvexShape> triangles;
+    triangles.reserve(
+        prova.boids().size());  // serve a preparare lo spazio nel vettore
+    int n = static_cast<int>(prova.boids().size());
+    for (int i = 0; i != n; ++i) {
+      sf::ConvexShape triangle;
+      triangle.setPointCount(3);  // creazione 3 vertici
+      // creazione triangolo, SFML USA I FLOAT
+      triangle.setPoint(0, sf::Vector2f(12.f, 0.f));
+      triangle.setPoint(1, sf::Vector2f(-8.f, -6.f));
+      triangle.setPoint(2, sf::Vector2f(-8.f, 6.f));  //  l'angolo
+      // di 0 gradi corrisponde sempre alla direzione destra, conviene
+      // disegnarlo già con la punta a dx così che segua la direzione
+      triangle.setFillColor(sf::Color::White);
+      triangle.setOrigin(
+          {0.f, 0.f});  // per come abbiamo costruito i vertici è comodo
+      triangles.push_back(triangle);
     }
-  } catch (std::exception const& e) {  // Cattura runtime_error
+
+    // GAME LOOP
+
+    while (window.isOpen()) {
+      sf::Event event;
+
+      while (window.pollEvent(event)) {
+        if (event.type == sf::Event::Closed) {
+          window.close();
+        }
+      }
+      // aggiorna simulazione
+      prova.movement();
+      // aggiorna triangoli
+      std::vector<pf::Boid> const& boids = prova.boids();
+
+      for (std::size_t i = 0; i != boids.size(); ++i) {
+        pf::Boid const& boid = boids[i];
+        // Posizione del boid
+        triangles[i].setPosition(static_cast<float>(boid.pos.x),
+                                 static_cast<float>(boid.pos.y));
+
+        // direzione del boid
+
+        double const angle_rad = std::atan2(
+            -boid.vel.v_y,
+            boid.vel.v_x);  // il - perchè la y cresce verso il basso su SFML,
+                            // così abbiamo la direzione giusta
+
+        double const angle_deg = angle_rad * 180.0 / std::acos(-1.0); //pi greco
+
+        triangles[i].setRotation(static_cast<float>(angle_deg));
+      }
+
+      // disegno
+
+      window.clear(sf::Color(20, 20, 30)); //crea un colore usando il modello RGB (questo è molto scuro)
+
+      for (sf::ConvexShape const& triangle : triangles) {
+        window.draw(triangle);
+      }
+
+      window.display();
+    }
+  }
+  /*
+
+    prova.movement();
+    pf::print(prova.boids(), x_min, x_max, y_min,
+              y_max);  // richiamo funzione esterna al flock e le passo
+                       // una funzione interna al flock
+*/
+
+  catch (std::exception const& e) {  // Cattura runtime_error
     std::cerr << e.what() << '\n';
     return EXIT_FAILURE;
   } catch (...) {

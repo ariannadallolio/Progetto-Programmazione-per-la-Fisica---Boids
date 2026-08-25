@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
-
+#include <fstream>
 #include "boids.hpp"
 #include "flock.hpp"
 #include "statistics.hpp"
@@ -15,6 +15,7 @@ int main() {
     double const y_min = 0.0;
     double const y_max = 600;
 
+    
     int n{};
     std::cout << "How many boids?" << '\n';
     if (!(std::cin >> n)) {
@@ -25,6 +26,14 @@ int main() {
       throw std::runtime_error{
           "Error! The number of boids has to be positive."};
     }
+
+
+   std::ifstream input_file{"parameters.txt"}; //in sola lettura
+   if(!input_file){
+    std::runtime_error{"Errore: file non trovato"};
+   }
+   
+
 
     pf::Flock prova(n, 0.08, 0.15, 0.003, 100, 30, 3.0, 12.0, 1.0, x_min, x_max,
                     y_min,

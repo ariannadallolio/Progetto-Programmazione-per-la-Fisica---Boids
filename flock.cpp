@@ -198,40 +198,33 @@ Space const& Flock::space() const { return space_; }
 void movement();
 
 void Flock::movement() {
-  std::vector<Boid> updatedboids{boids_};
+  std::vector<Velocity> new_velocities;
 
   int const n = static_cast<int>(boids_.size());
 
-  for (int j = 0; j != n; ++j) {
-    std::vector<int> neighbours = neighbours_control(j, par_.d, boids_, space_);
+  for (int i = 0; i != n; ++i) {
+    std::vector<int> neighbours = neighbours_control(i, par_.d, boids_, space_);
 
-    Velocity v1 = separation(par_.s, par_.d_s, j, neighbours, boids_, space_);
+    Velocity const v1 =
+        separation(par_.s, par_.d_s, i, neighbours, boids_, space_);
+    Velocity const v2 = alignment(par_.a, i, neighbours, boids_);
+    Velocity const v3 = cohesion(par_.c, i, neighbours, boids_, space_);
 
-    Velocity v2 = alignment(par_.a, j, neighbours, boids_);
+    auto const i_sz = static_cast<std::size_t>(i);
 
-    Velocity v3 = cohesion(par_.c, j, neighbours, boids_, space_);
-
-    auto const j_sz = static_cast<std::size_t>(j);
-
-    Velocity v_tot = boids_[j_sz].vel + v1 + v2 + v3;
-
-    v_tot = limit_speed(par_.v_min, par_.v_max, v_tot);
-
-    updatedboids[j_sz].vel = v_tot;
+    new_velocities.push_back(
+        limit_speed(par_.v_min, par_.v_max, boids_[i_sz].vel + v1 + v2 + v3));
   }
 
   for (int j = 0; j != n; ++j) {
     auto const j_sz = static_cast<std::size_t>(j);
-
-    boids_[j_sz].vel = updatedboids[j_sz].vel;
+    boids_[j].vel = new_velocities[j];
 
     Position newp = {boids_[j_sz].pos.x + par_.dt * boids_[j_sz].vel.v_x,
 
                      boids_[j_sz].pos.y + par_.dt * boids_[j_sz].vel.v_y};
 
-    newp = toroidal_space(newp, space_);
-
-    boids_[j_sz].pos = newp;
+    boids_[j_sz].pos = toroidal_space(newp, space_);
   }
 }
 

@@ -354,19 +354,19 @@ TEST_CASE("Testing Boid Generation") {
       0.0,
       100.0,
   };
+  double v_min = 3.0;
   double v_max = 10.0;
 
-  std::vector<pf::Boid> boids =
-      pf::generate_boid(100, v_max, space);
+  std::vector<pf::Boid> boids = pf::generate_boid(100, v_min, v_max, space);
 
   CHECK(boids.size() == 100);
 
   // Verifica che tutte le posizioni generate siano all'interno dello spazio.
   for (pf::Boid const& b : boids) {
-    CHECK(b.pos.x >= x_min);
-    CHECK(b.pos.x <= x_max);
-    CHECK(b.pos.y >= y_min);
-    CHECK(b.pos.y <= y_max);
+    CHECK(b.pos.x >= space.x_min);
+    CHECK(b.pos.x <= space.x_max);
+    CHECK(b.pos.y >= space.y_min);
+    CHECK(b.pos.y <= space.y_max);
 
     // Verifica che entrambe le componenti della velocità
     // siano comprese tra -v_max e +v_max.
@@ -381,15 +381,19 @@ TEST_CASE("Testing Boid Generation") {
 // Funzione testata: neighbours_control.
 
 TEST_CASE("Testing Neighbours Control") {
-  double x_min = 0.0, x_max = 100.0;
-  double y_min = 0.0, y_max = 100.0;
+  pf::Space space{
+      0.0,
+      100.0,
+      0.0,
+      100.0,
+  };
 
   SUBCASE("The boid does not count itself as a neighbour") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {50.0, 50.0}},
                                    {{0.0, 0.0}, {55.0, 50.0}}};
 
     std::vector<int> neighbours =
-        pf::neighbours_control(0, 10.0, boids, x_min, x_max, y_min, y_max);
+        pf::neighbours_control(0, 10.0, boids, space);
 
     CHECK(neighbours.size() == 1);
     CHECK(neighbours[0] == 1);
@@ -400,7 +404,7 @@ TEST_CASE("Testing Neighbours Control") {
                                    {{0.0, 0.0}, {50.0, 50.0}}};
 
     std::vector<int> neighbours =
-        pf::neighbours_control(0, 10.0, boids, x_min, x_max, y_min, y_max);
+        pf::neighbours_control(0, 10.0, boids, space);
 
     CHECK(neighbours.empty());
   }

@@ -22,8 +22,7 @@ struct Parameters {
 void check_parameters(Parameters const& par, Space const& space);
 
 std::vector<Boid> generate_boid(int n, double v_min, double v_max,
-                                Space const& space,
-                                std::default_random_engine& engine);
+                                Space const& space);
 
 std::vector<int> neighbours_control(int boid_to_check, double d,
                                     std::vector<Boid> const& boids,
@@ -57,7 +56,6 @@ class Flock {
   std::vector<Boid> const& boids() const;
   Parameters const& parameters() const;
   Space const& space() const;
-
 
   void movement();
 };

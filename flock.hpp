@@ -54,9 +54,9 @@ class Flock {
  public:
   Flock(int n, Parameters const& par, Space const& space);
 
-  std::vector<Boid> const& boids() const { return boids_; }
-  Parameters const& parameters() const { return par_; }
-  Space const& space() const { return space_; }
+  std::vector<Boid> const& boids();
+  Parameters const& parameters();
+  Space const& space();
 
 
   void movement();

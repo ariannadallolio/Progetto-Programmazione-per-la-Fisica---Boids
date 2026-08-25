@@ -192,6 +192,10 @@ Flock::Flock(int n, Parameters const& par, Space const& space)
 // getter per prendere il vettore di boid e usarlo x esempio per media e
 // dev std
 std::vector<Boid> const& Flock::boids() const { return boids_; }
+Parameters const& Flock::parameters() const { return par_; }
+Space const& Flock::space() const { return space_; }
+
+void movement();
 
 void Flock::movement() {
   std::vector<Boid> updatedboids{boids_};

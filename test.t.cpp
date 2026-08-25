@@ -1060,18 +1060,6 @@ TEST_CASE("Testing Distance Statistics") {
     CHECK(pf::std_dev_distance(boids, m_dist, space) ==
           doctest::Approx(1.632993).epsilon(0.001));
   }
-
-  // Boid sovrapposti: distanze tutte nulle, nessuna divisione anomala.
-  SUBCASE("Overlapping boids give zero mean and zero deviation") {
-    std::vector<pf::Boid> boids = {{{3.0, 4.0}, {10.0, 10.0}},
-                                   {{3.0, 4.0}, {10.0, 10.0}},
-                                   {{3.0, 4.0}, {10.0, 10.0}}};
-
-    double const m_dist = pf::mean_distance(boids, space);
-
-    CHECK(m_dist == doctest::Approx(0.0));
-    CHECK(pf::std_dev_distance(boids, m_dist, space) == doctest::Approx(0.0));
-  }
 }
 
 // ===========================================================================

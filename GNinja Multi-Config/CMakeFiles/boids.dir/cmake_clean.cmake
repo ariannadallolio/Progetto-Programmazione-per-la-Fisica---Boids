@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/boids.dir/flock.cpp.o.d"
   "CMakeFiles/boids.dir/main.cpp.o"
   "CMakeFiles/boids.dir/main.cpp.o.d"
+  "CMakeFiles/boids.dir/sfml.cpp.o"
+  "CMakeFiles/boids.dir/sfml.cpp.o.d"
   "CMakeFiles/boids.dir/statistics.cpp.o"
   "CMakeFiles/boids.dir/statistics.cpp.o.d"
   "boids"

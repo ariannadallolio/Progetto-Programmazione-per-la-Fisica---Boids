@@ -63,8 +63,8 @@ CMAKE_BINARY_DIR = "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/main.dir/all
-all: CMakeFiles/test.t.dir/all
+all: CMakeFiles/boids.dir/all
+all: CMakeFiles/boids.t.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -100,8 +100,8 @@ clean: CMakeFiles/ContinuousTest.dir/clean
 clean: CMakeFiles/ContinuousCoverage.dir/clean
 clean: CMakeFiles/ContinuousMemCheck.dir/clean
 clean: CMakeFiles/ContinuousSubmit.dir/clean
-clean: CMakeFiles/main.dir/clean
-clean: CMakeFiles/test.t.dir/clean
+clean: CMakeFiles/boids.dir/clean
+clean: CMakeFiles/boids.t.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -833,56 +833,56 @@ CMakeFiles/ContinuousSubmit.dir/clean:
 .PHONY : CMakeFiles/ContinuousSubmit.dir/clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/main.dir
+# Target rules for target CMakeFiles/boids.dir
 
 # All Build rule for target.
-CMakeFiles/main.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" --progress-num=1,2,3,4,5 "Built target main"
-.PHONY : CMakeFiles/main.dir/all
+CMakeFiles/boids.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" --progress-num=1,2,3,4,5,6 "Built target boids"
+.PHONY : CMakeFiles/boids.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/main.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" 5
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/main.dir/all
+CMakeFiles/boids.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" 6
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/boids.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" 0
-.PHONY : CMakeFiles/main.dir/rule
+.PHONY : CMakeFiles/boids.dir/rule
 
 # Convenience name for target.
-main: CMakeFiles/main.dir/rule
-.PHONY : main
+boids: CMakeFiles/boids.dir/rule
+.PHONY : boids
 
 # clean rule for target.
-CMakeFiles/main.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/clean
-.PHONY : CMakeFiles/main.dir/clean
+CMakeFiles/boids.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/clean
+.PHONY : CMakeFiles/boids.dir/clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/test.t.dir
+# Target rules for target CMakeFiles/boids.t.dir
 
 # All Build rule for target.
-CMakeFiles/test.t.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" --progress-num=6,7,8,9,10 "Built target test.t"
-.PHONY : CMakeFiles/test.t.dir/all
+CMakeFiles/boids.t.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" --progress-num=7,8,9,10,11 "Built target boids.t"
+.PHONY : CMakeFiles/boids.t.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/test.t.dir/rule: cmake_check_build_system
+CMakeFiles/boids.t.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" 5
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test.t.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/boids.t.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" 0
-.PHONY : CMakeFiles/test.t.dir/rule
+.PHONY : CMakeFiles/boids.t.dir/rule
 
 # Convenience name for target.
-test.t: CMakeFiles/test.t.dir/rule
-.PHONY : test.t
+boids.t: CMakeFiles/boids.t.dir/rule
+.PHONY : boids.t
 
 # clean rule for target.
-CMakeFiles/test.t.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/clean
-.PHONY : CMakeFiles/test.t.dir/clean
+CMakeFiles/boids.t.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/clean
+.PHONY : CMakeFiles/boids.t.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

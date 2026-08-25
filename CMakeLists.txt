@@ -41,7 +41,8 @@ add_executable(boids
     main.cpp
     boids.cpp
     flock.cpp
-    statistics.cpp)
+    statistics.cpp
+    sfml.cpp)
 # nel caso si usi SFML. analogamente per eventuali altre librerie
 target_link_libraries(boids PRIVATE sfml-graphics)
 

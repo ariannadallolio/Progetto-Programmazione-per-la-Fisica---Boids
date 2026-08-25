@@ -82,6 +82,6 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/ContinuousCoverage.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousMemCheck.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousSubmit.dir/DependInfo.cmake"
-  "CMakeFiles/main.dir/DependInfo.cmake"
-  "CMakeFiles/test.t.dir/DependInfo.cmake"
+  "CMakeFiles/boids.dir/DependInfo.cmake"
+  "CMakeFiles/boids.t.dir/DependInfo.cmake"
   )

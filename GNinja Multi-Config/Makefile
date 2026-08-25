@@ -491,38 +491,38 @@ ContinuousSubmit/fast:
 .PHONY : ContinuousSubmit/fast
 
 #=============================================================================
-# Target rules for targets named main
+# Target rules for targets named boids
 
 # Build rule for target.
-main: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main
-.PHONY : main
+boids: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 boids
+.PHONY : boids
 
 # fast build rule for target.
-main/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
-.PHONY : main/fast
+boids/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/build
+.PHONY : boids/fast
 
 #=============================================================================
-# Target rules for targets named test.t
+# Target rules for targets named boids.t
 
 # Build rule for target.
-test.t: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test.t
-.PHONY : test.t
+boids.t: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 boids.t
+.PHONY : boids.t
 
 # fast build rule for target.
-test.t/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/build
-.PHONY : test.t/fast
+boids.t/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/build
+.PHONY : boids.t/fast
 
 boids.o: boids.cpp.o
 .PHONY : boids.o
 
 # target to build an object file
 boids.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/boids.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/boids.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/boids.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/boids.cpp.o
 .PHONY : boids.cpp.o
 
 boids.i: boids.cpp.i
@@ -530,8 +530,8 @@ boids.i: boids.cpp.i
 
 # target to preprocess a source file
 boids.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/boids.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/boids.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/boids.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/boids.cpp.i
 .PHONY : boids.cpp.i
 
 boids.s: boids.cpp.s
@@ -539,8 +539,8 @@ boids.s: boids.cpp.s
 
 # target to generate assembly for a file
 boids.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/boids.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/boids.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/boids.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/boids.cpp.s
 .PHONY : boids.cpp.s
 
 flock.o: flock.cpp.o
@@ -548,8 +548,8 @@ flock.o: flock.cpp.o
 
 # target to build an object file
 flock.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/flock.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/flock.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/flock.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/flock.cpp.o
 .PHONY : flock.cpp.o
 
 flock.i: flock.cpp.i
@@ -557,8 +557,8 @@ flock.i: flock.cpp.i
 
 # target to preprocess a source file
 flock.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/flock.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/flock.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/flock.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/flock.cpp.i
 .PHONY : flock.cpp.i
 
 flock.s: flock.cpp.s
@@ -566,8 +566,8 @@ flock.s: flock.cpp.s
 
 # target to generate assembly for a file
 flock.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/flock.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/flock.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/flock.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/flock.cpp.s
 .PHONY : flock.cpp.s
 
 main.o: main.cpp.o
@@ -575,7 +575,7 @@ main.o: main.cpp.o
 
 # target to build an object file
 main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/main.cpp.o
 .PHONY : main.cpp.o
 
 main.i: main.cpp.i
@@ -583,7 +583,7 @@ main.i: main.cpp.i
 
 # target to preprocess a source file
 main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -591,16 +591,40 @@ main.s: main.cpp.s
 
 # target to generate assembly for a file
 main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/main.cpp.s
 .PHONY : main.cpp.s
+
+sfml.o: sfml.cpp.o
+.PHONY : sfml.o
+
+# target to build an object file
+sfml.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/sfml.cpp.o
+.PHONY : sfml.cpp.o
+
+sfml.i: sfml.cpp.i
+.PHONY : sfml.i
+
+# target to preprocess a source file
+sfml.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/sfml.cpp.i
+.PHONY : sfml.cpp.i
+
+sfml.s: sfml.cpp.s
+.PHONY : sfml.s
+
+# target to generate assembly for a file
+sfml.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/sfml.cpp.s
+.PHONY : sfml.cpp.s
 
 statistics.o: statistics.cpp.o
 .PHONY : statistics.o
 
 # target to build an object file
 statistics.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/statistics.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/statistics.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/statistics.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/statistics.cpp.o
 .PHONY : statistics.cpp.o
 
 statistics.i: statistics.cpp.i
@@ -608,8 +632,8 @@ statistics.i: statistics.cpp.i
 
 # target to preprocess a source file
 statistics.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/statistics.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/statistics.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/statistics.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/statistics.cpp.i
 .PHONY : statistics.cpp.i
 
 statistics.s: statistics.cpp.s
@@ -617,8 +641,8 @@ statistics.s: statistics.cpp.s
 
 # target to generate assembly for a file
 statistics.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/statistics.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/statistics.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/statistics.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/statistics.cpp.s
 .PHONY : statistics.cpp.s
 
 test.t.o: test.t.cpp.o
@@ -626,7 +650,7 @@ test.t.o: test.t.cpp.o
 
 # target to build an object file
 test.t.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/test.t.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/test.t.cpp.o
 .PHONY : test.t.cpp.o
 
 test.t.i: test.t.cpp.i
@@ -634,7 +658,7 @@ test.t.i: test.t.cpp.i
 
 # target to preprocess a source file
 test.t.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/test.t.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/test.t.cpp.i
 .PHONY : test.t.cpp.i
 
 test.t.s: test.t.cpp.s
@@ -642,7 +666,7 @@ test.t.s: test.t.cpp.s
 
 # target to generate assembly for a file
 test.t.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.t.dir/build.make CMakeFiles/test.t.dir/test.t.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.t.dir/build.make CMakeFiles/boids.t.dir/test.t.cpp.s
 .PHONY : test.t.cpp.s
 
 # Help Target
@@ -682,8 +706,8 @@ help:
 	@echo "... NightlySubmit"
 	@echo "... NightlyTest"
 	@echo "... NightlyUpdate"
-	@echo "... main"
-	@echo "... test.t"
+	@echo "... boids"
+	@echo "... boids.t"
 	@echo "... boids.o"
 	@echo "... boids.i"
 	@echo "... boids.s"
@@ -693,6 +717,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... sfml.o"
+	@echo "... sfml.i"
+	@echo "... sfml.s"
 	@echo "... statistics.o"
 	@echo "... statistics.i"
 	@echo "... statistics.s"

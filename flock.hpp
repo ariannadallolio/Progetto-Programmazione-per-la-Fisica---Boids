@@ -48,7 +48,6 @@ class Flock {
   Parameters par_;
   Space space_;
   std::vector<Boid> boids_;
-  std::default_random_engine engine_;
 
  public:
   Flock(int n, Parameters const& par, Space const& space);

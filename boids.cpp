@@ -8,8 +8,7 @@ namespace pf {
 // operatori posizione
 
 bool is_valid(Space const& space) {
-  return space.x_min < space.x_max &&
-         space.y_min < space.y_max;
+  return space.x_min < space.x_max && space.y_min < space.y_max;
 }
 
 Position operator-(Position const& a, Position const& b) {
@@ -56,26 +55,7 @@ bool operator==(Position const& a, Position const& b) {
 
 bool operator!=(Position const& a, Position const& b) { return (!(a == b)); }
 
-/*
-double distance_squared(Position const& a, Position const& b) {
-  double dx = a.x - b.x;
-  double dy = a.y - b.y;
-  return dx * dx + dy * dy;  // così evitiamo std::sqrt che è più impegnativo,
-                             // tanto è uguale
-}
- */
-
-// forse questa si può togliere
-/*
-double distance(Position const& a, Position const& b) {
-  double dx = a.x - b.x;
-  double dy = a.y - b.y;
-  return std::sqrt(dx * dx + dy * dy);
-}
-  */
-
 Position toroidal_space(Position newp, Space const& space) {
-
   double const Lx = space.x_max - space.x_min;
   double const Ly = space.y_max - space.y_min;
   if (newp.x < space.x_min) {
@@ -96,8 +76,8 @@ Position toroidal_space(Position newp, Space const& space) {
 // questa funzione definisce la distanza tra due boids nello spazio toroidale,
 // calcola qual è la distanza minore, se quella a destra o a sinistra e utilizza
 // quella minore
-Position toroidal_difference(Position const& a, Position const& b, Space const& space) {
-
+Position toroidal_difference(Position const& a, Position const& b,
+                             Space const& space) {
   double const Lx = space.x_max - space.x_min;
   double const Ly = space.y_max - space.y_min;
   double dx = a.x - b.x;

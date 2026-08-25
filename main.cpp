@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
-
+#include <fstream>
 #include "boids.hpp"
 #include "flock.hpp"
 #include "statistics.hpp"
@@ -15,6 +15,7 @@ int main() {
     double const y_min = 0.0;
     double const y_max = 600;
 
+    
     pf::Parameters par{
     0.08,   // s
     0.15,   // a
@@ -43,6 +44,14 @@ pf::Space space{
       throw std::runtime_error{
           "Error! The number of boids has to be positive."};
     }
+
+
+   std::ifstream input_file{"parameters.txt"}; //in sola lettura
+   if(!input_file){
+    std::runtime_error{"Errore: file non trovato"};
+   }
+   
+
 
     pf::Flock prova(n, par, space);  // oppure da dare in input con txt
 

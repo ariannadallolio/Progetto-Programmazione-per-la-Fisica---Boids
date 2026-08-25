@@ -218,7 +218,7 @@ void Flock::movement() {
 
   for (int j = 0; j != n; ++j) {
     auto const j_sz = static_cast<std::size_t>(j);
-    boids_[j].vel = new_velocities[j];
+    boids_[j_sz].vel = new_velocities[j_sz];
 
     Position newp = {boids_[j_sz].pos.x + par_.dt * boids_[j_sz].vel.v_x,
 

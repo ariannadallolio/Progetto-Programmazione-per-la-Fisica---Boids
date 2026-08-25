@@ -7,6 +7,11 @@ namespace pf {
 
 // operatori posizione
 
+bool is_valid(Space const& space) {
+  return space.x_min < space.x_max &&
+         space.y_min < space.y_max;
+}
+
 Position operator-(Position const& a, Position const& b) {
   return {a.x - b.x, a.y - b.y};
 }
@@ -69,22 +74,20 @@ double distance(Position const& a, Position const& b) {
 }
   */
 
-Position toroidal_space(Position newp, double x_min, double x_max, double y_min,
-                        double y_max) {
-  assert(x_min < x_max);
-  assert(y_min < y_max);
-  double const Lx = x_max - x_min;
-  double const Ly = y_max - y_min;
-  if (newp.x < x_min) {
+Position toroidal_space(Position newp, Space const& space) {
+
+  double const Lx = space.x_max - space.x_min;
+  double const Ly = space.y_max - space.y_min;
+  if (newp.x < space.x_min) {
     newp.x += Lx;
   }
-  if (newp.y < y_min) {
+  if (newp.y < space.y_min) {
     newp.y += Ly;
   }
-  if (x_max < newp.x) {
+  if (space.x_max < newp.x) {
     newp.x -= Lx;
   }
-  if (y_max < newp.y) {
+  if (space.y_max < newp.y) {
     newp.y -= Ly;
   }
   return newp;
@@ -93,12 +96,10 @@ Position toroidal_space(Position newp, double x_min, double x_max, double y_min,
 // questa funzione definisce la distanza tra due boids nello spazio toroidale,
 // calcola qual è la distanza minore, se quella a destra o a sinistra e utilizza
 // quella minore
-Position toroidal_difference(Position const& a, Position const& b, double x_min,
-                             double x_max, double y_min, double y_max) {
-  assert(x_min < x_max);
-  assert(y_min < y_max);
-  double const Lx = x_max - x_min;
-  double const Ly = y_max - y_min;
+Position toroidal_difference(Position const& a, Position const& b, Space const& space) {
+
+  double const Lx = space.x_max - space.x_min;
+  double const Ly = space.y_max - space.y_min;
   double dx = a.x - b.x;
   double dy = a.y - b.y;
   // il segno + o - dipende da quanto vale la differenza di posizione tra i due
@@ -121,9 +122,8 @@ Position toroidal_difference(Position const& a, Position const& b, double x_min,
 // questa funzione calcola la distanza quadrata tra due boids, tenendo consto
 // della distanza minore calcolata da toroidal_distance
 double toroidal_distance_squared(Position const& a, Position const& b,
-                                 double x_min, double x_max, double y_min,
-                                 double y_max) {
-  Position const diff = toroidal_difference(a, b, x_min, x_max, y_min, y_max);
+                                 Space const& space) {
+  Position const diff = toroidal_difference(a, b, space);
   return diff.x * diff.x + diff.y * diff.y;
 }
 

@@ -17,6 +17,15 @@ struct Boid {
   Position pos;
 };
 
+struct Space {
+  double x_min;
+  double x_max;
+  double y_min;
+  double y_max;
+};
+
+bool is_valid(Space const& space);
+
 Position operator-(Position const& a, Position const& b);
 Position operator+(Position const& a, Position const& b);
 Position& operator+=(Position& a, Position const& b);
@@ -29,13 +38,11 @@ Velocity operator*(double c, Velocity const& a);
 Velocity operator*(Velocity const& a, double c);
 bool operator==(Position const& a, Position const& b);
 bool operator!=(Position const& a, Position const& b);
-Position toroidal_space(Position newp, double x_min, double x_max, double y_min,
-                        double y_max);
-Position toroidal_difference(Position const& a, Position const& b, double x_min,
-                             double x_max, double y_min, double y_max);
+Position toroidal_space(Position newp, Space const& space);
+Position toroidal_difference(Position const& a, Position const& b,
+                             Space const& space);
 double toroidal_distance_squared(Position const& a, Position const& b,
-                                 double x_min, double x_max, double y_min,
-                                 double y_max);
+                                 Space const& space);
 double speed_modulus(Velocity const& a);
 
 }  // namespace pf

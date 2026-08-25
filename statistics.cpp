@@ -4,7 +4,6 @@
 #include <cmath>
 #include <iostream>
 
-
 namespace pf {
 
 double mean_distance(std::vector<Boid> const& boid, double x_min, double x_max,
@@ -34,7 +33,7 @@ double std_dev_distance(std::vector<Boid> const& boid, double const& mean,
                         double y_max) {
   assert(!boid.empty());
   int n = static_cast<int>(boid.size());
-  if (n == 1) {
+  if (n < 2) {
     return 0.0;
   }
   // double const mean = mean_distance(boid, x_min, x_max, y_min, y_max);

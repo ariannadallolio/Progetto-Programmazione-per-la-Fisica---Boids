@@ -1,63 +1,45 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
-#include <fstream>
+#include <string>
+
 #include "boids.hpp"
 #include "flock.hpp"
 #include "statistics.hpp"
 
 int main() {
   try {
-    double const x_min = 0.0;
-    double const x_max = 800;
-    double const y_min = 0.0;
-    double const y_max = 600;
+    std::string input_file;
+    std::cout << "Insert file name: ";
+    std::cin >> input_file;
 
-    
-    pf::Parameters par{
-    0.08,   // s
-    0.15,   // a
-    0.003,  // c
-    100,    // d
-    30,     // d_s
-    3.0,    // v_min
-    12.0,   // v_max
-    1.0     // dt
-};
+    std::ifstream file(input_file);
 
-pf::Space space{
-    x_min,
-    x_max,
-    y_min,
-    y_max
-};
-
+    if (!file.is_open()) {
+      throw std::runtime_error{"Impossibile aprire il file: " + input_file};
+    }
+    pf::Parameters par;
+    pf::Space space;
     int n{};
-    std::cout << "How many boids?" << '\n';
-    if (!(std::cin >> n)) {
+    std::string label;
+    if (!(file >> label >> n >> label >> par.s >> label >> par.a >> label >>
+          par.c >> label >> par.d >> label >> par.d_s >> label >> par.v_min >>
+          label >> par.v_max >> label >> par.dt >> label >> space.x_min >>
+          label >> space.x_max >> label >> space.y_min >> label >>
+          space.y_max)) {
       throw std::runtime_error{
-          "Error! The number of boids has to be an integer"};
+          "Errore: Dati mancanti o formato errato nel file"};
     }
-    if (n <= 0) {
-      throw std::runtime_error{
-          "Error! The number of boids has to be positive."};
-    }
-
-
-   std::ifstream input_file{"parameters.txt"}; //in sola lettura
-   if(!input_file){
-    std::runtime_error{"Errore: file non trovato"};
-   }
-   
-
 
     pf::Flock prova(n, par, space);  // oppure da dare in input con txt
 
-    sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(x_max),
-                                          static_cast<unsigned int>(y_max)),
-                            "Boids");
+    sf::RenderWindow window(
+        sf::VideoMode(static_cast<unsigned int>(space.x_max),
+                      static_cast<unsigned int>(space.y_max)),
+        "Boids");
     if (!window.isOpen()) {
       throw std::runtime_error{"Errore: impossibile aprire la finestra SFML"};
     }
@@ -82,7 +64,8 @@ pf::Space space{
 
     // GAME LOOP
     int frame_count = 0;
-    int const print_every = 60;  // con 60 fps, equivale a "una volta al secondo"
+    int const print_every =
+        60;  // con 60 fps, equivale a "una volta al secondo"
 
     while (window.isOpen()) {
       sf::Event event{};
@@ -94,10 +77,11 @@ pf::Space space{
       }
       // aggiorna simulazione
       prova.movement();
-      //aggiorna contatore frame e quando raggiunge multipli di 60 stampa media e dev 
+      // aggiorna contatore frame e quando raggiunge multipli di 60 stampa
+      // media e dev
       ++frame_count;
-      if (frame_count%(print_every) == 0){
-      print(prova.boids(), space);
+      if (frame_count % (print_every) == 0) {
+        print(prova.boids(), space);
       }
 
       // aggiorna triangoli
@@ -124,9 +108,9 @@ pf::Space space{
 
       // disegno
 
-      window.clear(sf::Color(
-          20, 20,
-          30));  // crea un colore usando il modello RGB (questo è molto scuro)
+      window.clear(sf::Color(20, 20,
+                             30));  // crea un colore usando il modello RGB
+                                    // (questo è molto scuro)
 
       for (sf::ConvexShape const& triangle : triangles) {
         window.draw(triangle);
@@ -134,16 +118,7 @@ pf::Space space{
 
       window.display();
     }
-  }
-  /*
-
-    prova.movement();
-    pf::print(prova.boids(), x_min, x_max, y_min,
-              y_max);  // richiamo funzione esterna al flock e le passo
-                       // una funzione interna al flock
-*/
-
-  catch (std::exception const& e) {  // Cattura runtime_error
+  } catch (std::exception const& e) {  // Cattura runtime_error
     std::cerr << e.what() << '\n';
     return EXIT_FAILURE;
   } catch (...) {

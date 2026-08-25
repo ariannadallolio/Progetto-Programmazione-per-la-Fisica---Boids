@@ -10,7 +10,7 @@ double mean_distance(std::vector<Boid> const& boid,
                      Space const& space) {  // distanza media tra boids
   assert(!boid.empty());
   int n = static_cast<int>(boid.size());
-  if (n == 1) {
+  if (n < 2) {
     return 0.0;
   }
   double sum{0.0};
@@ -55,7 +55,7 @@ double mean_velocity(std::vector<Boid> const& boid) {
   assert(!boid.empty());
   double sum{};
   int n = static_cast<int>(boid.size());
-  if (n == 1) {
+  if (n < 2) {
     return speed_modulus(boid[0].vel);
   }
   for (int i = 0; i != n; ++i) {
@@ -67,7 +67,7 @@ double mean_velocity(std::vector<Boid> const& boid) {
 double std_dev_velocity(std::vector<Boid> const& boid, double const& mean) {
   assert(!boid.empty());
   int n = static_cast<int>(boid.size());
-  if (n == 1) {
+  if (n < 2) {
     return 0.0;
   }
   double sum{0.0};

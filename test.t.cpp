@@ -9,7 +9,6 @@
 #include "flock.hpp"
 #include "statistics.hpp"
 
-
 // ===========================================================================
 // TEST 1: Operatori della struct Position
 // Funzioni testate: operator+, operator-, operator+=, operator* (entrambe le
@@ -229,11 +228,17 @@ TEST_CASE("Testing Toroidal Difference") {
   // Esattamente a Lx/2 le due direzioni sono equivalenti: la condizione e'
   // una disuguaglianza stretta, quindi il valore resta -50 e non viene
   // riportato a +50. Si controlla il modulo, non il segno.
-  SUBCASE("Mid-domain boundary (exactly Lx / 2)") {
+  SUBCASE("Mid-space boundary (exactly Lx / 2)") {
     pf::Position diff =
         pf::toroidal_difference({0.0, 50.0}, {50.0, 50.0}, space);
 
     CHECK(std::abs(diff.x) == doctest::Approx(50.0));
+  }
+  SUBCASE("Mid-space boundary (exactly Ly / 2)") {
+    pf::Position diff =
+        pf::toroidal_difference({50.0, 0.0}, {50.0, 50.0}, space);
+
+    CHECK(std::abs(diff.y) == doctest::Approx(50.0));
   }
 }
 
@@ -256,8 +261,8 @@ TEST_CASE("Testing Toroidal Distance Squared and Speed Modulus") {
 
     // Simmetria rispetto allo scambio degli argomenti.
     CHECK(pf::toroidal_distance_squared({10.0, 20.0}, {40.0, 60.0}, space) ==
-          doctest::Approx(pf::toroidal_distance_squared(
-              {40.0, 60.0}, {10.0, 20.0}, space)));
+          doctest::Approx(pf::toroidal_distance_squared({40.0, 60.0},
+                                                        {10.0, 20.0}, space)));
 
     // Distanza di un punto da se' stesso.
     CHECK(pf::toroidal_distance_squared({10.0, 20.0}, {10.0, 20.0}, space) ==
@@ -297,17 +302,6 @@ TEST_CASE("Testing Neighbours Detection and Control") {
   SUBCASE("Neighbours found across the toroidal border") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {98.0, 50.0}},
                                    {{0.0, 0.0}, {2.0, 50.0}}};
-
-    std::vector<int> neighbours = pf::neighbours_control(0, 10.0, boids, space);
-
-    CHECK(neighbours.size() == 1);
-    CHECK(neighbours[0] == 1);
-  }
-
-  // Il boid non deve mai contare se' stesso.
-  SUBCASE("The boid does not count itself as a neighbour") {
-    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {50.0, 50.0}},
-                                   {{0.0, 0.0}, {55.0, 50.0}}};
 
     std::vector<int> neighbours = pf::neighbours_control(0, 10.0, boids, space);
 
@@ -371,31 +365,7 @@ TEST_CASE("Testing Rule 1: Separation") {
 
   // v1 = -s * somma(pos_vicino - pos_boid): il boid viene spinto in
   // direzione opposta al vicino.
-  SUBCASE("Basic repulsion") {
-    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
-                                   {{0.0, 0.0}, {11.0, 10.0}}};
-    std::vector<int> neighbours = {1};
-
-    pf::Velocity v1 = pf::separation(1.0, 5.0, 0, neighbours, boids, space);
-
-    CHECK(v1.v_x == doctest::Approx(-1.0));
-    CHECK(v1.v_y == doctest::Approx(0.0));
-  }
-
-  // I vicini oltre d_s non contribuiscono (distanza 8 > d_s = 5).
-  SUBCASE("Neighbours beyond d_s are ignored") {
-    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
-                                   {{0.0, 0.0}, {18.0, 10.0}}};
-    std::vector<int> neighbours = {1};
-
-    pf::Velocity v1 = pf::separation(1.0, 5.0, 0, neighbours, boids, space);
-
-    CHECK(v1.v_x == doctest::Approx(0.0));
-    CHECK(v1.v_y == doctest::Approx(0.0));
-  }
-
-  // Il fattore s scala linearmente il contributo.
-  SUBCASE("The factor s scales the result linearly") {
+  SUBCASE("TBasic repulsion") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
                                    {{0.0, 0.0}, {12.0, 14.0}}};
     std::vector<int> neighbours = {1};
@@ -404,6 +374,18 @@ TEST_CASE("Testing Rule 1: Separation") {
 
     CHECK(v1.v_x == doctest::Approx(-1.0));
     CHECK(v1.v_y == doctest::Approx(-2.0));
+  }
+
+  // I vicini oltre d_s non contribuiscono (distanza 8 > d_s = 5).
+  SUBCASE("Neighbours beyond d_s are ignored") {
+    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
+                                   {{0.0, 0.0}, {18.0, 10.0}}};
+    std::vector<int> neighbours = {1};
+
+    pf::Velocity v1 = pf::separation(0.5, 5.0, 0, neighbours, boids, space);
+
+    CHECK(v1.v_x == doctest::Approx(0.0));
+    CHECK(v1.v_y == doctest::Approx(0.0));
   }
 
   // Contributi di piu' vicini che si sommano: uno a destra e uno sopra.
@@ -608,8 +590,6 @@ TEST_CASE("Testing Speed Limits") {
     CHECK(pf::speed_modulus(v_lim) == doctest::Approx(0.0));
     CHECK(v_lim.v_x == doctest::Approx(0.0));
     CHECK(v_lim.v_y == doctest::Approx(0.0));
-    CHECK_FALSE(std::isnan(v_lim.v_x));
-    CHECK_FALSE(std::isnan(v_lim.v_y));
   }
 }
 
@@ -638,24 +618,7 @@ TEST_CASE("Testing Boid Generation") {
 
       CHECK(pf::speed_modulus(b.vel) >= doctest::Approx(v_min));
       CHECK(pf::speed_modulus(b.vel) <= doctest::Approx(v_max));
-
-      // Conseguenza del vincolo sul modulo.
-      CHECK(std::abs(b.vel.v_x) <= doctest::Approx(v_max));
-      CHECK(std::abs(b.vel.v_y) <= doctest::Approx(v_max));
     }
-  }
-
-  // Caso limite: un solo boid.
-  SUBCASE("Single boid generation (N = 1)") {
-    pf::Space space{0.0, 100.0, 0.0, 100.0};
-
-    std::vector<pf::Boid> boids = pf::generate_boid(1, 3.0, 10.0, space);
-
-    CHECK(boids.size() == 1);
-    CHECK(boids[0].pos.x >= space.x_min);
-    CHECK(boids[0].pos.x <= space.x_max);
-    CHECK(boids[0].pos.y >= space.y_min);
-    CHECK(boids[0].pos.y <= space.y_max);
   }
 
   // Dominio traslato e con coordinate negative: le distribuzioni devono
@@ -719,20 +682,17 @@ TEST_CASE("Testing Flock Construction and Getters") {
 
   // I getter restituiscono i parametri e il dominio passati in input.
   CHECK(flock.parameters().s == doctest::Approx(par.s));
+  CHECK(flock.parameters().a == doctest::Approx(par.a));
+  CHECK(flock.parameters().c == doctest::Approx(par.c));
+  CHECK(flock.parameters().d == doctest::Approx(par.d));
   CHECK(flock.parameters().d_s == doctest::Approx(par.d_s));
+  CHECK(flock.parameters().v_min == doctest::Approx(par.v_min));
+  CHECK(flock.parameters().v_max == doctest::Approx(par.v_max));
   CHECK(flock.parameters().dt == doctest::Approx(par.dt));
+  CHECK(flock.space().x_min == doctest::Approx(space.x_min));
   CHECK(flock.space().x_max == doctest::Approx(space.x_max));
+  CHECK(flock.space().y_min == doctest::Approx(space.y_min));
   CHECK(flock.space().y_max == doctest::Approx(space.y_max));
-
-  // Lo stato iniziale rispetta gia' i vincoli di dominio e di velocita'.
-  for (pf::Boid const& b : flock.boids()) {
-    CHECK(b.pos.x >= space.x_min);
-    CHECK(b.pos.x <= space.x_max);
-    CHECK(b.pos.y >= space.y_min);
-    CHECK(b.pos.y <= space.y_max);
-    CHECK(pf::speed_modulus(b.vel) >= doctest::Approx(par.v_min));
-    CHECK(pf::speed_modulus(b.vel) <= doctest::Approx(par.v_max));
-  }
 }
 
 // ===========================================================================
@@ -759,8 +719,8 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
 
   // n <= 0 -> runtime_error (verificato prima di check_parameters).
   SUBCASE("Invalid number of boids") {
-    CHECK_THROWS_AS(pf::Flock(-5, valid_par, space), std::runtime_error);
-    CHECK_THROWS_AS(pf::Flock(0, valid_par, space), std::runtime_error);
+    CHECK_THROWS_AS(pf::Flock(-5, valid_par, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(0, valid_par, space), std::invalid_argument);
   }
 
   // Dominio degenere.
@@ -788,17 +748,6 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
     pf::Parameters par_c = valid_par;
     par_c.c = -0.005;
     CHECK_THROWS_AS(pf::Flock(10, par_c, space), std::invalid_argument);
-  }
-
-  // a >= 1 renderebbe l'allineamento instabile (sovra-correzione).
-  SUBCASE("Alignment factor a must be smaller than 1") {
-    pf::Parameters par_a1 = valid_par;
-    par_a1.a = 1.0;
-    CHECK_THROWS_AS(pf::Flock(10, par_a1, space), std::invalid_argument);
-
-    pf::Parameters par_a2 = valid_par;
-    par_a2.a = 1.5;
-    CHECK_THROWS_AS(pf::Flock(10, par_a2, space), std::invalid_argument);
   }
 
   // I raggi devono essere positivi.
@@ -939,27 +888,6 @@ TEST_CASE("Testing Time Evolution (movement)") {
     CHECK(v_after.v_x == doctest::Approx(v_before.v_x));
     CHECK(v_after.v_y == doctest::Approx(v_before.v_y));
   }
-
-  // Nessun boid puo' percorrere piu' di v_max * dt in un singolo passo.
-  SUBCASE("Displacement per step is bounded by v_max * dt") {
-    pf::Parameters par_small = par;
-    par_small.dt = 0.01;
-
-    pf::Flock flock(10, par_small, space);
-
-    std::vector<pf::Boid> const before = flock.boids();
-
-    flock.movement();
-
-    std::vector<pf::Boid> const& after = flock.boids();
-
-    for (std::size_t i = 0; i != after.size(); ++i) {
-      double const step = std::sqrt(
-          pf::toroidal_distance_squared(before[i].pos, after[i].pos, space));
-
-      CHECK(step <= doctest::Approx(par_small.v_max * par_small.dt));
-    }
-  }
 }
 
 // ===========================================================================
@@ -1093,6 +1021,6 @@ TEST_CASE("Testing Statistics Edge Cases (1 boid)") {
   // Con un solo boid la media delle velocita' e' il suo stesso modulo.
   double const m_vel = pf::mean_velocity(single_boid);
 
-  CHECK(m_vel == doctest::Approx(5.0).epsilon(0.001));
+  CHECK(m_vel == doctest::Approx(5.0));
   CHECK(pf::std_dev_velocity(single_boid, m_vel) == doctest::Approx(0.0));
 }

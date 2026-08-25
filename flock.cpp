@@ -18,10 +18,6 @@ void check_parameters(Parameters const& par, Space const& space) {
     throw std::invalid_argument{
         "Errore: i fattori s, a, c devono essere positivi"};
   }
-  if (par.a >= 1.0) {
-    throw std::invalid_argument{
-        "Errore: il fattore di allineamento a deve essere minore di 1"};
-  }
   if (par.d <= 0.0 || par.d_s <= 0.0) {
     throw std::invalid_argument{
         "Errore: i raggi d e d_s devono essere "
@@ -180,7 +176,7 @@ Velocity limit_speed(double v_min, double v_max, Velocity v_tot) {
 Flock::Flock(int n, Parameters const& par, Space const& space)
     : par_{par}, space_{space} {
   if (n <= 0) {
-    throw std::runtime_error{
+    throw std::invalid_argument{
         "Errore: il numero di boids deve essere maggiore di zero"};
   }
 

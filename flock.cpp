@@ -195,7 +195,7 @@ std::vector<Boid> const& Flock::boids() const { return boids_; }
 Parameters const& Flock::parameters() const { return par_; }
 Space const& Flock::space() const { return space_; }
 
-void movement();
+
 
 void Flock::movement() {
   std::vector<Velocity> new_velocities;

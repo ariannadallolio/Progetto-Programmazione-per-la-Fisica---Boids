@@ -15,6 +15,24 @@ int main() {
     double const y_min = 0.0;
     double const y_max = 600;
 
+    pf::Parameters par{
+    0.08,   // s
+    0.15,   // a
+    0.003,  // c
+    100,    // d
+    30,     // d_s
+    3.0,    // v_min
+    12.0,   // v_max
+    1.0     // dt
+};
+
+pf::Space space{
+    x_min,
+    x_max,
+    y_min,
+    y_max
+};
+
     int n{};
     std::cout << "How many boids?" << '\n';
     if (!(std::cin >> n)) {
@@ -26,9 +44,7 @@ int main() {
           "Error! The number of boids has to be positive."};
     }
 
-    pf::Flock prova(n, 0.08, 0.15, 0.003, 100, 30, 3.0, 12.0, 1.0, x_min, x_max,
-                    y_min,
-                    y_max);  // oppure da dare in input con txt
+    pf::Flock prova(n, par, space);  // oppure da dare in input con txt
 
     sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(x_max),
                                           static_cast<unsigned int>(y_max)),
@@ -72,7 +88,7 @@ int main() {
       //aggiorna contatore frame e quando raggiunge multipli di 60 stampa media e dev 
       ++frame_count;
       if (frame_count%(print_every) == 0){
-      print(prova.boids(), x_min, x_max, y_min, y_max);
+      print(prova.boids(), space);
       }
 
       // aggiorna triangoli

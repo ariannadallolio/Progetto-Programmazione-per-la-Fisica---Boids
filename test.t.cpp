@@ -115,18 +115,18 @@ TEST_CASE("Testing Velocity Operators") {
 
 // ===========================================================================
 // TEST 3: Validita' del dominio
-// Funzione testata: is_valid(Space).
+// Funzione testata: space_is_valid(Space).
 // ===========================================================================
 
 TEST_CASE("Testing Space Validity") {
-  CHECK(pf::is_valid(pf::Space{0.0, 100.0, 0.0, 100.0}));
-  CHECK(pf::is_valid(pf::Space{-50.0, 50.0, 100.0, 200.0}));
+  CHECK(pf::space_is_valid(pf::Space{0.0, 100.0, 0.0, 100.0}));
+  CHECK(pf::space_is_valid(pf::Space{-50.0, 50.0, 100.0, 200.0}));
 
   // Estremi coincidenti o invertiti: dominio degenere.
-  CHECK_FALSE(pf::is_valid(pf::Space{0.0, 0.0, 0.0, 100.0}));
-  CHECK_FALSE(pf::is_valid(pf::Space{0.0, 100.0, 50.0, 50.0}));
-  CHECK_FALSE(pf::is_valid(pf::Space{100.0, 0.0, 0.0, 100.0}));
-  CHECK_FALSE(pf::is_valid(pf::Space{0.0, 100.0, 100.0, 0.0}));
+  CHECK_FALSE(pf::space_is_valid(pf::Space{0.0, 0.0, 0.0, 100.0}));
+  CHECK_FALSE(pf::space_is_valid(pf::Space{0.0, 100.0, 50.0, 50.0}));
+  CHECK_FALSE(pf::space_is_valid(pf::Space{100.0, 0.0, 0.0, 100.0}));
+  CHECK_FALSE(pf::space_is_valid(pf::Space{0.0, 100.0, 100.0, 0.0}));
 }
 
 // ===========================================================================

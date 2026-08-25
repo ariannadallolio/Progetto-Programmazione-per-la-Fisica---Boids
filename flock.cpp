@@ -10,7 +10,7 @@
 namespace pf {
 
 void check_parameters(Parameters const& par, Space const& space) {
-  if (!is_valid(space)) {
+  if (!space_is_valid(space)) {
     throw std::invalid_argument{
         "Errore: deve essere x_min < x_max e y_min < y_max"};
   }

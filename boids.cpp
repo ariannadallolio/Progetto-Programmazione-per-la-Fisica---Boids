@@ -7,7 +7,7 @@ namespace pf {
 
 // operatori posizione
 
-bool is_valid(Space const& space) {
+bool space_is_valid(Space const& space) {
   return space.x_min < space.x_max && space.y_min < space.y_max;
 }
 

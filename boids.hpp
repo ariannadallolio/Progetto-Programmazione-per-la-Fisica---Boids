@@ -24,7 +24,7 @@ struct Space {
   double y_max;
 };
 
-bool is_valid(Space const& space);
+bool space_is_valid(Space const& space);
 
 Position operator-(Position const& a, Position const& b);
 Position operator+(Position const& a, Position const& b);

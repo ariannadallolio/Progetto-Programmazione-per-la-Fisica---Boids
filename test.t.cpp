@@ -7,7 +7,9 @@
 #include "statistics.hpp"
 
 // TEST 1: Operatori Vettoriali
-// Funzioni testate: operator+ e operator- della struct Position. !!SI POSSONO TESTARE GLI ALTRI
+// Funzioni testate: operator+ e operator- della struct Position.
+
+//!!SI POSSONO TESTARE GLI ALTRI
 
 TEST_CASE("Testing Vector Operators") {
   pf::Position p1{10.0, 20.0};
@@ -27,7 +29,9 @@ TEST_CASE("Testing Vector Operators") {
 }
 
 // TEST 2: Geometria Toroidale (gestione dei bordi nello spazio toroidale)
-// Funzioni testate: toroidal_space e toroidal_difference. !!TESTARE ANCHE OUT SOPRA E SOTTO
+// Funzioni testate: toroidal_space e toroidal_difference. 
+
+//!!TESTARE ANCHE OUT SOPRA E SOTTO
 
 TEST_CASE("Testing Toroidal Geometry") {
   double x_min = 0.0, x_max = 100.0;
@@ -48,7 +52,9 @@ TEST_CASE("Testing Toroidal Geometry") {
   }
 
   // Verifica che la distanza calcolata scelga sempre il percorso più breve
-  // attraverso i bordi. !!TESTARE ANCHE SOPRA E SOTTO
+  // attraverso i bordi. 
+  
+ // !!TESTARE ANCHE SOPRA E SOTTO
   SUBCASE("Toroidal Difference (Shortest Distance)") {
     pf::Position p_left{5.0, 50.0};
     pf::Position p_right{95.0, 50.0};

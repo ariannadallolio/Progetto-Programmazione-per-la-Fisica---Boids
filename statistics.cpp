@@ -72,7 +72,7 @@ void print(Statistics const& stats) {
 }
 void save_for_root(Statistics const& stats, std::ofstream& file,
                    int frame_count) {
-  file << frame_count << stats.mean_distance << '\t' << stats.std_dev_distance
+  file << frame_count <<'\t'<< stats.mean_distance << '\t' << stats.std_dev_distance
        << '\t' << stats.mean_velocity << '\t' << stats.std_dev_velocity << '\n';
 }
 }  // namespace pf

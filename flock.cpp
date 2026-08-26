@@ -247,18 +247,21 @@ Velocity limit_speed(double v_min, double v_max, Velocity v_tot) {
   return v_tot;
 }
 
-Flock::Flock(int n, Parameters const& par, Space const& space)
-    : par_{par}, space_{space} {
+Flock::Flock(int n, Parameters const& par, Space const& space,
+             Predator_parameters const& par_p)
+    : par_{par}, par_p_{par_p}, space_{space} {
   if (n <= 0) {
     throw std::invalid_argument{
         "Errore: il numero di boids deve essere maggiore di zero"};
   }
 
   check_parameters(par_, space_);
+  check_predator_parameters(par_p_, space_);
 
   boids_ = generate_boid(n, par_.v_min, par_.v_max, space_);
   // per generare il predatore
-  // predator_=generate_boid(n_predator,par_p_.v_min,par_p_.vmax,space_);
+  predator_ = generate_boid(1, par_p_.v_min_p, par_p_.v_max_p,
+                            space_)[0];  // da mettere il numero di predatori
 }
 
 // getter per prendere il vettore di boid e usarlo x esempio per media e
@@ -279,12 +282,20 @@ void Flock::movement() {
         separation(par_.s, par_.d_s, i, neighbours, boids_, space_);
     Velocity const v2 = alignment(par_.a, i, neighbours, boids_);
     Velocity const v3 = cohesion(par_.c, i, neighbours, boids_, space_);
-
     auto const i_sz = static_cast<std::size_t>(i);
+    Velocity const v4 =
+        escape(par_p_.s_p, par_p_.d_escape, boids_[i_sz], predator_, space_);
 
-    new_velocities.push_back(
-        limit_speed(par_.v_min, par_.v_max, boids_[i_sz].vel + v1 + v2 + v3));
+    new_velocities.push_back(limit_speed(par_.v_min, par_.v_max,
+                                         boids_[i_sz].vel + v1 + v2 + v3 + v4));
   }
+  // il predatore insegue il centro di massa delle prede in raggio,
+  // calcolato sulle posizioni attuali (prima dell'aggiornamento)
+  std::vector<int> const preys =
+      preys_control(par_p_.d_chase, predator_, boids_, space_);
+  Velocity const v_chase = chase(par_p_.c_p, predator_, preys, boids_, space_);
+  predator_.vel =
+      limit_speed(par_p_.v_min_p, par_p_.v_max_p, predator_.vel + v_chase);
 
   for (int j = 0; j != n; ++j) {
     auto const j_sz = static_cast<std::size_t>(j);
@@ -296,6 +307,9 @@ void Flock::movement() {
 
     boids_[j_sz].pos = toroidal_space(newp, space_);
   }
+  Position const newp_p = {predator_.pos.x + par_.dt * predator_.vel.v_x,
+                           predator_.pos.y + par_.dt * predator_.vel.v_y};
+  predator_.pos = toroidal_space(newp_p, space_);
 }
 
 }  // namespace pf

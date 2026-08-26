@@ -1,8 +1,10 @@
+#include "sfml.hpp"
+
 #include <SFML/Graphics.hpp>
 #include <cmath>
-#include "statistics.hpp"
+
 #include "flock.hpp"
-#include "sfml.hpp"
+#include "statistics.hpp"
 namespace pf {
 void simulation(Flock& simulation_flock) {
   sf::RenderWindow window(

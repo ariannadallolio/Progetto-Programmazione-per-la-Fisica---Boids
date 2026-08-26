@@ -58,19 +58,21 @@ bool operator!=(Position const& a, Position const& b) { return (!(a == b)); }
 Position toroidal_space(Position newp, Space const& space) {
   double const Lx = space.x_max - space.x_min;
   double const Ly = space.y_max - space.y_min;
-  if (newp.x < space.x_min) {
-    newp.x += Lx;
+
+  // Si porta la coordinata nell'intervallo [0, L) e poi la si ritrasla:
+  // fmod da' il resto con il segno del dividendo, quindi per i valori
+  // negativi serve una sola aggiunta di L.
+  double x = std::fmod(newp.x - space.x_min, Lx); //agloritmo che ti ritorna il resto della divisione tra il primo fattore e il secondo
+  if (x < 0.0) {//questo per fare la correzione se il boid va a sinistra
+    x += Lx;
   }
-  if (newp.y < space.y_min) {
-    newp.y += Ly;
+
+  double y = std::fmod(newp.y - space.y_min, Ly);
+  if (y < 0.0) {
+    y += Ly;
   }
-  if (space.x_max < newp.x) {
-    newp.x -= Lx;
-  }
-  if (space.y_max < newp.y) {
-    newp.y -= Ly;
-  }
-  return newp;
+
+  return {space.x_min + x, space.y_min + y};
 }
 
 // questa funzione definisce la distanza tra due boids nello spazio toroidale,

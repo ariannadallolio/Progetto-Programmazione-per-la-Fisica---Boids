@@ -150,6 +150,12 @@ TEST_CASE("Testing Toroidal Space Wrap-Around") {
 
     pf::Position wrapped_b = pf::toroidal_space({50.0, -5.0}, space);
     CHECK(wrapped_b.y == doctest::Approx(95.0));
+
+    // Spostamento superiore a una intera lunghezza del dominio.
+    CHECK(pf::toroidal_space({250.0, 50.0}, space).x == doctest::Approx(50.0));
+    CHECK(pf::toroidal_space({-150.0, 50.0}, space).x == doctest::Approx(50.0));
+    CHECK(pf::toroidal_space({50.0, 320.0}, space).y == doctest::Approx(20.0));
+    CHECK(pf::toroidal_space({50.0, -150.0}, space).y == doctest::Approx(50.0));
   }
 
   // Uscita diagonale: entrambe le componenti vanno corrette.

@@ -915,7 +915,7 @@ TEST_CASE("Testing Velocity Statistics") {
 
     CHECK(m_vel == doctest::Approx(5.0));
     CHECK(stats.std_dev_velocity == doctest::Approx(0.0));
-
+  }
     // Moduli 5 e 10 -> media 7.5; scarti +/- 2.5 -> sqrt(12.5 / 2) = 2.5.
     SUBCASE("Non-zero standard deviation (two boids)") {
       std::vector<pf::Boid> boids = {{{3.0, 4.0}, {0.0, 0.0}},
@@ -954,7 +954,7 @@ TEST_CASE("Testing Velocity Statistics") {
       CHECK(stats.std_dev_velocity == doctest::Approx(0.0));
     }
   }
-}
+
   // ===========================================================================
   // TEST 17: Statistiche sulle distanze
   // Funzioni testate: mean_distance, std_dev_distance.

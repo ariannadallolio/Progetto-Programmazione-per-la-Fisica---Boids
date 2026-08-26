@@ -6,86 +6,68 @@
 
 namespace pf {
 
-double mean_distance(std::vector<Boid> const& boid,
-                     Space const& space) {  // distanza media tra boids
+Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
   assert(!boid.empty());
-  int n = static_cast<int>(boid.size());
-  if (n < 2) {
-    return 0.0;
-  }
-  double sum{0.0};
-  for (int i = 0; i != n; ++i) {
-    for (int j = i + 1; j != n; j++) {
-      auto const i_sz = static_cast<std::size_t>(i);
-      auto const j_sz = static_cast<std::size_t>(j);
-      sum += std::sqrt(
-          toroidal_distance_squared(boid[i_sz].pos, boid[j_sz].pos, space));
-    }
-  }
-  double const n_pairs = n * (n - 1.0) / 2.0;
-  return sum * (1.0 / n_pairs);
-}
 
-// disperione che mi dice quando sono divere tra loro le distanze tra coppie,
-// vogliamo farla rispetto al centro i massa?
-double std_dev_distance(std::vector<Boid> const& boid, double const& mean,
-                        Space const& space) {
-  assert(!boid.empty());
   int n = static_cast<int>(boid.size());
+
   if (n < 2) {
-    return 0.0;
+    return {0.0, 0.0, speed_modulus(boid[0].vel), 0.0};
   }
-  // double const mean = mean_distance(boid, x_min, x_max, y_min, y_max);
-  double sum{0.0};
+
+  double const n_pairs = n * (n - 1.0) / 2.0;
+  std::vector<double>
+      distances;  // vettore temporaneo per salvare le distanze e usarle
+                  // per la deviazione standard, così da calcolarle una
+                  // sola volta e ottimizzare la funzione
+  double mean_distance_sum{0.0};
   for (int i = 0; i != n; ++i) {
     for (int j = i + 1; j != n; j++) {
       auto const i_sz = static_cast<std::size_t>(i);
       auto const j_sz = static_cast<std::size_t>(j);
       double const distance_ij = std::sqrt(
           toroidal_distance_squared(boid[i_sz].pos, boid[j_sz].pos, space));
-      double const difference = distance_ij - mean;
-      sum += difference * difference;
+      distances.push_back(distance_ij);
+      mean_distance_sum += distance_ij;
     }
   }
-  double const n_pairs = n * (n - 1.0) / 2.0;
-  return std::sqrt(sum / n_pairs);
-}
+  double const mean_distance = mean_distance_sum * (1.0 / n_pairs);
 
-double mean_velocity(std::vector<Boid> const& boid) {
-  assert(!boid.empty());
-  double sum{};
-  int n = static_cast<int>(boid.size());
-  if (n < 2) {
-    return speed_modulus(boid[0].vel);
+  double std_dev_distance_sum{0.0};
+  for (double d : distances) {
+    double const difference = d - mean_distance;
+    std_dev_distance_sum += difference * difference;
   }
+  double const std_dev_distance = sqrt(std_dev_distance_sum / n_pairs);
+
+  std::vector<double>
+      speeds;  // vettore temporaneo per salvare le velocità e usarle
+               // per la deviazione standard, così da calcolarle una
+               // sola volta e ottimizzare la funzione
+  double mean_velocity_sum{0.0};
   for (int i = 0; i != n; ++i) {
-    sum += speed_modulus(boid[static_cast<std::size_t>(i)].vel);
+    double modulus = speed_modulus(boid[static_cast<std::size_t>(i)].vel);
+    speeds.push_back(modulus);
+    mean_velocity_sum += modulus;
   }
-  return sum * (1.0 / n);
+  double const mean_velocity = mean_velocity_sum / n;
+
+  double std_dev_velocity_sum{0.0};
+  for (double s : speeds) {
+    double const difference = s - mean_velocity;
+    std_dev_velocity_sum += difference * difference;
+  }
+  double const std_dev_velocity = sqrt(std_dev_velocity_sum / n);
+
+  return {mean_distance, std_dev_distance, mean_velocity, std_dev_velocity};
 }
 
-double std_dev_velocity(std::vector<Boid> const& boid, double const& mean) {
-  assert(!boid.empty());
-  int n = static_cast<int>(boid.size());
-  if (n < 2) {
-    return 0.0;
-  }
-  double sum{0.0};
-  for (Boid const& m : boid) {
-    double const speed = speed_modulus(m.vel);
-    double const difference = speed - mean;
-    sum += difference * difference;
-  }
-  return std::sqrt(sum / n);
-}
+
 void print(std::vector<Boid> const& boid, Space const& space) {
-  double mean_distance_ = mean_distance(boid, space);
-  double std_dev_distance_ = std_dev_distance(boid, mean_distance_, space);
-  std::cout << "Distanza media: " << mean_distance_ << " +/- "
-            << std_dev_distance_ << '\n';
-  double mean_velocity_ = mean_velocity(boid);
-  double std_dev_velocity_ = std_dev_velocity(boid, mean_velocity_);
-  std::cout << "Velocità media:" << mean_velocity_ << " +/- "
-            << std_dev_velocity_ << "\n \n \n";
+  Statistics stats = statistics(boid, space);
+  std::cout << "Mean distance: " << stats.mean_distance << " +/- "
+            << stats.std_dev_distance << "\n \n \n"
+            << "Mean Velocity:" << stats.mean_velocity << " +/- "
+            << stats.std_dev_velocity << "\n \n \n";
 }
 }  // namespace pf

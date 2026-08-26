@@ -898,117 +898,125 @@ TEST_CASE("Testing Time Evolution (movement)") {
 // ===========================================================================
 
 TEST_CASE("Testing Velocity Statistics") {
+  pf::Space space{0.0, 100.0, 0.0, 100.0};
   // Moduli identici -> media pari al modulo, deviazione nulla.
   SUBCASE("Constant modulus gives zero standard deviation") {
     std::vector<pf::Boid> boids = {{{3.0, 4.0}, {0.0, 0.0}},
                                    {{3.0, 4.0}, {0.0, 0.0}}};
 
-    double const m_vel = pf::mean_velocity(boids);
+    pf::Statistics stats = pf::statistics(boids, space);
+    double const m_vel = stats.mean_velocity;
 
     CHECK(m_vel == doctest::Approx(5.0));
-    CHECK(pf::std_dev_velocity(boids, m_vel) == doctest::Approx(0.0));
+    CHECK(stats.std_dev_velocity == doctest::Approx(0.0));
+
+    // Moduli 5 e 10 -> media 7.5; scarti +/- 2.5 -> sqrt(12.5 / 2) = 2.5.
+    SUBCASE("Non-zero standard deviation (two boids)") {
+      std::vector<pf::Boid> boids = {{{3.0, 4.0}, {0.0, 0.0}},
+                                     {{6.0, 8.0}, {10.0, 0.0}}};
+
+      pf::Statistics stats = pf::statistics(boids, space);
+      double const m_vel = stats.mean_velocity;
+
+      CHECK(m_vel == doctest::Approx(7.5));
+      CHECK(stats.std_dev_velocity == doctest::Approx(2.5));
+    }
+
+    // Moduli 3, 5, 7 -> media 5; scarti -2, 0, +2 -> sqrt(8 / 3) = 1.632993.
+    SUBCASE("Non-zero standard deviation (three boids)") {
+      std::vector<pf::Boid> boids = {{{3.0, 0.0}, {0.0, 0.0}},
+                                     {{0.0, 5.0}, {10.0, 0.0}},
+                                     {{0.0, -7.0}, {20.0, 0.0}}};
+
+      pf::Statistics stats = pf::statistics(boids, space);
+      double const m_vel = stats.mean_velocity;
+
+      CHECK(m_vel == doctest::Approx(5.0));
+      CHECK(stats.std_dev_velocity ==
+            doctest::Approx(1.632993).epsilon(0.001));
+    }
+
+    // Il modulo e' sempre positivo: velocita' opposte danno la stessa media.
+    SUBCASE("Opposite velocities have the same modulus") {
+      std::vector<pf::Boid> boids = {{{3.0, 4.0}, {0.0, 0.0}},
+                                     {{-3.0, -4.0}, {10.0, 0.0}}};
+
+      pf::Statistics stats = pf::statistics(boids, space);
+      double const m_vel = stats.mean_velocity;
+
+      CHECK(m_vel == doctest::Approx(5.0));
+      CHECK(stats.std_dev_velocity == doctest::Approx(0.0));
+    }
+  }
+}
+  // ===========================================================================
+  // TEST 17: Statistiche sulle distanze
+  // Funzioni testate: mean_distance, std_dev_distance.
+  // La media e' calcolata su tutte le n(n-1)/2 coppie distinte.
+  // ===========================================================================
+
+  TEST_CASE("Testing Distance Statistics") {
+    pf::Space space{0.0, 100.0, 0.0, 100.0};
+
+    // Due boid, una sola coppia: media = distanza, deviazione nulla.
+    SUBCASE("Two boids: mean equals the distance") {
+      std::vector<pf::Boid> boids = {{{0.0, 0.0}, {0.0, 0.0}},
+                                     {{0.0, 0.0}, {3.0, 4.0}}};
+
+      pf::Statistics stats = pf::statistics(boids, space);
+      double const m_dist = stats.mean_distance;
+
+      CHECK(m_dist == doctest::Approx(5.0).epsilon(0.001));
+      CHECK(stats.std_dev_distance == doctest::Approx(0.0));
+    }
+
+    // Le distanze sono toroidali: 1 e 99 distano 2, non 98.
+    SUBCASE("Distances are computed on the torus") {
+      std::vector<pf::Boid> boids = {{{0.0, 0.0}, {1.0, 50.0}},
+                                     {{0.0, 0.0}, {99.0, 50.0}}};
+
+      pf::Statistics stats = pf::statistics(boids, space);
+      double const m_dist = stats.mean_distance;
+
+      CHECK(m_dist == doctest::Approx(2.0));
+    }
+
+    // Tre boid ai vertici di un triangolo rettangolo 6-8-10: le coppie
+    // valgono 6, 8, 10 -> media 8; scarti -2, 0, +2 -> sqrt(8 / 3).
+    SUBCASE("Three boids: non-zero standard deviation") {
+      std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
+                                     {{0.0, 0.0}, {16.0, 10.0}},
+                                     {{0.0, 0.0}, {10.0, 18.0}}};
+
+     pf::Statistics stats = pf::statistics(boids, space);
+    double const m_dist = stats.mean_distance;
+
+      CHECK(m_dist == doctest::Approx(8.0));
+      CHECK(stats.std_dev_distance ==
+            doctest::Approx(1.632993).epsilon(0.001));
+    }
   }
 
-  // Moduli 5 e 10 -> media 7.5; scarti +/- 2.5 -> sqrt(12.5 / 2) = 2.5.
-  SUBCASE("Non-zero standard deviation (two boids)") {
-    std::vector<pf::Boid> boids = {{{3.0, 4.0}, {0.0, 0.0}},
-                                   {{6.0, 8.0}, {10.0, 0.0}}};
+  // ===========================================================================
+  // TEST 18: Casi limite delle statistiche
+  // Un solo boid: nessuna coppia, quindi nessuna divisione per zero.
+  // ===========================================================================
 
-    double const m_vel = pf::mean_velocity(boids);
+  TEST_CASE("Testing Statistics Edge Cases (1 boid)") {
+    pf::Space space{0.0, 100.0, 0.0, 100.0};
 
-    CHECK(m_vel == doctest::Approx(7.5));
-    CHECK(pf::std_dev_velocity(boids, m_vel) == doctest::Approx(2.5));
-  }
+    std::vector<pf::Boid> single_boid = {{{3.0, 4.0}, {10.0, 10.0}}};
 
-  // Moduli 3, 5, 7 -> media 5; scarti -2, 0, +2 -> sqrt(8 / 3) = 1.632993.
-  SUBCASE("Non-zero standard deviation (three boids)") {
-    std::vector<pf::Boid> boids = {{{3.0, 0.0}, {0.0, 0.0}},
-                                   {{0.0, 5.0}, {10.0, 0.0}},
-                                   {{0.0, -7.0}, {20.0, 0.0}}};
+    pf::Statistics stats = pf::statistics(single_boid, space);
+      double const m_dist = stats.mean_distance;
 
-    double const m_vel = pf::mean_velocity(boids);
+    CHECK(m_dist == doctest::Approx(0.0));
+    CHECK(stats.std_dev_distance ==
+          doctest::Approx(0.0));
+
+    // Con un solo boid la media delle velocita' e' il suo stesso modulo.
+    double const m_vel = stats.mean_velocity;
 
     CHECK(m_vel == doctest::Approx(5.0));
-    CHECK(pf::std_dev_velocity(boids, m_vel) ==
-          doctest::Approx(1.632993).epsilon(0.001));
+    CHECK(stats.std_dev_velocity == doctest::Approx(0.0));
   }
-
-  // Il modulo e' sempre positivo: velocita' opposte danno la stessa media.
-  SUBCASE("Opposite velocities have the same modulus") {
-    std::vector<pf::Boid> boids = {{{3.0, 4.0}, {0.0, 0.0}},
-                                   {{-3.0, -4.0}, {10.0, 0.0}}};
-
-    double const m_vel = pf::mean_velocity(boids);
-
-    CHECK(m_vel == doctest::Approx(5.0));
-    CHECK(pf::std_dev_velocity(boids, m_vel) == doctest::Approx(0.0));
-  }
-}
-
-// ===========================================================================
-// TEST 17: Statistiche sulle distanze
-// Funzioni testate: mean_distance, std_dev_distance.
-// La media e' calcolata su tutte le n(n-1)/2 coppie distinte.
-// ===========================================================================
-
-TEST_CASE("Testing Distance Statistics") {
-  pf::Space space{0.0, 100.0, 0.0, 100.0};
-
-  // Due boid, una sola coppia: media = distanza, deviazione nulla.
-  SUBCASE("Two boids: mean equals the distance") {
-    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {0.0, 0.0}},
-                                   {{0.0, 0.0}, {3.0, 4.0}}};
-
-    double const m_dist = pf::mean_distance(boids, space);
-
-    CHECK(m_dist == doctest::Approx(5.0).epsilon(0.001));
-    CHECK(pf::std_dev_distance(boids, m_dist, space) == doctest::Approx(0.0));
-  }
-
-  // Le distanze sono toroidali: 1 e 99 distano 2, non 98.
-  SUBCASE("Distances are computed on the torus") {
-    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {1.0, 50.0}},
-                                   {{0.0, 0.0}, {99.0, 50.0}}};
-
-    double const m_dist = pf::mean_distance(boids, space);
-
-    CHECK(m_dist == doctest::Approx(2.0));
-  }
-
-  // Tre boid ai vertici di un triangolo rettangolo 6-8-10: le coppie
-  // valgono 6, 8, 10 -> media 8; scarti -2, 0, +2 -> sqrt(8 / 3).
-  SUBCASE("Three boids: non-zero standard deviation") {
-    std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
-                                   {{0.0, 0.0}, {16.0, 10.0}},
-                                   {{0.0, 0.0}, {10.0, 18.0}}};
-
-    double const m_dist = pf::mean_distance(boids, space);
-
-    CHECK(m_dist == doctest::Approx(8.0));
-    CHECK(pf::std_dev_distance(boids, m_dist, space) ==
-          doctest::Approx(1.632993).epsilon(0.001));
-  }
-}
-
-// ===========================================================================
-// TEST 18: Casi limite delle statistiche
-// Un solo boid: nessuna coppia, quindi nessuna divisione per zero.
-// ===========================================================================
-
-TEST_CASE("Testing Statistics Edge Cases (1 boid)") {
-  pf::Space space{0.0, 100.0, 0.0, 100.0};
-
-  std::vector<pf::Boid> single_boid = {{{3.0, 4.0}, {10.0, 10.0}}};
-
-  double const m_dist = pf::mean_distance(single_boid, space);
-
-  CHECK(m_dist == doctest::Approx(0.0));
-  CHECK(pf::std_dev_distance(single_boid, m_dist, space) ==
-        doctest::Approx(0.0));
-
-  // Con un solo boid la media delle velocita' e' il suo stesso modulo.
-  double const m_vel = pf::mean_velocity(single_boid);
-
-  CHECK(m_vel == doctest::Approx(5.0));
-  CHECK(pf::std_dev_velocity(single_boid, m_vel) == doctest::Approx(0.0));
-}

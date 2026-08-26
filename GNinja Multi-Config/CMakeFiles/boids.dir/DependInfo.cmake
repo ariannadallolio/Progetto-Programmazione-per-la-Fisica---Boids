@@ -11,7 +11,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/boids.cpp" "CMakeFiles/boids.dir/boids.cpp.o" "gcc" "CMakeFiles/boids.dir/boids.cpp.o.d"
   "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/flock.cpp" "CMakeFiles/boids.dir/flock.cpp.o" "gcc" "CMakeFiles/boids.dir/flock.cpp.o.d"
   "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/main.cpp" "CMakeFiles/boids.dir/main.cpp.o" "gcc" "CMakeFiles/boids.dir/main.cpp.o.d"
-  "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/sfml.cpp" "CMakeFiles/boids.dir/sfml.cpp.o" "gcc" "CMakeFiles/boids.dir/sfml.cpp.o.d"
+  "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/rendering.cpp" "CMakeFiles/boids.dir/rendering.cpp.o" "gcc" "CMakeFiles/boids.dir/rendering.cpp.o.d"
   "/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/statistics.cpp" "CMakeFiles/boids.dir/statistics.cpp.o" "gcc" "CMakeFiles/boids.dir/statistics.cpp.o.d"
   )
 

@@ -594,29 +594,29 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/main.cpp.s
 .PHONY : main.cpp.s
 
-sfml.o: sfml.cpp.o
-.PHONY : sfml.o
+rendering.o: rendering.cpp.o
+.PHONY : rendering.o
 
 # target to build an object file
-sfml.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/sfml.cpp.o
-.PHONY : sfml.cpp.o
+rendering.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/rendering.cpp.o
+.PHONY : rendering.cpp.o
 
-sfml.i: sfml.cpp.i
-.PHONY : sfml.i
+rendering.i: rendering.cpp.i
+.PHONY : rendering.i
 
 # target to preprocess a source file
-sfml.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/sfml.cpp.i
-.PHONY : sfml.cpp.i
+rendering.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/rendering.cpp.i
+.PHONY : rendering.cpp.i
 
-sfml.s: sfml.cpp.s
-.PHONY : sfml.s
+rendering.s: rendering.cpp.s
+.PHONY : rendering.s
 
 # target to generate assembly for a file
-sfml.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/sfml.cpp.s
-.PHONY : sfml.cpp.s
+rendering.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boids.dir/build.make CMakeFiles/boids.dir/rendering.cpp.s
+.PHONY : rendering.cpp.s
 
 statistics.o: statistics.cpp.o
 .PHONY : statistics.o
@@ -717,9 +717,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
-	@echo "... sfml.o"
-	@echo "... sfml.i"
-	@echo "... sfml.s"
+	@echo "... rendering.o"
+	@echo "... rendering.i"
+	@echo "... rendering.s"
 	@echo "... statistics.o"
 	@echo "... statistics.i"
 	@echo "... statistics.s"

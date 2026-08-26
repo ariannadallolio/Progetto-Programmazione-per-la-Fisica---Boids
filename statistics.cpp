@@ -1,8 +1,9 @@
 #include "statistics.hpp"
-#include <numeric>
+
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <numeric>
 
 namespace pf {
 
@@ -17,7 +18,7 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
 
   double const n_pairs = n * (n - 1.0) / 2.0;
 
-  //mean distance and std deviation
+  // mean distance and std deviation
   std::vector<double>
       distances;  // vettore temporaneo per salvare le distanze e usarle
                   // per la deviazione standard, così da calcolarle una
@@ -32,7 +33,8 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
       distances.push_back(distance_ij);
     }
   }
-  double mean_distance_sum = std::accumulate(distances.begin(), distances.end(), 0.0);
+  double mean_distance_sum =
+      std::accumulate(distances.begin(), distances.end(), 0.0);
   double const mean_distance = mean_distance_sum * (1.0 / n_pairs);
 
   double std_dev_distance_sum{0.0};
@@ -42,8 +44,7 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
   }
   double const std_dev_distance = sqrt(std_dev_distance_sum / n_pairs);
 
- 
-  //mean velocity and std deviation
+  // mean velocity and std deviation
   std::vector<double>
       speeds;  // vettore temporaneo per salvare le velocità e usarle
                // per la deviazione standard, così da calcolarle una
@@ -65,12 +66,15 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
   return {mean_distance, std_dev_distance, mean_velocity, std_dev_velocity};
 }
 
-
-void print(std::vector<Boid> const& boid, Space const& space) {
-  Statistics stats = statistics(boid, space);
+void print(Statistics const& stats) {
   std::cout << "Mean distance: " << stats.mean_distance << " +/- "
             << stats.std_dev_distance << '\n'
             << "Mean Velocity:" << stats.mean_velocity << " +/- "
             << stats.std_dev_velocity << "\n \n \n";
+  // Open file in "append" mode (does not overwrite)
+}
+void save_for_root(Statistics const& stats, std::ofstream& file, int frame_count) {
+  file << frame_count << stats.mean_distance << '\t' << stats.std_dev_distance
+       << '\t' << stats.mean_velocity << '\t' << stats.std_dev_velocity << '\n';
 }
 }  // namespace pf

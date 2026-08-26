@@ -19,8 +19,18 @@ struct Parameters {
   double dt;
 };
 
-void check_parameters(Parameters const& par, Space const& space);
+struct Predator_parameters {
+  double s_p;       // fattore di separazione dal predatore
+  double c_p;       // fattore di coesione del predatore
+  double d_chase;   // raggio di azione del predatore
+  double d_escape;  // raggio di percezione dei boid del predatore
+  double v_min_p;   // velocità predatore
+  double v_max_p;   // velocità predatore
+};
 
+void check_parameters(Parameters const& par, Space const& space);
+void check_predator_parameters(Predator_parameters const& par_p,
+                               Space const& space);
 std::vector<Boid> generate_boid(int n, double v_min, double v_max,
                                 Space const& space);
 

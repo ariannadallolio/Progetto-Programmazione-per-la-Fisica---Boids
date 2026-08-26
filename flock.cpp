@@ -12,47 +12,75 @@ namespace pf {
 void check_parameters(Parameters const& par, Space const& space) {
   if (!space_is_valid(space)) {
     throw std::invalid_argument{
-        "Errore: deve essere x_min < x_max e y_min < y_max"};
+        "Error: It has to be x_min < x_max and y_min < y_max"};
   }
   if (par.s <= 0.0 || par.a <= 0.0 || par.c <= 0.0) {
     throw std::invalid_argument{
-        "Errore: i fattori s, a, c devono essere positivi"};
+        "Error: the parameters s, a, c must be positive"};
   }
   if (par.d <= 0.0 || par.d_s <= 0.0) {
     throw std::invalid_argument{
-        "Errore: i raggi d e d_s devono essere "
-        "positivi"};
+        "Error: the parameters d e d_s must be positive"};
   }
   if (par.d_s >= par.d) {
     throw std::invalid_argument{
-        "Errore: il raggio di separazione d_s deve essere minore del raggio "
-        "di percezione d"};
+        "Error: The separation radius d_s must be less than the radius of "
+        "perception d"};
   }
   if (par.v_max <= 0.0) {
-    throw std::invalid_argument{
-        "Errore: la velocita' massima deve essere positiva"};
+    throw std::invalid_argument{"Error: The maximum speed must be positive"};
   }
   if (par.v_min < 0.0) {
-    throw std::invalid_argument{
-        "Errore: la velocita' minima non puo' essere negativa"};
+    throw std::invalid_argument{"Error: The minimum speed cannot be negative"};
   }
   if (par.v_min >= par.v_max) {
     throw std::invalid_argument{
-        "Errore: la velocita' minima deve essere minore della massima"};
+        "Error: the minimum speed must be less than the maximum speed"};
   }
   if (par.dt <= 0.0) {
-    throw std::invalid_argument{
-        "Errore: il passo temporale dt deve essere positivo"};
+    throw std::invalid_argument{"Error: The time step dt must be positive"};
   }
 }
 
-// cambio il nome della funzione da generate_n a generate_boid perchè senno
-// sembra un algoritmo std aggiungerei anche dei limiti alla velocità, tipo da
-// v_min a v_max, lo consiglia anche nel sito
+void check_predator_parameters(Predator_parameters const& par_p,
+                               Space const& space) {
+  if (par_p.s_p <= 0.0 || par_p.c_p <= 0.0) {
+    throw std::invalid_argument{
+        "Error: the parameters s_p and c_p must be positive"};
+  }
+  if (par_p.d_chase <= 0.0 || par_p.d_escape <= 0.0) {
+    throw std::invalid_argument{
+        "Error: the parameters d_chase e d_escape must be positive"};
+  }
+  if (par_p.v_min_p <= 0.0) {
+    throw std::invalid_argument{
+        "Error: The minimum speed of the predatore must be positive"};
+  }
+  if (par_p.v_max_p <= 0.0) {
+    throw std::invalid_argument{
+        "Error: The maximum speed of the predatore must be positive"};
+  }
+  if (par_p.v_min_p >= par_p.v_max_p) {
+    throw std::invalid_argument{
+        "Error: the minimum speed must be less than the maximum speed"};
+  }
+
+  double const Lx = space.x_max - space.x_min;
+  double const Ly = space.y_max - space.y_min;
+
+  if (par_p.d_chase > std::min(Lx, Ly) / 2.0) {
+    throw std::invalid_argument{
+        "Error: The hunting radius d_chase cannot exceed half of the domain"};
+  }
+}
+
+// cambio il nome della funzione da generate_n a generate_boid perchè
+// senno sembra un algoritmo std aggiungerei anche dei limiti alla
+// velocità, tipo da v_min a v_max, lo consiglia anche nel sito
 std::vector<Boid> generate_boid(int n, double v_min, double v_max,
                                 Space const& space) {  // v_max serve? controlla
-  assert(n > 0);  // dici che serve questo? non facciamo già il controllo nel
-                  // costruttore?
+  assert(n > 0);  // dici che serve questo? non facciamo già il controllo
+                  // nel costruttore?
   std::vector<Boid> boids;
 
   std::random_device r;  // seed
@@ -159,6 +187,56 @@ Velocity cohesion(double c, int boid_to_check,
   return v3;
 }
 
+std::vector<int> preys_control(double d_chase, Boid const& predator,
+                               std::vector<Boid> const& boids,
+                               Space const& space) {
+  std::vector<int> preys{};
+  double const d_chase_double = d_chase * d_chase;
+  int const n = static_cast<int>(boids.size());
+  for (int i = 0; i != n; ++i) {
+    if (toroidal_distance_squared(boids[static_cast<std::size_t>(i)].pos,
+                                  predator.pos, space) < d_chase_double) {
+      preys.push_back(i);
+    }
+  }
+  return preys;
+}
+
+Velocity chase(double c_p, Boid const& predator, std::vector<int> const& preys,
+               std::vector<Boid> const& boids, Space const& space) {
+  Velocity v_c{};
+  if (preys.empty()) {
+    return v_c;
+  }
+
+  Position sum{0.0, 0.0};
+
+  for (int m : preys) {
+    sum += toroidal_difference(boids[static_cast<std::size_t>(m)].pos,
+                               predator.pos, space);
+  }
+  double const n = static_cast<int>(preys.size());
+  Position const center_direction = (sum * (1.0 / n));
+  v_c = {c_p * center_direction.x, c_p * center_direction.y};
+  return v_c;
+}
+
+Velocity escape(double s_p, double d_escape, Boid const& boid,
+                Boid const& predator, Space const& space) {
+  Velocity v4{};
+
+  if (toroidal_distance_squared(boid.pos, predator.pos, space) >=
+      d_escape * d_escape) {
+    return v4;
+  }
+
+  // Stessa struttura di separation, ma con un solo "vicino": il predatore.
+  Position const diff = toroidal_difference(predator.pos, boid.pos, space);
+  Position const v_pos = -s_p * diff;
+  v4 = {v_pos.x, v_pos.y};
+  return v4;
+}
+
 Velocity limit_speed(double v_min, double v_max, Velocity v_tot) {
   double const modulus = speed_modulus(v_tot);
   if (modulus == 0.0) {
@@ -183,6 +261,8 @@ Flock::Flock(int n, Parameters const& par, Space const& space)
   check_parameters(par_, space_);
 
   boids_ = generate_boid(n, par_.v_min, par_.v_max, space_);
+  // per generare il predatore
+  // predator_=generate_boid(n_predator,par_p_.v_min,par_p_.vmax,space_);
 }
 
 // getter per prendere il vettore di boid e usarlo x esempio per media e
@@ -190,8 +270,6 @@ Flock::Flock(int n, Parameters const& par, Space const& space)
 std::vector<Boid> const& Flock::boids() const { return boids_; }
 Parameters const& Flock::parameters() const { return par_; }
 Space const& Flock::space() const { return space_; }
-
-
 
 void Flock::movement() {
   std::vector<Velocity> new_velocities;

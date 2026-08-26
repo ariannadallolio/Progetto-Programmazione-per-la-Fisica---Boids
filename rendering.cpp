@@ -1,10 +1,10 @@
-#include "sfml.hpp"
-
-#include <SFML/Graphics.hpp>
-#include <cmath>
-
+#include "rendering.hpp"
 #include "flock.hpp"
 #include "statistics.hpp"
+#include <SFML/Graphics.hpp>
+#include <cmath>
+#include <fstream>
+
 namespace pf {
 void simulation(Flock& simulation_flock) {
   sf::RenderWindow window(
@@ -35,8 +35,13 @@ void simulation(Flock& simulation_flock) {
   }
 
   // GAME LOOP
+  std::ofstream file("statistics.txt");
+  if (!file) {
+    throw std::runtime_error{"Impossible to create file"};
+  }
+
   int frame_count = 0;
-  int const print_every = 60;  // con 60 fps, equivale a "una volta al secondo"
+  int const print_every = 60; //frame
 
   while (window.isOpen()) {
     sf::Event event{};
@@ -46,16 +51,15 @@ void simulation(Flock& simulation_flock) {
         window.close();
       }
     }
-    // aggiorna simulazione
-    simulation_flock.movement();
-    // aggiorna contatore frame e quando raggiunge multipli di 60 stampa
-    // media e dev
+   
+  simulation_flock.movement();
+  auto history= statistics(simulation_flock.boids(), simulation_flock.space());
     ++frame_count;
+    save_for_root(history,file, frame_count);
     if (frame_count % (print_every) == 0) {
-      print(simulation_flock.boids(), simulation_flock.space());
+      print(history);
     }
 
-    // aggiorna triangoli
     std::vector<pf::Boid> const& boids = simulation_flock.boids();
 
     for (std::size_t i = 0; i != boids.size(); ++i) {
@@ -64,29 +68,24 @@ void simulation(Flock& simulation_flock) {
       triangles[i].setPosition(static_cast<float>(boid.pos.x),
                                static_cast<float>(boid.pos.y));
 
-      // direzione del boid
-
       double const angle_rad = std::atan2(
           boid.vel.v_y,
-          boid.vel.v_x);  // il - perchè la y cresce verso il basso su SFML,
-                          // così abbiamo la direzione giusta
+          boid.vel.v_x); 
 
-      double const angle_deg = angle_rad * 180.0 / std::acos(-1.0);  // pi greco
+      double const angle_deg = angle_rad * 180.0 / std::acos(-1.0);
 
       triangles[i].setRotation(static_cast<float>(angle_deg));
     }
 
-    // disegno
 
     window.clear(sf::Color(20, 20,
-                           30));  // crea un colore usando il modello RGB
-                                  // (questo è molto scuro)
-
+                           30));  
     for (sf::ConvexShape const& triangle : triangles) {
       window.draw(triangle);
     }
 
     window.display();
   }
+  
 }
 }  // namespace pf

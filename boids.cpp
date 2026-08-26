@@ -1,12 +1,10 @@
 #include "boids.hpp"
-
 #include <cassert>
 #include <cmath>
 
 namespace pf {
 
-// operatori posizione
-
+//space operators
 bool space_is_valid(Space const& space) {
   return space.x_min < space.x_max && space.y_min < space.y_max;
 }
@@ -26,10 +24,17 @@ Position& operator+=(Position& a, Position const& b) {
 }
 
 Position operator*(double c, Position const& a) { return {c * a.x, c * a.y}; }
+
 Position operator*(Position const& a, double c) { return c * a; }
 
-// operatori velocità
+bool operator==(Position const& a, Position const& b) {
+  return (a.x == b.x && a.y == b.y);
+}
 
+bool operator!=(Position const& a, Position const& b) { return (!(a == b)); }
+
+
+// velocity operators
 Velocity operator-(Velocity const& a, Velocity const& b) {
   return {a.v_x - b.v_x, a.v_y - b.v_y};
 }
@@ -49,11 +54,6 @@ Velocity operator*(double c, Velocity const& a) {
 }
 Velocity operator*(Velocity const& a, double c) { return c * a; }
 
-bool operator==(Position const& a, Position const& b) {
-  return (a.x == b.x && a.y == b.y);
-}
-
-bool operator!=(Position const& a, Position const& b) { return (!(a == b)); }
 
 Position toroidal_space(Position newp, Space const& space) {
   double const Lx = space.x_max - space.x_min;

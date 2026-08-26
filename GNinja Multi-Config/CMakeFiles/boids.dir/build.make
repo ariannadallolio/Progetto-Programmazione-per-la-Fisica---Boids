@@ -125,19 +125,19 @@ CMakeFiles/boids.dir/statistics.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/boids.dir/statistics.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/statistics.cpp -o CMakeFiles/boids.dir/statistics.cpp.s
 
-CMakeFiles/boids.dir/sfml.cpp.o: CMakeFiles/boids.dir/flags.make
-CMakeFiles/boids.dir/sfml.cpp.o: /home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/sfml.cpp
-CMakeFiles/boids.dir/sfml.cpp.o: CMakeFiles/boids.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/boids.dir/sfml.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/boids.dir/sfml.cpp.o -MF CMakeFiles/boids.dir/sfml.cpp.o.d -o CMakeFiles/boids.dir/sfml.cpp.o -c /home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/sfml.cpp
+CMakeFiles/boids.dir/rendering.cpp.o: CMakeFiles/boids.dir/flags.make
+CMakeFiles/boids.dir/rendering.cpp.o: /home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/rendering.cpp
+CMakeFiles/boids.dir/rendering.cpp.o: CMakeFiles/boids.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/boids.dir/rendering.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/boids.dir/rendering.cpp.o -MF CMakeFiles/boids.dir/rendering.cpp.o.d -o CMakeFiles/boids.dir/rendering.cpp.o -c /home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/rendering.cpp
 
-CMakeFiles/boids.dir/sfml.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/boids.dir/sfml.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/sfml.cpp > CMakeFiles/boids.dir/sfml.cpp.i
+CMakeFiles/boids.dir/rendering.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/boids.dir/rendering.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/rendering.cpp > CMakeFiles/boids.dir/rendering.cpp.i
 
-CMakeFiles/boids.dir/sfml.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/boids.dir/sfml.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/sfml.cpp -o CMakeFiles/boids.dir/sfml.cpp.s
+CMakeFiles/boids.dir/rendering.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/boids.dir/rendering.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/rendering.cpp -o CMakeFiles/boids.dir/rendering.cpp.s
 
 # Object files for target boids
 boids_OBJECTS = \
@@ -145,7 +145,7 @@ boids_OBJECTS = \
 "CMakeFiles/boids.dir/boids.cpp.o" \
 "CMakeFiles/boids.dir/flock.cpp.o" \
 "CMakeFiles/boids.dir/statistics.cpp.o" \
-"CMakeFiles/boids.dir/sfml.cpp.o"
+"CMakeFiles/boids.dir/rendering.cpp.o"
 
 # External object files for target boids
 boids_EXTERNAL_OBJECTS =
@@ -154,11 +154,22 @@ boids: CMakeFiles/boids.dir/main.cpp.o
 boids: CMakeFiles/boids.dir/boids.cpp.o
 boids: CMakeFiles/boids.dir/flock.cpp.o
 boids: CMakeFiles/boids.dir/statistics.cpp.o
-boids: CMakeFiles/boids.dir/sfml.cpp.o
+boids: CMakeFiles/boids.dir/rendering.cpp.o
 boids: CMakeFiles/boids.dir/build.make
 boids: /usr/lib/x86_64-linux-gnu/libsfml-graphics.so.2.6.1
+boids: /home/ariannadallolio/root/lib/libGpad.so
 boids: /usr/lib/x86_64-linux-gnu/libsfml-window.so.2.6.1
 boids: /usr/lib/x86_64-linux-gnu/libsfml-system.so.2.6.1
+boids: /home/ariannadallolio/root/lib/libGraf.so
+boids: /home/ariannadallolio/root/lib/libHist.so
+boids: /home/ariannadallolio/root/lib/libMatrix.so
+boids: /home/ariannadallolio/root/lib/libMathCore.so
+boids: /home/ariannadallolio/root/lib/libImt.so
+boids: /home/ariannadallolio/root/lib/libMultiProc.so
+boids: /home/ariannadallolio/root/lib/libNet.so
+boids: /home/ariannadallolio/root/lib/libRIO.so
+boids: /home/ariannadallolio/root/lib/libThread.so
+boids: /home/ariannadallolio/root/lib/libCore.so
 boids: CMakeFiles/boids.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/home/ariannadallolio/pf_labs/boids/Progetto-Programmazione-per-la-Fisica---Boids/GNinja Multi-Config/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable boids"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/boids.dir/link.txt --verbose=$(VERBOSE)

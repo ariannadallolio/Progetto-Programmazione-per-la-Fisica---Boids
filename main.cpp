@@ -7,7 +7,8 @@
 
 #include "boids.hpp"
 #include "flock.hpp"
-#include "sfml.hpp"
+#include "rendering.hpp"
+#include "histogram.hpp"
 
 int main() {
   try {
@@ -118,9 +119,9 @@ int main() {
     }
 
     pf::Flock simulation_flock(n, par,
-                               space);  // oppure da dare in input con txt
-
+                               space);
     pf::simulation(simulation_flock);
+    pf::graph();
 
   } catch (std::exception const& e) {  // Cattura runtime_error
     std::cerr << e.what() << '\n';

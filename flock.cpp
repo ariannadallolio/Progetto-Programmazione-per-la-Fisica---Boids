@@ -74,19 +74,15 @@ void check_predator_parameters(Predator_parameters const& par_p,
   }
 }
 
-// cambio il nome della funzione da generate_n a generate_boid perchè
-// senno sembra un algoritmo std aggiungerei anche dei limiti alla
-// velocità, tipo da v_min a v_max, lo consiglia anche nel sito
 std::vector<Boid> generate_boid(int n, double v_min, double v_max,
-                                Space const& space) {  // v_max serve? controlla
-  assert(n > 0);  // dici che serve questo? non facciamo già il controllo
-                  // nel costruttore?
+                                Space const& space) {
+  assert(n > 0);
   std::vector<Boid> boids;
 
   std::random_device r;  // seed
   std::default_random_engine eng{r()};
   std::uniform_real_distribution<double> uniform_v_modulus{v_min, v_max};
-  double const pi = std::acos(-1.0);  // funzione arcocoseno
+  double const pi = std::acos(-1.0);
   std::uniform_real_distribution<double> uniform_v_angle{0.0, 2.0 * pi};
   std::uniform_real_distribution<double> uniform_px{space.x_min, space.x_max};
   std::uniform_real_distribution<double> uniform_py{space.y_min, space.y_max};
@@ -105,7 +101,8 @@ std::vector<int> neighbours_control(int boid_to_check, double d,
                                     Space const& space) {
   assert(boid_to_check >= 0);
   assert(boid_to_check < static_cast<int>(boids.size()));
-  std::vector<int> neighbours{};  // int restituisce indici boid vicini
+  std::vector<int> neighbours{};  // int is position in vector "boids" of
+                                  // boid_to_check's neighbours
   double d_squared = d * d;
   int const n = static_cast<int>(boids.size());
   for (int i = 0; i != n; ++i) {
@@ -132,12 +129,11 @@ Velocity separation(double s, double d_s, int boid_to_check,
   Position sum{0.0, 0.0};
   double d_s_squared = d_s * d_s;
   Position const pos_check = boids[static_cast<std::size_t>(boid_to_check)].pos;
-  for (int m : neighbours) {  // range for loop che itera direttamente
-                              // sugli elementi
+  for (int m : neighbours) {
     Position const pos_m = boids[static_cast<std::size_t>(m)].pos;
     if (toroidal_distance_squared(pos_m, pos_check, space) < d_s_squared) {
       Position const diff = toroidal_difference(pos_m, pos_check, space);
-      sum += diff;  ////////////algoritmo accumulate?
+      sum += diff;
     }
   }
   Position const pos_v1 = -s * sum;

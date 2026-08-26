@@ -23,7 +23,6 @@ int main() {
       throw std::runtime_error{"Error: The input is not valid"};
     }
 
-    // Controllo che la risposta sia valida
     if (answer != "Y" && answer != "y" && answer != "N" && answer != "n") {
       throw std::runtime_error{"Error: insert only Y, y, N or n"};
     }
@@ -123,7 +122,7 @@ int main() {
     pf::simulation(simulation_flock);
     pf::graph();
 
-  } catch (std::exception const& e) {  // Cattura runtime_error
+  } catch (std::exception const& e) { 
     std::cerr << e.what() << '\n';
     return EXIT_FAILURE;
   } catch (...) {

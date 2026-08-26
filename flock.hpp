@@ -51,9 +51,6 @@ Velocity cohesion(double c, int boid_to_check,
 Velocity limit_speed(double v_min, double v_max, Velocity v_tot);
 
 class Flock {
-  // valori da mettere in input, inizializzati nel private e definiti col
-  // costruttore nel public (così da poter mettere le invarianti e poterli
-  // riempire nel main)
  private:
   Parameters par_;
   Space space_;

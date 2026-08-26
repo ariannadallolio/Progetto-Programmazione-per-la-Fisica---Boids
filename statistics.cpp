@@ -18,12 +18,10 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
 
   double const n_pairs = n * (n - 1.0) / 2.0;
 
-  // mean distance and std deviation
   std::vector<double>
-      distances;  // vettore temporaneo per salvare le distanze e usarle
-                  // per la deviazione standard, così da calcolarle una
-                  // sola volta e ottimizzare la funzione
-
+      distances;  // temporary vector to save distances and use them for
+                  // standard deviation, so we optimize the function by
+                  // calculating sqrt::toroidal_distance just one time
   for (int i = 0; i != n; ++i) {
     for (int j = i + 1; j != n; j++) {
       auto const i_sz = static_cast<std::size_t>(i);
@@ -46,9 +44,9 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
 
   // mean velocity and std deviation
   std::vector<double>
-      speeds;  // vettore temporaneo per salvare le velocità e usarle
-               // per la deviazione standard, così da calcolarle una
-               // sola volta e ottimizzare la funzione
+      speeds;  // temporary vector to save distances and use them for
+               //  standard deviation, so we optimize the function by
+               //  calculating speeds just one time
   for (int i = 0; i != n; ++i) {
     double modulus = speed_modulus(boid[static_cast<std::size_t>(i)].vel);
     speeds.push_back(modulus);
@@ -71,9 +69,9 @@ void print(Statistics const& stats) {
             << stats.std_dev_distance << '\n'
             << "Mean Velocity:" << stats.mean_velocity << " +/- "
             << stats.std_dev_velocity << "\n \n \n";
-  // Open file in "append" mode (does not overwrite)
 }
-void save_for_root(Statistics const& stats, std::ofstream& file, int frame_count) {
+void save_for_root(Statistics const& stats, std::ofstream& file,
+                   int frame_count) {
   file << frame_count << stats.mean_distance << '\t' << stats.std_dev_distance
        << '\t' << stats.mean_velocity << '\t' << stats.std_dev_velocity << '\n';
 }

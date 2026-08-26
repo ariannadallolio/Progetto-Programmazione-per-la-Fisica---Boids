@@ -1,5 +1,5 @@
 #include "statistics.hpp"
-
+#include <numeric>
 #include <cassert>
 #include <cmath>
 #include <iostream>
@@ -16,11 +16,13 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
   }
 
   double const n_pairs = n * (n - 1.0) / 2.0;
+
+  //mean distance and std deviation
   std::vector<double>
       distances;  // vettore temporaneo per salvare le distanze e usarle
                   // per la deviazione standard, così da calcolarle una
                   // sola volta e ottimizzare la funzione
-  double mean_distance_sum{0.0};
+
   for (int i = 0; i != n; ++i) {
     for (int j = i + 1; j != n; j++) {
       auto const i_sz = static_cast<std::size_t>(i);
@@ -28,9 +30,9 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
       double const distance_ij = std::sqrt(
           toroidal_distance_squared(boid[i_sz].pos, boid[j_sz].pos, space));
       distances.push_back(distance_ij);
-      mean_distance_sum += distance_ij;
     }
   }
+  double mean_distance_sum = std::accumulate(distances.begin(), distances.end(), 0.0);
   double const mean_distance = mean_distance_sum * (1.0 / n_pairs);
 
   double std_dev_distance_sum{0.0};
@@ -40,16 +42,17 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
   }
   double const std_dev_distance = sqrt(std_dev_distance_sum / n_pairs);
 
+ 
+  //mean velocity and std deviation
   std::vector<double>
       speeds;  // vettore temporaneo per salvare le velocità e usarle
                // per la deviazione standard, così da calcolarle una
                // sola volta e ottimizzare la funzione
-  double mean_velocity_sum{0.0};
   for (int i = 0; i != n; ++i) {
     double modulus = speed_modulus(boid[static_cast<std::size_t>(i)].vel);
     speeds.push_back(modulus);
-    mean_velocity_sum += modulus;
   }
+  double mean_velocity_sum = std::accumulate(speeds.begin(), speeds.end(), 0.0);
   double const mean_velocity = mean_velocity_sum / n;
 
   double std_dev_velocity_sum{0.0};

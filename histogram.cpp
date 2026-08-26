@@ -38,5 +38,6 @@ void graph() {
   h_vel->Draw();
 
 c1->SaveAs("flock_statistics.png");
+file.close();
 }
 }  // namespace pf

@@ -1,10 +1,11 @@
 #include "boids.hpp"
+
 #include <cassert>
 #include <cmath>
 
 namespace pf {
 
-//space operators
+// space operators
 bool space_is_valid(Space const& space) {
   return space.x_min < space.x_max && space.y_min < space.y_max;
 }
@@ -33,7 +34,6 @@ bool operator==(Position const& a, Position const& b) {
 
 bool operator!=(Position const& a, Position const& b) { return (!(a == b)); }
 
-
 // velocity operators
 Velocity operator-(Velocity const& a, Velocity const& b) {
   return {a.v_x - b.v_x, a.v_y - b.v_y};
@@ -54,7 +54,6 @@ Velocity operator*(double c, Velocity const& a) {
 }
 Velocity operator*(Velocity const& a, double c) { return c * a; }
 
-
 Position toroidal_space(Position newp, Space const& space) {
   double const Lx = space.x_max - space.x_min;
   double const Ly = space.y_max - space.y_min;
@@ -62,8 +61,10 @@ Position toroidal_space(Position newp, Space const& space) {
   // Si porta la coordinata nell'intervallo [0, L) e poi la si ritrasla:
   // fmod da' il resto con il segno del dividendo, quindi per i valori
   // negativi serve una sola aggiunta di L.
-  double x = std::fmod(newp.x - space.x_min, Lx); //agloritmo che ti ritorna il resto della divisione tra il primo fattore e il secondo
-  if (x < 0.0) {//questo per fare la correzione se il boid va a sinistra
+  double x = std::fmod(newp.x - space.x_min,
+                       Lx);  // agloritmo che ti ritorna il resto della
+                             // divisione tra il primo fattore e il secondo
+  if (x < 0.0) {
     x += Lx;
   }
 
@@ -75,17 +76,13 @@ Position toroidal_space(Position newp, Space const& space) {
   return {space.x_min + x, space.y_min + y};
 }
 
-// questa funzione definisce la distanza tra due boids nello spazio toroidale,
-// calcola qual è la distanza minore, se quella a destra o a sinistra e utilizza
-// quella minore
 Position toroidal_difference(Position const& a, Position const& b,
                              Space const& space) {
   double const Lx = space.x_max - space.x_min;
   double const Ly = space.y_max - space.y_min;
   double dx = a.x - b.x;
   double dy = a.y - b.y;
-  // il segno + o - dipende da quanto vale la differenza di posizione tra i due
-  // boid
+
   if (dx > Lx / 2.0) {
     dx -= Lx;
   }
@@ -101,8 +98,6 @@ Position toroidal_difference(Position const& a, Position const& b,
   return {dx, dy};
 }
 
-// questa funzione calcola la distanza quadrata tra due boids, tenendo consto
-// della distanza minore calcolata da toroidal_distance
 double toroidal_distance_squared(Position const& a, Position const& b,
                                  Space const& space) {
   Position const diff = toroidal_difference(a, b, space);

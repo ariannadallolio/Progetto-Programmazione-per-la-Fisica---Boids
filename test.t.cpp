@@ -9,17 +9,14 @@
 #include "flock.hpp"
 #include "statistics.hpp"
 
-// ===========================================================================
-// TEST 1: Operatori della struct Position
-// Funzioni testate: operator+, operator-, operator+=, operator* (entrambe le
-// forme), operator==, operator!=.
-// ===========================================================================
+// TEST 1: Position struct operators
+// Tested functions: operator+, operator-, operator+=, operator* (both forms), operator==, operator!=.
 
 TEST_CASE("Testing Position Operators") {
   pf::Position p1{10.0, 20.0};
   pf::Position p2{5.0, 5.0};
 
-  // Somma e sottrazione componente per componente.
+  // Component-wise addition and subtraction.
   SUBCASE("Addition & Subtraction") {
     pf::Position res_sub = p1 - p2;
     CHECK(res_sub.x == doctest::Approx(5.0));
@@ -30,8 +27,7 @@ TEST_CASE("Testing Position Operators") {
     CHECK(res_add.y == doctest::Approx(25.0));
   }
 
-  // Prodotto per scalare: esistono sia (double, Position) sia
-  // (Position, double), quindi vanno testate entrambe le overload.
+  // Scalar multiplication:(double, Position) and (Position, double)
   SUBCASE("Scalar Multiplication (both overloads)") {
     pf::Position p_right = p1 * 2.0;
     CHECK(p_right.x == doctest::Approx(20.0));
@@ -41,14 +37,14 @@ TEST_CASE("Testing Position Operators") {
     CHECK(p_left.x == doctest::Approx(5.0));
     CHECK(p_left.y == doctest::Approx(10.0));
 
-    // Scalare negativo: e' il caso usato in separation (-s * sum).
+    // Negative scalar: this case is used in separation (-s * sum).
     pf::Position p_neg = -1.0 * p1;
     CHECK(p_neg.x == doctest::Approx(-10.0));
     CHECK(p_neg.y == doctest::Approx(-20.0));
   }
 
-  // operator+= modifica l'operando sinistro e restituisce un riferimento ad
-  // esso (usato dagli accumulatori in separation e cohesion).
+  // operator+= modifies the left operand and returns a reference to it
+  // (used by accumulators in separation and cohesion).
   SUBCASE("Compound Assignment returns reference") {
     pf::Position p_acc{1.0, 2.0};
     pf::Position& ref = (p_acc += p1);
@@ -58,7 +54,7 @@ TEST_CASE("Testing Position Operators") {
     CHECK(&ref == &p_acc);
   }
 
-  // Confronto esatto (non Approx): l'operatore usa == sui double.
+  // Exact comparison: the operator uses == on doubles.
   SUBCASE("Equality Operators") {
     pf::Position p3{10.0, 20.0};
     pf::Position p4{10.0, 20.001};
@@ -68,16 +64,15 @@ TEST_CASE("Testing Position Operators") {
     CHECK(p1 != p4);
     CHECK_FALSE(p1 != p3);
 
-    // Differenza su una sola componente alla volta.
+    // Difference in a single component at a time.
     CHECK(pf::Position{1.0, 2.0} != pf::Position{1.0, 3.0});
     CHECK(pf::Position{1.0, 2.0} != pf::Position{9.0, 2.0});
   }
 }
 
-// ===========================================================================
-// TEST 2: Operatori della struct Velocity
-// Funzioni testate: operator+, operator-, operator+=, operator* (entrambe).
-// ===========================================================================
+
+// TEST 2: Velocity struct operators
+// Tested functions: operator+, operator-, operator+=, operator* (both).
 
 TEST_CASE("Testing Velocity Operators") {
   pf::Velocity v1{4.0, 6.0};
@@ -112,31 +107,28 @@ TEST_CASE("Testing Velocity Operators") {
   }
 }
 
-// ===========================================================================
-// TEST 3: Validita' del dominio
-// Funzione testata: space_is_valid(Space).
-// ===========================================================================
+
+// TEST 3: Domain validity
+// Tested function: space_is_valid(Space).
 
 TEST_CASE("Testing Space Validity") {
   CHECK(pf::space_is_valid(pf::Space{0.0, 100.0, 0.0, 100.0}));
   CHECK(pf::space_is_valid(pf::Space{-50.0, 50.0, 100.0, 200.0}));
 
-  // Estremi coincidenti o invertiti: dominio degenere.
+  // Coincident or inverted boundaries: degenerate domain.
   CHECK_FALSE(pf::space_is_valid(pf::Space{0.0, 0.0, 0.0, 100.0}));
   CHECK_FALSE(pf::space_is_valid(pf::Space{0.0, 100.0, 50.0, 50.0}));
   CHECK_FALSE(pf::space_is_valid(pf::Space{100.0, 0.0, 0.0, 100.0}));
   CHECK_FALSE(pf::space_is_valid(pf::Space{0.0, 100.0, 100.0, 0.0}));
 }
 
-// ===========================================================================
-// TEST 4: Wrap-around dello spazio toroidale
-// Funzione testata: toroidal_space.
-// ===========================================================================
+// TEST 4: Toroidal space wrap-around
+// Tested function: toroidal_space.
 
 TEST_CASE("Testing Toroidal Space Wrap-Around") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
 
-  // Un boid che esce da uno dei 4 bordi rientra dal lato opposto.
+  // A boid exiting from one of the 4 borders re-enters from the opposite side.
   SUBCASE("All 4 borders") {
     pf::Position wrapped_r = pf::toroidal_space({105.0, 50.0}, space);
     CHECK(wrapped_r.x == doctest::Approx(5.0));
@@ -151,14 +143,14 @@ TEST_CASE("Testing Toroidal Space Wrap-Around") {
     pf::Position wrapped_b = pf::toroidal_space({50.0, -5.0}, space);
     CHECK(wrapped_b.y == doctest::Approx(95.0));
 
-    // Spostamento superiore a una intera lunghezza del dominio.
+    // Displacement greater than a full domain length.
     CHECK(pf::toroidal_space({250.0, 50.0}, space).x == doctest::Approx(50.0));
     CHECK(pf::toroidal_space({-150.0, 50.0}, space).x == doctest::Approx(50.0));
     CHECK(pf::toroidal_space({50.0, 320.0}, space).y == doctest::Approx(20.0));
     CHECK(pf::toroidal_space({50.0, -150.0}, space).y == doctest::Approx(50.0));
   }
 
-  // Uscita diagonale: entrambe le componenti vanno corrette.
+  // Diagonal exit: both components must be adjusted.
   SUBCASE("Corner (both components out of range)") {
     pf::Position wrapped = pf::toroidal_space({103.0, -2.0}, space);
 
@@ -166,7 +158,7 @@ TEST_CASE("Testing Toroidal Space Wrap-Around") {
     CHECK(wrapped.y == doctest::Approx(98.0));
   }
 
-  // Un punto interno non deve essere modificato.
+  // An interior point must remain unchanged.
   SUBCASE("Interior point is left unchanged") {
     pf::Position inside{42.0, 17.0};
     pf::Position result = pf::toroidal_space(inside, space);
@@ -174,7 +166,7 @@ TEST_CASE("Testing Toroidal Space Wrap-Around") {
     CHECK(result == inside);
   }
 
-  // Dominio traslato/negativo: il wrap usa Lx = x_max - x_min, non x_max.
+  // Shifted/negative domain: wrap uses Lx = x_max - x_min, not x_max.
   SUBCASE("Shifted and negative domain") {
     pf::Space shifted{-50.0, 50.0, 100.0, 200.0};
 
@@ -186,16 +178,14 @@ TEST_CASE("Testing Toroidal Space Wrap-Around") {
   }
 }
 
-// ===========================================================================
-// TEST 5: Distanza minima nello spazio toroidale
-// Funzione testata: toroidal_difference.
-// ===========================================================================
+// TEST 5: Minimum distance in toroidal space
+// Tested function: toroidal_difference.
 
 TEST_CASE("Testing Toroidal Difference") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
 
-  // Il percorso piu' breve passa attraverso il bordo: 5 - 95 = -90, che
-  // supera -Lx/2, quindi viene riportato a +10.
+  // The shortest path goes across the border: 5 - 95 = -90, which
+  // exceeds -Lx/2, so it is wrapped around to +10.
   SUBCASE("Shortest path along X and Y") {
     pf::Position diff_x =
         pf::toroidal_difference({5.0, 50.0}, {95.0, 50.0}, space);
@@ -207,13 +197,13 @@ TEST_CASE("Testing Toroidal Difference") {
     CHECK(diff_y.x == doctest::Approx(0.0));
     CHECK(diff_y.y == doctest::Approx(10.0));
 
-    // Caso simmetrico: invertendo gli argomenti cambia solo il segno.
+    // Symmetric case: reversing the arguments only changes the sign.
     pf::Position diff_rev =
         pf::toroidal_difference({95.0, 50.0}, {5.0, 50.0}, space);
     CHECK(diff_rev.x == doctest::Approx(-10.0));
   }
 
-  // Se la distanza diretta e' gia' la piu' breve non viene corretta.
+  // If the direct path is already the shortest, it is not adjusted.
   SUBCASE("Direct path is already the shortest") {
     pf::Position diff =
         pf::toroidal_difference({30.0, 60.0}, {20.0, 40.0}, space);
@@ -222,7 +212,7 @@ TEST_CASE("Testing Toroidal Difference") {
     CHECK(diff.y == doctest::Approx(20.0));
   }
 
-  // Posizioni coincidenti: differenza nulla.
+  // Coincident positions: zero difference.
   SUBCASE("Identical positions") {
     pf::Position p{25.0, 75.0};
     pf::Position diff = pf::toroidal_difference(p, p, space);
@@ -231,9 +221,8 @@ TEST_CASE("Testing Toroidal Difference") {
     CHECK(diff.y == doctest::Approx(0.0));
   }
 
-  // Esattamente a Lx/2 le due direzioni sono equivalenti: la condizione e'
-  // una disuguaglianza stretta, quindi il valore resta -50 e non viene
-  // riportato a +50. Si controlla il modulo, non il segno.
+  // Exactly at Lx/2 both directions are equivalent: the condition is
+  // a strict inequality, so the value remains -50 and is not wrapped to +50.
   SUBCASE("Mid-space boundary (exactly Lx / 2)") {
     pf::Position diff =
         pf::toroidal_difference({0.0, 50.0}, {50.0, 50.0}, space);
@@ -248,29 +237,27 @@ TEST_CASE("Testing Toroidal Difference") {
   }
 }
 
-// ===========================================================================
-// TEST 6: Distanza quadrata toroidale e modulo della velocita'
-// Funzioni testate: toroidal_distance_squared, speed_modulus.
-// ===========================================================================
+// TEST 6: Toroidal squared distance and speed magnitude
+// Tested functions: toroidal_distance_squared, speed_modulus.
 
 TEST_CASE("Testing Toroidal Distance Squared and Speed Modulus") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
 
   SUBCASE("Distance squared, direct and across the border") {
-    // Triangolo 3-4-5: distanza 5, quadrato 25.
+    // 3-4-5 triangle: distance 5, square 25.
     CHECK(pf::toroidal_distance_squared({0.0, 0.0}, {3.0, 4.0}, space) ==
           doctest::Approx(25.0));
 
-    // Attraverso il bordo: dx = 2, dy = 0 -> 4.
+    // Across the border: dx = 2, dy = 0 -> 4.
     CHECK(pf::toroidal_distance_squared({99.0, 50.0}, {1.0, 50.0}, space) ==
           doctest::Approx(4.0));
 
-    // Simmetria rispetto allo scambio degli argomenti.
+    // Symmetry under argument swapping.
     CHECK(pf::toroidal_distance_squared({10.0, 20.0}, {40.0, 60.0}, space) ==
           doctest::Approx(pf::toroidal_distance_squared({40.0, 60.0},
                                                         {10.0, 20.0}, space)));
 
-    // Distanza di un punto da se' stesso.
+    // Distance from a point to itself.
     CHECK(pf::toroidal_distance_squared({10.0, 20.0}, {10.0, 20.0}, space) ==
           doctest::Approx(0.0));
   }
@@ -283,15 +270,13 @@ TEST_CASE("Testing Toroidal Distance Squared and Speed Modulus") {
   }
 }
 
-// ===========================================================================
-// TEST 7: Rilevamento dei vicini
-// Funzione testata: neighbours_control.
-// ===========================================================================
+// TEST 7: Neighbour detection
+// Tested function: neighbours_control.
 
 TEST_CASE("Testing Neighbours Detection and Control") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
 
-  // Caso standard: solo il boid entro il raggio d viene selezionato.
+  // Standard case: only the boid within radius d is selected.
   SUBCASE("Neighbours found in standard Euclidean distance") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {50.0, 50.0}},
                                    {{0.0, 0.0}, {53.0, 54.0}},
@@ -303,8 +288,7 @@ TEST_CASE("Testing Neighbours Detection and Control") {
     CHECK(neighbours[0] == 1);
   }
 
-  // Due boid ai lati opposti della mappa si riconoscono come vicini grazie
-  // alla distanza toroidale.
+  // Two boids on opposite sides of the map detect each other as neighbours
   SUBCASE("Neighbours found across the toroidal border") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {98.0, 50.0}},
                                    {{0.0, 0.0}, {2.0, 50.0}}};
@@ -315,7 +299,7 @@ TEST_CASE("Testing Neighbours Detection and Control") {
     CHECK(neighbours[0] == 1);
   }
 
-  // Nessun vicino oltre il raggio visivo.
+  // No neighbours beyond visual range.
   SUBCASE("No neighbours are found outside the visual range") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
                                    {{0.0, 0.0}, {50.0, 50.0}}};
@@ -325,8 +309,7 @@ TEST_CASE("Testing Neighbours Detection and Control") {
     CHECK(neighbours.empty());
   }
 
-  // Il confronto e' una disuguaglianza stretta: a distanza esattamente d il
-  // boid NON viene contato come vicino.
+  // At distance exactly d, the boid is NOT counted as a neighbour.
   SUBCASE("Distance exactly equal to d is excluded") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {50.0, 50.0}},
                                    {{0.0, 0.0}, {60.0, 50.0}}};
@@ -336,8 +319,8 @@ TEST_CASE("Testing Neighbours Detection and Control") {
     CHECK(neighbours.empty());
   }
 
-  // Piu' vicini: gli indici sono restituiti in ordine crescente ed
-  // escludono quello fuori raggio.
+  // Multiple neighbours: indices are returned in increasing order and
+  // exclude the one out of range.
   SUBCASE("Multiple neighbours, indices in increasing order") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {50.0, 50.0}},
                                    {{0.0, 0.0}, {52.0, 50.0}},
@@ -351,7 +334,7 @@ TEST_CASE("Testing Neighbours Detection and Control") {
     CHECK(neighbours[1] == 3);
   }
 
-  // Un solo boid nello stormo: nessun vicino possibile.
+  // Only one boid in the flock: no neighbours possible.
   SUBCASE("Single boid has no neighbours") {
     std::vector<pf::Boid> boids = {{{1.0, 1.0}, {50.0, 50.0}}};
 
@@ -361,17 +344,15 @@ TEST_CASE("Testing Neighbours Detection and Control") {
   }
 }
 
-// ===========================================================================
-// TEST 8: Regola 1 di Reynolds - Separazione
-// Funzione testata: separation.
-// ===========================================================================
+// TEST 8: Reynolds Rule 1 - Separation
+// Tested function: separation.
 
 TEST_CASE("Testing Rule 1: Separation") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
 
-  // v1 = -s * somma(pos_vicino - pos_boid): il boid viene spinto in
-  // direzione opposta al vicino.
-  SUBCASE("TBasic repulsion") {
+  // v1 = -s * sum(neighbour_pos - boid_pos): the boid is pushed away
+  // from the neighbour.
+  SUBCASE("Basic repulsion") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
                                    {{0.0, 0.0}, {12.0, 14.0}}};
     std::vector<int> neighbours = {1};
@@ -382,7 +363,7 @@ TEST_CASE("Testing Rule 1: Separation") {
     CHECK(v1.v_y == doctest::Approx(-2.0));
   }
 
-  // I vicini oltre d_s non contribuiscono (distanza 8 > d_s = 5).
+  // Neighbours beyond d_s do not contribute (distance 8 > d_s = 5).
   SUBCASE("Neighbours beyond d_s are ignored") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
                                    {{0.0, 0.0}, {18.0, 10.0}}};
@@ -394,7 +375,7 @@ TEST_CASE("Testing Rule 1: Separation") {
     CHECK(v1.v_y == doctest::Approx(0.0));
   }
 
-  // Contributi di piu' vicini che si sommano: uno a destra e uno sopra.
+  // Summed contributions from multiple neighbours: one to the right, one above.
   SUBCASE("Contributions of several neighbours are summed") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {50.0, 50.0}},
                                    {{0.0, 0.0}, {52.0, 50.0}},
@@ -407,8 +388,8 @@ TEST_CASE("Testing Rule 1: Separation") {
     CHECK(v1.v_y == doctest::Approx(-3.0));
   }
 
-  // La repulsione usa la distanza toroidale: il vicino "oltre il bordo"
-  // spinge verso l'interno del dominio.
+  // Repulsion uses toroidal distance: the neighbour "across the border"
+  // pushes toward the interior of the domain.
   SUBCASE("Repulsion across the toroidal border") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {99.0, 50.0}},
                                    {{0.0, 0.0}, {1.0, 50.0}}};
@@ -420,7 +401,7 @@ TEST_CASE("Testing Rule 1: Separation") {
     CHECK(v1.v_y == doctest::Approx(0.0));
   }
 
-  // Nessun vicino: nessuna variazione di velocita'.
+  // No neighbours: no change in velocity.
   SUBCASE("No neighbours returns zero") {
     std::vector<pf::Boid> boids = {{{5.0, 5.0}, {10.0, 10.0}}};
     std::vector<int> neighbours = {};
@@ -432,13 +413,12 @@ TEST_CASE("Testing Rule 1: Separation") {
   }
 }
 
-// ===========================================================================
-// TEST 9: Regola 2 di Reynolds - Allineamento
-// Funzione testata: alignment.
-// ===========================================================================
+// TEST 9: Reynolds Rule 2 - Alignment
+// Tested function: alignment.
 
 TEST_CASE("Testing Rule 2: Alignment") {
-  // v2 = a * media(v_vicino - v_boid) = 0.5 * (10 - 0) = 5.
+
+  // v2 = a * mean(neighbour_v - boid_v) = 0.5 * (10 - 0) = 5.
   SUBCASE("Steering towards the neighbours' mean velocity") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
                                    {{10.0, 0.0}, {12.0, 10.0}}};
@@ -450,7 +430,7 @@ TEST_CASE("Testing Rule 2: Alignment") {
     CHECK(v2.v_y == doctest::Approx(0.0));
   }
 
-  // Media su due vicini: ((4,0) + (0,8)) / 2 = (2,4), scalato per a = 0.5.
+  // Mean over two neighbours: ((4,0) + (0,8)) / 2 = (2,4), scaled by a = 0.5.
   SUBCASE("Mean over several neighbours") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {50.0, 50.0}},
                                    {{4.0, 0.0}, {52.0, 50.0}},
@@ -463,7 +443,7 @@ TEST_CASE("Testing Rule 2: Alignment") {
     CHECK(v2.v_y == doctest::Approx(2.0));
   }
 
-  // Se il boid ha gia' la stessa velocita' dei vicini non deve sterzare.
+  // If the boid already matches the neighbours' velocity, no steering occurs.
   SUBCASE("Already aligned boid gets no correction") {
     std::vector<pf::Boid> boids = {{{3.0, 4.0}, {50.0, 50.0}},
                                    {{3.0, 4.0}, {52.0, 50.0}}};
@@ -486,16 +466,14 @@ TEST_CASE("Testing Rule 2: Alignment") {
   }
 }
 
-// ===========================================================================
-// TEST 10: Regola 3 di Reynolds - Coesione
-// Funzione testata: cohesion.
-// ===========================================================================
+// TEST 10: Reynolds Rule 3 - Cohesion
+// Tested function: cohesion.
 
 TEST_CASE("Testing Rule 3: Cohesion") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
 
-  // v3 = c * (centro di massa dei vicini - posizione del boid):
-  // ((10,0) + (10,10)) / 2 = (10,5), scalato per c = 0.1.
+  // v3 = c * (neighbours' centre of mass - boid position):
+  // ((10,0) + (10,10)) / 2 = (10,5), scaled by c = 0.1.
   SUBCASE("Steering towards the centre of mass") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {0.0, 0.0}},
                                    {{0.0, 0.0}, {10.0, 0.0}},
@@ -508,8 +486,8 @@ TEST_CASE("Testing Rule 3: Cohesion") {
     CHECK(v3.v_y == doctest::Approx(0.5));
   }
 
-  // Il centro di massa usa le differenze toroidali: il boid a x = 99 deve
-  // essere attratto verso destra (oltre il bordo), non verso sinistra.
+  // Centre of mass uses toroidal differences: a boid at x = 99 must
+  // be attracted to the right (across the border), not to the left.
   SUBCASE("Centre of mass across the toroidal border") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {99.0, 50.0}},
                                    {{0.0, 0.0}, {1.0, 50.0}}};
@@ -521,7 +499,7 @@ TEST_CASE("Testing Rule 3: Cohesion") {
     CHECK(v3.v_y == doctest::Approx(0.0));
   }
 
-  // Boid gia' nel centro di massa dei vicini: nessuna correzione.
+  // Boid already at the neighbours' centre of mass: no correction.
   SUBCASE("Boid already at the centre of mass") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {50.0, 50.0}},
                                    {{0.0, 0.0}, {40.0, 50.0}},
@@ -545,13 +523,12 @@ TEST_CASE("Testing Rule 3: Cohesion") {
   }
 }
 
-// ===========================================================================
-// TEST 11: Limiti di velocita'
-// Funzione testata: limit_speed (con speed_modulus).
-// ===========================================================================
+// TEST 11: Speed limits
+// Tested function: limit_speed (using speed_modulus).
 
 TEST_CASE("Testing Speed Limits") {
-  // Sopra v_max: il modulo viene riportato a v_max mantenendo la direzione.
+
+  // Above v_max: magnitude is clamped to v_max while preserving direction.
   SUBCASE("Maximum speed limit") {
     pf::Velocity v_lim = pf::limit_speed(3.0, 10.0, {30.0, 40.0});
 
@@ -561,7 +538,7 @@ TEST_CASE("Testing Speed Limits") {
     CHECK(v_lim.v_y == doctest::Approx(8.0));
   }
 
-  // Sotto v_min: il modulo viene portato a v_min, direzione invariata.
+  // Below v_min: magnitude is clamped to v_min, direction unchanged.
   SUBCASE("Minimum speed limit") {
     pf::Velocity v_lim = pf::limit_speed(3.0, 10.0, {1.2, 1.6});
 
@@ -571,7 +548,7 @@ TEST_CASE("Testing Speed Limits") {
     CHECK(v_lim.v_y == doctest::Approx(2.4));
   }
 
-  // Velocita' gia' nel range: nessuna modifica.
+  // Speed already within range: unchanged.
   SUBCASE("Speed already inside the range is unchanged") {
     pf::Velocity v_lim = pf::limit_speed(3.0, 10.0, {3.0, 4.0});
 
@@ -579,8 +556,7 @@ TEST_CASE("Testing Speed Limits") {
     CHECK(v_lim.v_y == doctest::Approx(4.0));
   }
 
-  // La direzione (segno delle componenti) e' preservata anche nel terzo
-  // quadrante.
+  // Direction (sign of components) is preserved in the third quadrant too.
   SUBCASE("Direction is preserved for negative components") {
     pf::Velocity v_lim = pf::limit_speed(3.0, 10.0, {-30.0, -40.0});
 
@@ -588,8 +564,8 @@ TEST_CASE("Testing Speed Limits") {
     CHECK(v_lim.v_y == doctest::Approx(-8.0));
   }
 
-  // Modulo nullo: non e' normalizzabile, la funzione deve restituire il
-  // vettore invariato senza dividere per zero (niente NaN).
+  // Zero magnitude: non-normalizable, the function must return the vector
+  // unchanged without division by zero.
   SUBCASE("Null modulus does not produce NaN") {
     pf::Velocity v_lim = pf::limit_speed(3.0, 10.0, {0.0, 0.0});
 
@@ -599,14 +575,13 @@ TEST_CASE("Testing Speed Limits") {
   }
 }
 
-// ===========================================================================
-// TEST 12: Generazione casuale dei boid
-// Funzione testata: generate_boid.
-// ===========================================================================
+// TEST 12: Random boid generation
+// Tested function: generate_boid.
 
 TEST_CASE("Testing Boid Generation") {
-  // La generazione estrae un modulo uniforme in [v_min, v_max] e un angolo
-  // uniforme in [0, 2pi): il vincolo e' sul modulo, non sulle componenti.
+
+  // Generation draws a uniform magnitude in [v_min, v_max] and a uniform
+  // angle in [0, 2pi): the constraint applies to magnitude, not components.
   SUBCASE("Positions inside the domain and modulus inside [v_min, v_max]") {
     pf::Space space{0.0, 100.0, 0.0, 100.0};
     double const v_min = 3.0;
@@ -627,8 +602,8 @@ TEST_CASE("Testing Boid Generation") {
     }
   }
 
-  // Dominio traslato e con coordinate negative: le distribuzioni devono
-  // usare gli estremi effettivi, non [0, x_max].
+  // Shifted domain with negative coordinates: distributions must use
+  // effective bounds, not [0, x_max].
   SUBCASE("Shifted and negative rectangular domain") {
     pf::Space space{-50.0, 50.0, 100.0, 200.0};
     double const v_min = 1.0;
@@ -649,7 +624,7 @@ TEST_CASE("Testing Boid Generation") {
     }
   }
 
-  // v_min == v_max: tutti i boid hanno lo stesso modulo, direzioni diverse.
+  // v_min == v_max: all boids share the same speed magnitude, different directions.
   SUBCASE("Degenerate speed range (v_min == v_max)") {
     pf::Space space{0.0, 100.0, 0.0, 100.0};
 
@@ -661,11 +636,9 @@ TEST_CASE("Testing Boid Generation") {
   }
 }
 
-// ===========================================================================
-// TEST 13: Costruzione valida di Flock e getter
-// Funzioni testate: Flock::Flock, Flock::boids, Flock::parameters,
+// TEST 13: Valid Flock construction and getters
+// Tested functions: Flock::Flock, Flock::boids, Flock::parameters,
 // Flock::space.
-// ===========================================================================
 
 TEST_CASE("Testing Flock Construction and Getters") {
   pf::Space space{0.0, 800.0, 0.0, 600.0};
@@ -684,10 +657,10 @@ TEST_CASE("Testing Flock Construction and Getters") {
 
   pf::Flock flock(par, space);
 
-  // Il costruttore deve popolare lo stormo con esattamente n boid.
+  // Constructor must populate the flock with exactly n boids.
   CHECK(flock.boids().size() == 25);
 
-  // I getter restituiscono i parametri e il dominio passati in input.
+  // Getters return the input parameters and domain.
   CHECK(flock.parameters().n_boids == doctest::Approx(par.n_boids));
   CHECK(flock.parameters().s == doctest::Approx(par.s));
   CHECK(flock.parameters().a == doctest::Approx(par.a));
@@ -703,10 +676,8 @@ TEST_CASE("Testing Flock Construction and Getters") {
   CHECK(flock.space().y_max == doctest::Approx(space.y_max));
 }
 
-// ===========================================================================
-// TEST 14: Invarianti della classe Flock
-// Funzioni testate: Flock::Flock e check_parameters (eccezioni).
-// ===========================================================================
+// TEST 14: Flock class invariants
+// Tested functions: Flock::Flock and check_parameters (exceptions).
 
 TEST_CASE("Testing Flock Invariants (Exceptions)") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
@@ -723,16 +694,16 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
       1.0     // dt
   };
 
-  // Controllo di riferimento: con parametri validi non si lancia nulla.
+  // Baseline check: valid parameters do not throw.
   CHECK_NOTHROW(pf::Flock(valid_par, space));
 
-  // n <= 0 -> runtime_error (verificato prima di check_parameters).
+  // n <= 0 -> runtime_error (checked before check_parameters).
   SUBCASE("Invalid number of boids") {
     CHECK_THROWS_AS(pf::Flock(valid_par, space), std::invalid_argument);
     CHECK_THROWS_AS(pf::Flock(valid_par, space), std::invalid_argument);
   }
 
-  // Dominio degenere.
+  // Degenerate domain.
   SUBCASE("Invalid space") {
     CHECK_THROWS_AS(pf::Flock(valid_par, pf::Space{0.0, 0.0, 0.0, 100.0}),
                     std::invalid_argument);
@@ -740,7 +711,7 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
                     std::invalid_argument);
   }
 
-  // I fattori s, a, c devono essere strettamente positivi.
+  // Factors s, a, c must be strictly positive.
   SUBCASE("Non-positive s, a, c") {
     pf::Parameters par_s = valid_par;
     par_s.s = -0.05;
@@ -759,7 +730,7 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
     CHECK_THROWS_AS(pf::Flock(par_c, space), std::invalid_argument);
   }
 
-  // I raggi devono essere positivi.
+  // Radii must be positive.
   SUBCASE("Non-positive radii") {
     pf::Parameters par_d = valid_par;
     par_d.d = -100.0;
@@ -770,7 +741,7 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
     CHECK_THROWS_AS(pf::Flock(par_ds, space), std::invalid_argument);
   }
 
-  // Invariante fondamentale del modello: d_s < d.
+  // Core model invariant: d_s < d.
   SUBCASE("Separation radius must be smaller than perception radius") {
     pf::Parameters par_eq = valid_par;
     par_eq.d = 20.0;  // d == d_s
@@ -781,7 +752,7 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
     CHECK_THROWS_AS(pf::Flock(par_lt, space), std::invalid_argument);
   }
 
-  // Vincoli sulle velocita': v_max > 0, v_min >= 0, v_min < v_max.
+  // Speed constraints: v_max > 0, v_min >= 0, v_min < v_max.
   SUBCASE("Invalid speed limits") {
     pf::Parameters par_vmax = valid_par;
     par_vmax.v_max = 0.0;
@@ -799,13 +770,13 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
     par_vinv.v_min = 40.0;  // v_min > v_max
     CHECK_THROWS_AS(pf::Flock(par_vinv, space), std::invalid_argument);
 
-    // v_min = 0 e' invece ammesso dalle invarianti.
+    // v_min = 0 is allowed by the invariants.
     pf::Parameters par_vzero = valid_par;
     par_vzero.v_min = 0.0;
     CHECK_NOTHROW(pf::Flock(par_vzero, space));
   }
 
-  // Il passo temporale deve essere positivo.
+  // Time step must be positive.
   SUBCASE("Non-positive dt") {
     pf::Parameters par_dt = valid_par;
     par_dt.dt = -1.0;
@@ -817,10 +788,8 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
   }
 }
 
-// ===========================================================================
-// TEST 15: Evoluzione temporale
-// Funzione testata: Flock::movement.
-// ===========================================================================
+// TEST 15: Time evolution
+// Tested function: Flock::movement.
 
 TEST_CASE("Testing Time Evolution (movement)") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
@@ -837,9 +806,9 @@ TEST_CASE("Testing Time Evolution (movement)") {
       1.0    // dt
   };
 
-  // Dopo l'aggiornamento i boid restano nel dominio e nei limiti di
-  // velocita', e il loro numero non cambia. Si itera piu' volte per non
-  // testare solo il primo passo.
+  // After the update, boids remain in the domain and within speed limits,
+  // and their count does not change (Iterated multiple times to avoid testing
+  // only the first step).
   SUBCASE("Movement preserves flock constraints") {
     pf::Flock flock(par, space);
 
@@ -862,12 +831,12 @@ TEST_CASE("Testing Time Evolution (movement)") {
     }
   }
 
-  // Verifica esplicita dell'integrazione:
+  // Explicit verification of integration:
   // pos_new = toroidal_space(pos_old + dt * v_new).
   SUBCASE("Positions are updated with dt and the new velocity") {
     pf::Flock flock(par, space);
 
-    std::vector<pf::Boid> const before = flock.boids();  // copia
+    std::vector<pf::Boid> const before = flock.boids();  // copy
 
     flock.movement();
 
@@ -884,8 +853,7 @@ TEST_CASE("Testing Time Evolution (movement)") {
     }
   }
 
-  // Un boid isolato non ha vicini: le tre regole danno contributo nullo e il
-  // modulo generato e' gia' nel range, quindi la velocita' non cambia.
+  // An isolated boid has no neighbours, so velocity is unchanged.
   SUBCASE("A single boid keeps its velocity") {
     pf::Flock flock(par, space);
 
@@ -900,16 +868,13 @@ TEST_CASE("Testing Time Evolution (movement)") {
   }
 }
 
-// ===========================================================================
-// TEST 16: Statistiche sulle velocita'
-// Funzioni testate: mean_velocity, std_dev_velocity.
-// NB: la deviazione standard implementata e' quella di popolazione
-// (divisione per N, non per N-1).
-// ===========================================================================
+// TEST 16: Velocity statistics
+// Tested functions: mean_velocity, std_dev_velocity.
 
 TEST_CASE("Testing Velocity Statistics") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
-  // Moduli identici -> media pari al modulo, deviazione nulla.
+
+  // Identical magnitudes -> mean equal to magnitude, zero standard deviation.
   SUBCASE("Constant modulus gives zero standard deviation") {
     std::vector<pf::Boid> boids = {{{3.0, 4.0}, {0.0, 0.0}},
                                    {{3.0, 4.0}, {0.0, 0.0}}};
@@ -920,7 +885,7 @@ TEST_CASE("Testing Velocity Statistics") {
     CHECK(m_vel == doctest::Approx(5.0));
     CHECK(stats.std_dev_velocity == doctest::Approx(0.0));
   }
-  // Moduli 5 e 10 -> media 7.5; scarti +/- 2.5 -> sqrt(12.5 / 2) = 2.5.
+  // Magnitudes 5 and 10 -> mean 7.5; deviations +/- 2.5 -> sqrt(12.5 / 2) = 2.5.
   SUBCASE("Non-zero standard deviation (two boids)") {
     std::vector<pf::Boid> boids = {{{3.0, 4.0}, {0.0, 0.0}},
                                    {{6.0, 8.0}, {10.0, 0.0}}};
@@ -932,7 +897,7 @@ TEST_CASE("Testing Velocity Statistics") {
     CHECK(stats.std_dev_velocity == doctest::Approx(2.5));
   }
 
-  // Moduli 3, 5, 7 -> media 5; scarti -2, 0, +2 -> sqrt(8 / 3) = 1.632993.
+  // Magnitudes 3, 5, 7 -> mean 5; deviations -2, 0, +2 -> sqrt(8 / 3) = 1.632993.
   SUBCASE("Non-zero standard deviation (three boids)") {
     std::vector<pf::Boid> boids = {{{3.0, 0.0}, {0.0, 0.0}},
                                    {{0.0, 5.0}, {10.0, 0.0}},
@@ -945,7 +910,7 @@ TEST_CASE("Testing Velocity Statistics") {
     CHECK(stats.std_dev_velocity == doctest::Approx(1.632993).epsilon(0.001));
   }
 
-  // Il modulo e' sempre positivo: velocita' opposte danno la stessa media.
+  // Magnitude is always non-negative: opposite velocities yield the same mean.
   SUBCASE("Opposite velocities have the same modulus") {
     std::vector<pf::Boid> boids = {{{3.0, 4.0}, {0.0, 0.0}},
                                    {{-3.0, -4.0}, {10.0, 0.0}}};
@@ -958,16 +923,13 @@ TEST_CASE("Testing Velocity Statistics") {
   }
 }
 
-// ===========================================================================
-// TEST 17: Statistiche sulle distanze
-// Funzioni testate: mean_distance, std_dev_distance.
-// La media e' calcolata su tutte le n(n-1)/2 coppie distinte.
-// ===========================================================================
+// TEST 17: Distance statistics
+// Tested functions: mean_distance, std_dev_distance.
 
 TEST_CASE("Testing Distance Statistics") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
 
-  // Due boid, una sola coppia: media = distanza, deviazione nulla.
+  // Two boids, a single pair: mean = distance, zero standard deviation.
   SUBCASE("Two boids: mean equals the distance") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {0.0, 0.0}},
                                    {{0.0, 0.0}, {3.0, 4.0}}};
@@ -979,7 +941,7 @@ TEST_CASE("Testing Distance Statistics") {
     CHECK(stats.std_dev_distance == doctest::Approx(0.0));
   }
 
-  // Le distanze sono toroidali: 1 e 99 distano 2, non 98.
+  // Distances are toroidal: 1 and 99 are 2 units apart, not 98.
   SUBCASE("Distances are computed on the torus") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {1.0, 50.0}},
                                    {{0.0, 0.0}, {99.0, 50.0}}};
@@ -990,8 +952,8 @@ TEST_CASE("Testing Distance Statistics") {
     CHECK(m_dist == doctest::Approx(2.0));
   }
 
-  // Tre boid ai vertici di un triangolo rettangolo 6-8-10: le coppie
-  // valgono 6, 8, 10 -> media 8; scarti -2, 0, +2 -> sqrt(8 / 3).
+  // Three boids at the vertices of a 6-8-10 right triangle: pairwise
+  // distances are 6, 8, 10 -> mean 8; deviations -2, 0, +2 -> sqrt(8 / 3).
   SUBCASE("Three boids: non-zero standard deviation") {
     std::vector<pf::Boid> boids = {{{0.0, 0.0}, {10.0, 10.0}},
                                    {{0.0, 0.0}, {16.0, 10.0}},
@@ -1005,11 +967,9 @@ TEST_CASE("Testing Distance Statistics") {
   }
 }
 
-// ===========================================================================
-// TEST 18: Casi limite delle statistiche
-// Un solo boid: nessuna coppia, quindi nessuna divisione per zero.
-// ===========================================================================
+// TEST 18: Statistics edge cases
 
+// Single boid: no pairs, preventing division by zero.
 TEST_CASE("Testing Statistics Edge Cases (1 boid)") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
 
@@ -1021,7 +981,7 @@ TEST_CASE("Testing Statistics Edge Cases (1 boid)") {
   CHECK(m_dist == doctest::Approx(0.0));
   CHECK(stats.std_dev_distance == doctest::Approx(0.0));
 
-  // Con un solo boid la media delle velocita' e' il suo stesso modulo.
+  // With a single boid, the mean velocity equals its own magnitude.
   double const m_vel = stats.mean_velocity;
 
   CHECK(m_vel == doctest::Approx(5.0));

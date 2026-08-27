@@ -94,15 +94,10 @@ void simulation(Flock& simulation_flock) {
       triangles[i].setRotation(static_cast<float>(angle_deg));
     }
 
-<<<<<<< HEAD
     // update predators, con la stessa logica dei boid
     for (int i = 0; i != n_p; ++i) {
       auto const i_sz = static_cast<std::size_t>(i);
       pf::Boid const& pred = simulation_flock.predators()[i_sz];
-=======
-    // update predator, con la stessa logica dei boid
-    Boid const& pred = simulation_flock.predator();
->>>>>>> 4c927f4ef145cb45494ecc6e550548793796cbcb
 
       predator_shapes[i_sz].setPosition(static_cast<float>(pred.pos.x),
                                         static_cast<float>(pred.pos.y));

@@ -15,8 +15,7 @@ void check_parameters(Parameters const& par, Space const& space) {
         "Error: It has to be x_min < x_max and y_min < y_max"};
   }
   if (par.n_boids <= 0) {
-    throw std::invalid_argument{
-        "Error: the number of boids must be positive"};
+    throw std::invalid_argument{"Error: the number of boids must be positive"};
   }
   if (par.s <= 0.0 || par.a <= 0.0 || par.c <= 0.0) {
     throw std::invalid_argument{
@@ -48,7 +47,7 @@ void check_parameters(Parameters const& par, Space const& space) {
 
 void check_predator_parameters(Predator_parameters const& par_p,
                                Space const& space) {
-if (par_p.n_predators <= 0) {
+  if (par_p.n_predators <= 0) {
     throw std::invalid_argument{
         "Error: the number of predators must be positive"};
   }
@@ -86,6 +85,7 @@ std::vector<Boid> generate_boid(int n, double v_min, double v_max,
                                 Space const& space) {
   assert(n > 0);
   std::vector<Boid> boids;
+  boids.reserve(static_cast<std::size_t>(n));
 
   std::random_device r;  // seed
   std::default_random_engine eng{r()};
@@ -108,11 +108,18 @@ std::vector<int> neighbours_control(int boid_to_check, double d,
                                     std::vector<Boid> const& boids,
                                     Space const& space) {
   assert(boid_to_check >= 0);
-  assert(boid_to_check < static_cast<int>(boids.size()));
-  std::vector<int> neighbours{};  // int is position in vector "boids" of
-                                  // boid_to_check's neighbours
-  double d_squared = d * d;
   int const n = static_cast<int>(boids.size());
+  assert(boid_to_check < n);
+
+  std::vector<int> neighbours{};  // an int in "neighbours" vector represents
+                                  // the equivalent position in "boids" vector
+                                  // of a boid_to_check's neighbour
+  if (n > 1) {
+    neighbours.reserve(n - 1);
+  }
+
+  double d_squared = d * d;
+
   for (int i = 0; i != n; ++i) {
     if (i != boid_to_check &&
         toroidal_distance_squared(boids[static_cast<std::size_t>(boid_to_check)]
@@ -195,8 +202,10 @@ std::vector<int> preys_control(double d_chase, Boid const& predator,
                                std::vector<Boid> const& boids,
                                Space const& space) {
   std::vector<int> preys{};
-  double const d_chase_double = d_chase * d_chase;
   int const n = static_cast<int>(boids.size());
+  preys.reserve(n);
+  
+  double const d_chase_double = d_chase * d_chase;
   for (int i = 0; i != n; ++i) {
     if (toroidal_distance_squared(boids[static_cast<std::size_t>(i)].pos,
                                   predator.pos, space) < d_chase_double) {
@@ -258,7 +267,6 @@ Velocity limit_speed(double v_min, double v_max, Velocity v_tot) {
 Flock::Flock(Parameters const& par, Space const& space,
              Predator_parameters const& par_p)
     : par_b_{par}, par_p_{par_p}, space_{space} {
-
   check_parameters(par_b_, space_);
   check_predator_parameters(par_p_, space_);
 
@@ -278,11 +286,13 @@ Space const& Flock::space() const { return space_; }
 
 void Flock::movement() {
   std::vector<Velocity> new_velocities;
+  new_velocities.reserve(boids_.size());
 
   int const n = static_cast<int>(boids_.size());
 
   for (int i = 0; i != n; ++i) {
-    std::vector<int> neighbours = neighbours_control(i, par_b_.d, boids_, space_);
+    std::vector<int> neighbours =
+        neighbours_control(i, par_b_.d, boids_, space_);
 
     Velocity const v1 =
         separation(par_b_.s, par_b_.d_s, i, neighbours, boids_, space_);

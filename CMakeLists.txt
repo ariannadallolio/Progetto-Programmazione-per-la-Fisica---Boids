@@ -44,7 +44,8 @@ add_executable(boids
     flock.cpp
     statistics.cpp
     sfml_rendering.cpp
-    histogram.cpp)
+    histogram.cpp
+    input_parameters.cpp)
 # nel caso si usi SFML. analogamente per eventuali altre librerie
 target_link_libraries(boids PRIVATE sfml-graphics)
 target_link_libraries(

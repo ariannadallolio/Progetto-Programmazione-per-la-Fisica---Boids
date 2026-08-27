@@ -14,7 +14,6 @@ int main() {
     pf::Parameters par;
     pf::Predator_parameters par_p;
     pf::Space space;
-    int n{};
 
     std::cout << "Do you wanto to insert the parameters manually? (Y/n)";
 
@@ -39,13 +38,14 @@ int main() {
       }
 
       std::string label;
-      if (!(file >> label >> par.n_boids >> label >> par.s >> label >> par.a >> label >>
-            par.c >> label >> par.d >> label >> par.d_s >> label >> par.v_min >>
-            label >> par.v_max >> label >> par.dt >> label >> space.x_min >>
-            label >> space.x_max >> label >> space.y_min >> label >>
-            space.y_max >> label >> par_p.n_predators>> par_p.s_p >> label >> par_p.c_p >> label >>
-            par_p.d_chase >> label >> par_p.d_escape >> label >>
-            par_p.v_min_p >> label >> par_p.v_max_p)) {
+      if (!(file >> label >> par.n_boids >> label >> par.s >> label >> par.a >>
+            label >> par.c >> label >> par.d >> label >> par.d_s >> label >>
+            par.v_min >> label >> par.v_max >> label >> par.dt >> label >>
+            space.x_min >> label >> space.x_max >> label >> space.y_min >>
+            label >> space.y_max >> label >> par_p.n_predators >> label >>
+            par_p.s_p >> label >> par_p.c_p >> label >> par_p.d_chase >>
+            label >> par_p.d_escape >> label >> par_p.v_min_p >> label >>
+            par_p.v_max_p)) {
         throw std::runtime_error{
             "Error: Missing parameters or wrong file format"};
       }
@@ -53,8 +53,7 @@ int main() {
 
     if (answer == "y" || answer == "Y") {
       std::cout << "Number of boids: ";
-      if (!(std::cin >> n)) {
-        throw std::runtime_error{"Error: The parameter has to be an integer"};
+      if (!(std::cin >> par.n_boids)) {
         throw std::runtime_error{"Error: The parameter has to be an integer"};
       }
 
@@ -116,6 +115,10 @@ int main() {
       std::cout << "y_max: ";
       if (!(std::cin >> space.y_max)) {
         throw std::runtime_error{"Error: Invalid input"};
+      }
+
+      if (!(std::cin >> par_p.n_predators)) {
+        throw std::runtime_error{"Error: The parameter has to be an integer"};
       }
       std::cout << "Predator separation factor s_p: ";
       if (!(std::cin >> par_p.s_p)) {

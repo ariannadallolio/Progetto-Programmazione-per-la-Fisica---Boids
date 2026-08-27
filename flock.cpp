@@ -229,8 +229,9 @@ Velocity chase(double c_p, Boid const& predator, std::vector<int> const& preys,
                                predator.pos, space);
   }
   double const n = static_cast<int>(preys.size());
-  Position const center_direction = (sum * (1.0 / n));
-  v_c = {c_p * center_direction.x, c_p * center_direction.y};
+  Position const cm = ((1.0 / n)*sum);
+  Position const v3_pos = c_p * cm;
+  v_c = {v3_pos.x, v3_pos.y};
   return v_c;
 }
 
@@ -283,8 +284,6 @@ Flock::Flock(Parameters const& par, Space const& space,
       generate_boid(par_p_.n_predators, par_p_.v_min_p, par_p_.v_max_p, space_);
 }
 
-// getter per prendere il vettore di boid e usarlo x esempio per media e
-// dev std
 std::vector<Boid> const& Flock::boids() const { return boids_; }
 std::vector<Boid> const& Flock::predators() const { return predators_; }
 bool Flock::has_predator() const { return !predators_.empty(); }

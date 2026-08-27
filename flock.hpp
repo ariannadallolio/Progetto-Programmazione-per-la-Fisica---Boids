@@ -8,6 +8,7 @@
 namespace pf {
 
 struct Parameters {
+  int n_boids;
   double s;
   double a;
   double c;
@@ -19,6 +20,7 @@ struct Parameters {
 };
 
 struct Predator_parameters {
+  int n_predators;
   double s_p;       // fattore di separazione dal predatore
   double c_p;       // fattore di coesione del predatore
   double d_chase;   // raggio di azione del predatore
@@ -59,14 +61,14 @@ Velocity limit_speed(double v_min, double v_max, Velocity v_tot);
 
 class Flock {
  private:
-  Parameters par_;
+  Parameters par_b_;
   Predator_parameters par_p_;
   Space space_;
   std::vector<Boid> boids_;
   Boid predator_;
 
  public:
-  Flock(int n, Parameters const& par, Space const& space,
+  Flock(Parameters const& par, Space const& space,
         Predator_parameters const& par_p = Predator_parameters{});
 
   std::vector<Boid> const& boids() const;

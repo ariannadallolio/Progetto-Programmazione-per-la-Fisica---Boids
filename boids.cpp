@@ -1,6 +1,5 @@
 #include "boids.hpp"
 
-#include <cassert>
 #include <cmath>
 
 namespace pf {

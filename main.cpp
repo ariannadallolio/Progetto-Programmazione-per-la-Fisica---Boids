@@ -7,8 +7,8 @@
 
 #include "boids.hpp"
 #include "flock.hpp"
-#include "sfml_rendering.hpp"
 #include "histogram.hpp"
+#include "sfml_rendering.hpp"
 
 int main() {
   try {
@@ -52,8 +52,7 @@ int main() {
     if (answer == "y" || answer == "Y") {
       std::cout << "Number of boids: ";
       if (!(std::cin >> n)) {
-        throw std::runtime_error{
-            "Error: The parameter has to be an integer"};
+        throw std::runtime_error{"Error: The parameter has to be an integer"};
       }
 
       std::cout << "Separation factor s: ";
@@ -117,12 +116,11 @@ int main() {
       }
     }
 
-    pf::Flock simulation_flock(n, par,
-                               space);
+    pf::Flock simulation_flock(n, par, space);
     pf::simulation(simulation_flock);
     pf::graph();
 
-  } catch (std::exception const& e) { 
+  } catch (std::exception const& e) {
     std::cerr << e.what() << '\n';
     return EXIT_FAILURE;
   } catch (...) {

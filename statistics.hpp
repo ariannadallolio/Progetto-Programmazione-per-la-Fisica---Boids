@@ -1,9 +1,10 @@
-#ifndef statistics_HPP
-#define statistics_HPP
+#ifndef STATISTICS_HPP
+#define STATISTICS_HPP
 #include <fstream>
 #include <vector>
 
 #include "boids.hpp"
+
 namespace pf {
 
 struct Statistics {

@@ -3,8 +3,9 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <fstream>
+#include <stdexcept>
+#include <vector>
 
-#include "flock.hpp"
 #include "statistics.hpp"
 
 namespace pf {
@@ -78,10 +79,10 @@ void simulation(Flock& simulation_flock) {
                                 // frame to create reliable histograms
     }
 
-    std::vector<pf::Boid> const& boids = simulation_flock.boids();
+    std::vector<Boid> const& boids = simulation_flock.boids();
 
     for (std::size_t i = 0; i != boids.size(); ++i) {
-      pf::Boid const& boid = boids[i];
+      Boid const& boid = boids[i];
       // Posizione del boid
       triangles[i].setPosition(static_cast<float>(boid.pos.x),
                                static_cast<float>(boid.pos.y));
@@ -93,10 +94,15 @@ void simulation(Flock& simulation_flock) {
       triangles[i].setRotation(static_cast<float>(angle_deg));
     }
 
+<<<<<<< HEAD
     // update predators, con la stessa logica dei boid
     for (int i = 0; i != n_p; ++i) {
       auto const i_sz = static_cast<std::size_t>(i);
       pf::Boid const& pred = simulation_flock.predators()[i_sz];
+=======
+    // update predator, con la stessa logica dei boid
+    Boid const& pred = simulation_flock.predator();
+>>>>>>> 4c927f4ef145cb45494ecc6e550548793796cbcb
 
       predator_shapes[i_sz].setPosition(static_cast<float>(pred.pos.x),
                                         static_cast<float>(pred.pos.y));

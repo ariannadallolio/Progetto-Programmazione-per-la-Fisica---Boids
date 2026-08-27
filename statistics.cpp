@@ -22,6 +22,7 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
       distances;  // temporary vector to save distances and use them for
                   // standard deviation, so we optimize the function by
                   // calculating sqrt::toroidal_distance just one time
+  distances.reserve(static_cast<std::size_t>(n_pairs));
   for (int i = 0; i != n; ++i) {
     for (int j = i + 1; j != n; j++) {
       auto const i_sz = static_cast<std::size_t>(i);
@@ -47,6 +48,7 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
       speeds;  // temporary vector to save distances and use them for
                //  standard deviation, so we optimize the function by
                //  calculating speeds just one time
+  speeds.reserve(boid.size());
   for (int i = 0; i != n; ++i) {
     double modulus = speed_modulus(boid[static_cast<std::size_t>(i)].vel);
     speeds.push_back(modulus);

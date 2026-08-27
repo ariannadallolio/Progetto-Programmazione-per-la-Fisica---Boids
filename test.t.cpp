@@ -671,6 +671,7 @@ TEST_CASE("Testing Flock Construction and Getters") {
   pf::Space space{0.0, 800.0, 0.0, 600.0};
 
   pf::Parameters const par{
+      100,    // n
       0.05,   // s
       0.05,   // a
       0.005,  // c
@@ -681,12 +682,13 @@ TEST_CASE("Testing Flock Construction and Getters") {
       1.0     // dt
   };
 
-  pf::Flock flock(25, par, space);
+  pf::Flock flock(par, space);
 
   // Il costruttore deve popolare lo stormo con esattamente n boid.
   CHECK(flock.boids().size() == 25);
 
   // I getter restituiscono i parametri e il dominio passati in input.
+  CHECK(flock.parameters().n_boids == doctest::Approx(par.n_boids));
   CHECK(flock.parameters().s == doctest::Approx(par.s));
   CHECK(flock.parameters().a == doctest::Approx(par.a));
   CHECK(flock.parameters().c == doctest::Approx(par.c));
@@ -710,6 +712,7 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
 
   pf::Parameters const valid_par{
+      100,    // n
       0.05,   // s
       0.05,   // a
       0.005,  // c
@@ -721,19 +724,19 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
   };
 
   // Controllo di riferimento: con parametri validi non si lancia nulla.
-  CHECK_NOTHROW(pf::Flock(10, valid_par, space));
+  CHECK_NOTHROW(pf::Flock(valid_par, space));
 
   // n <= 0 -> runtime_error (verificato prima di check_parameters).
   SUBCASE("Invalid number of boids") {
-    CHECK_THROWS_AS(pf::Flock(-5, valid_par, space), std::invalid_argument);
-    CHECK_THROWS_AS(pf::Flock(0, valid_par, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(valid_par, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(valid_par, space), std::invalid_argument);
   }
 
   // Dominio degenere.
   SUBCASE("Invalid space") {
-    CHECK_THROWS_AS(pf::Flock(10, valid_par, pf::Space{0.0, 0.0, 0.0, 100.0}),
+    CHECK_THROWS_AS(pf::Flock(valid_par, pf::Space{0.0, 0.0, 0.0, 100.0}),
                     std::invalid_argument);
-    CHECK_THROWS_AS(pf::Flock(10, valid_par, pf::Space{0.0, 100.0, 50.0, 20.0}),
+    CHECK_THROWS_AS(pf::Flock(valid_par, pf::Space{0.0, 100.0, 50.0, 20.0}),
                     std::invalid_argument);
   }
 
@@ -741,76 +744,76 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
   SUBCASE("Non-positive s, a, c") {
     pf::Parameters par_s = valid_par;
     par_s.s = -0.05;
-    CHECK_THROWS_AS(pf::Flock(10, par_s, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_s, space), std::invalid_argument);
 
     pf::Parameters par_s0 = valid_par;
     par_s0.s = 0.0;
-    CHECK_THROWS_AS(pf::Flock(10, par_s0, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_s0, space), std::invalid_argument);
 
     pf::Parameters par_a = valid_par;
     par_a.a = -0.05;
-    CHECK_THROWS_AS(pf::Flock(10, par_a, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_a, space), std::invalid_argument);
 
     pf::Parameters par_c = valid_par;
     par_c.c = -0.005;
-    CHECK_THROWS_AS(pf::Flock(10, par_c, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_c, space), std::invalid_argument);
   }
 
   // I raggi devono essere positivi.
   SUBCASE("Non-positive radii") {
     pf::Parameters par_d = valid_par;
     par_d.d = -100.0;
-    CHECK_THROWS_AS(pf::Flock(10, par_d, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_d, space), std::invalid_argument);
 
     pf::Parameters par_ds = valid_par;
     par_ds.d_s = 0.0;
-    CHECK_THROWS_AS(pf::Flock(10, par_ds, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_ds, space), std::invalid_argument);
   }
 
   // Invariante fondamentale del modello: d_s < d.
   SUBCASE("Separation radius must be smaller than perception radius") {
     pf::Parameters par_eq = valid_par;
     par_eq.d = 20.0;  // d == d_s
-    CHECK_THROWS_AS(pf::Flock(10, par_eq, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_eq, space), std::invalid_argument);
 
     pf::Parameters par_lt = valid_par;
     par_lt.d = 10.0;  // d < d_s
-    CHECK_THROWS_AS(pf::Flock(10, par_lt, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_lt, space), std::invalid_argument);
   }
 
   // Vincoli sulle velocita': v_max > 0, v_min >= 0, v_min < v_max.
   SUBCASE("Invalid speed limits") {
     pf::Parameters par_vmax = valid_par;
     par_vmax.v_max = 0.0;
-    CHECK_THROWS_AS(pf::Flock(10, par_vmax, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_vmax, space), std::invalid_argument);
 
     pf::Parameters par_vmin = valid_par;
     par_vmin.v_min = -1.0;
-    CHECK_THROWS_AS(pf::Flock(10, par_vmin, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_vmin, space), std::invalid_argument);
 
     pf::Parameters par_veq = valid_par;
     par_veq.v_min = 30.0;  // v_min == v_max
-    CHECK_THROWS_AS(pf::Flock(10, par_veq, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_veq, space), std::invalid_argument);
 
     pf::Parameters par_vinv = valid_par;
     par_vinv.v_min = 40.0;  // v_min > v_max
-    CHECK_THROWS_AS(pf::Flock(10, par_vinv, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_vinv, space), std::invalid_argument);
 
     // v_min = 0 e' invece ammesso dalle invarianti.
     pf::Parameters par_vzero = valid_par;
     par_vzero.v_min = 0.0;
-    CHECK_NOTHROW(pf::Flock(10, par_vzero, space));
+    CHECK_NOTHROW(pf::Flock(par_vzero, space));
   }
 
   // Il passo temporale deve essere positivo.
   SUBCASE("Non-positive dt") {
     pf::Parameters par_dt = valid_par;
     par_dt.dt = -1.0;
-    CHECK_THROWS_AS(pf::Flock(10, par_dt, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_dt, space), std::invalid_argument);
 
     pf::Parameters par_dt0 = valid_par;
     par_dt0.dt = 0.0;
-    CHECK_THROWS_AS(pf::Flock(10, par_dt0, space), std::invalid_argument);
+    CHECK_THROWS_AS(pf::Flock(par_dt0, space), std::invalid_argument);
   }
 }
 
@@ -823,6 +826,7 @@ TEST_CASE("Testing Time Evolution (movement)") {
   pf::Space space{0.0, 100.0, 0.0, 100.0};
 
   pf::Parameters const par{
+      100,   // n
       0.1,   // s
       0.1,   // a
       0.1,   // c
@@ -837,7 +841,7 @@ TEST_CASE("Testing Time Evolution (movement)") {
   // velocita', e il loro numero non cambia. Si itera piu' volte per non
   // testare solo il primo passo.
   SUBCASE("Movement preserves flock constraints") {
-    pf::Flock flock(20, par, space);
+    pf::Flock flock(par, space);
 
     for (int step = 0; step != 10; ++step) {
       flock.movement();
@@ -861,7 +865,7 @@ TEST_CASE("Testing Time Evolution (movement)") {
   // Verifica esplicita dell'integrazione:
   // pos_new = toroidal_space(pos_old + dt * v_new).
   SUBCASE("Positions are updated with dt and the new velocity") {
-    pf::Flock flock(15, par, space);
+    pf::Flock flock(par, space);
 
     std::vector<pf::Boid> const before = flock.boids();  // copia
 
@@ -883,7 +887,7 @@ TEST_CASE("Testing Time Evolution (movement)") {
   // Un boid isolato non ha vicini: le tre regole danno contributo nullo e il
   // modulo generato e' gia' nel range, quindi la velocita' non cambia.
   SUBCASE("A single boid keeps its velocity") {
-    pf::Flock flock(1, par, space);
+    pf::Flock flock(par, space);
 
     pf::Velocity const v_before = flock.boids()[0].vel;
 

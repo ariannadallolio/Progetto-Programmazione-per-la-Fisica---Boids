@@ -7,7 +7,7 @@
 
 #include "boids.hpp"
 #include "flock.hpp"
-#include "rendering.hpp"
+#include "sfml_rendering.hpp"
 #include "histogram.hpp"
 
 int main() {

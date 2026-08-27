@@ -1,4 +1,4 @@
-#include "rendering.hpp"
+#include "sfml_rendering.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <cmath>

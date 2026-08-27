@@ -73,10 +73,10 @@ void simulation(Flock& simulation_flock) {
                                 // frame to create reliable histograms
     }
 
-    std::vector<pf::Boid> const& boids = simulation_flock.boids();
+    std::vector<Boid> const& boids = simulation_flock.boids();
 
     for (std::size_t i = 0; i != boids.size(); ++i) {
-      pf::Boid const& boid = boids[i];
+      Boid const& boid = boids[i];
       // Posizione del boid
       triangles[i].setPosition(static_cast<float>(boid.pos.x),
                                static_cast<float>(boid.pos.y));
@@ -89,7 +89,7 @@ void simulation(Flock& simulation_flock) {
     }
 
     // update predator, con la stessa logica dei boid
-    pf::Boid const& pred = simulation_flock.predator();
+    Boid const& pred = simulation_flock.predator();
 
     predator_shape.setPosition(static_cast<float>(pred.pos.x),
                                static_cast<float>(pred.pos.y));

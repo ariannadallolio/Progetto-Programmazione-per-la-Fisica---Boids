@@ -15,8 +15,7 @@ void check_parameters(Parameters const& par, Space const& space) {
         "Error: It has to be x_min < x_max and y_min < y_max"};
   }
   if (par.n_boids <= 0) {
-    throw std::invalid_argument{
-        "Error: the number of boids must be positive"};
+    throw std::invalid_argument{"Error: the number of boids must be positive"};
   }
   if (par.s <= 0.0 || par.a <= 0.0 || par.c <= 0.0) {
     throw std::invalid_argument{
@@ -48,7 +47,7 @@ void check_parameters(Parameters const& par, Space const& space) {
 
 void check_predator_parameters(Predator_parameters const& par_p,
                                Space const& space) {
-if (par_p.n_predators <= 0) {
+  if (par_p.n_predators <= 0) {
     throw std::invalid_argument{
         "Error: the number of predators must be positive"};
   }
@@ -226,18 +225,18 @@ Velocity chase(double c_p, Boid const& predator, std::vector<int> const& preys,
 }
 
 Velocity escape(double s_p, double d_escape, Boid const& boid,
-                Boid const& predator, Space const& space) {
+                std::vector<Boid> const& predators, Space const& space) {
   Velocity v4{};
-
-  if (toroidal_distance_squared(boid.pos, predator.pos, space) >=
-      d_escape * d_escape) {
-    return v4;
+  double const d_escape_squared = d_escape * d_escape;
+  for (Boid const& predator : predators) {
+    if (toroidal_distance_squared(boid.pos, predator.pos, space) <
+        d_escape_squared) {
+      Position const diff = toroidal_difference(predator.pos, boid.pos, space);
+      Position const v_pos = -s_p * diff;
+      v4 += Velocity{v_pos.x,
+                     v_pos.y};  // sommo le velocità legate a più predatori
+    }
   }
-
-  // Stessa struttura di separation, ma con un solo "vicino": il predatore.
-  Position const diff = toroidal_difference(predator.pos, boid.pos, space);
-  Position const v_pos = -s_p * diff;
-  v4 = {v_pos.x, v_pos.y};
   return v4;
 }
 
@@ -255,23 +254,30 @@ Velocity limit_speed(double v_min, double v_max, Velocity v_tot) {
   return v_tot;
 }
 
-Flock::Flock(Parameters const& par, Space const& space,
-             Predator_parameters const& par_p)
-    : par_b_{par}, par_p_{par_p}, space_{space} {
-
+Flock::Flock(Parameters const& par, Space const& space)
+    : par_b_{par}, par_p_{}, space_{space}{
   check_parameters(par_b_, space_);
-  check_predator_parameters(par_p_, space_);
 
   boids_ = generate_boid(par_b_.n_boids, par_b_.v_min, par_b_.v_max, space_);
-  // per generare il predatore
-  predator_ = generate_boid(par_p_.n_predators, par_p_.v_min_p, par_p_.v_max_p,
-                            space_)[0];  // da mettere il numero di predatori
+}
+
+// costruttore di questo Flock crea uno stormo con predatore utilizzando il
+// primo costruttore
+Flock::Flock(Parameters const& par, Space const& space,
+             Predator_parameters const& par_p)
+    : Flock(par, space) {  // costruttore delegante
+  check_predator_parameters(par_p, space_);
+
+  par_p_ = par_p;
+  predators_ =
+      generate_boid(par_p_.n_predators, par_p_.v_min_p, par_p_.v_max_p, space_);
 }
 
 // getter per prendere il vettore di boid e usarlo x esempio per media e
 // dev std
 std::vector<Boid> const& Flock::boids() const { return boids_; }
-Boid const& Flock::predator() const { return predator_; }
+std::vector<Boid> const& Flock::predators() const { return predators_; }
+bool Flock::has_predator() const { return !predators_.empty(); }
 Parameters const& Flock::parameters() const { return par_b_; }
 Predator_parameters const& Flock::predator_parameters() const { return par_p_; }
 Space const& Flock::space() const { return space_; }
@@ -282,15 +288,17 @@ void Flock::movement() {
   int const n = static_cast<int>(boids_.size());
 
   for (int i = 0; i != n; ++i) {
-    std::vector<int> neighbours = neighbours_control(i, par_b_.d, boids_, space_);
+    std::vector<int> neighbours =
+        neighbours_control(i, par_b_.d, boids_, space_);
 
     Velocity const v1 =
         separation(par_b_.s, par_b_.d_s, i, neighbours, boids_, space_);
     Velocity const v2 = alignment(par_b_.a, i, neighbours, boids_);
     Velocity const v3 = cohesion(par_b_.c, i, neighbours, boids_, space_);
     auto const i_sz = static_cast<std::size_t>(i);
+    // se predators_ e' vuoto il ciclo non parte e il contributo e' nullo
     Velocity const v4 =
-        escape(par_p_.s_p, par_p_.d_escape, boids_[i_sz], predator_, space_);
+        escape(par_p_.s_p, par_p_.d_escape, boids_[i_sz], predators_, space_);
 
     new_velocities.push_back(limit_speed(par_b_.v_min, par_b_.v_max,
                                          boids_[i_sz].vel + v1 + v2 + v3 + v4));
@@ -308,16 +316,19 @@ void Flock::movement() {
   }
 
   // predator
-  std::vector<int> const preys =
-      preys_control(par_p_.d_chase, predator_, boids_, space_);
-  Velocity const v_chase = chase(par_p_.c_p, predator_, preys, boids_, space_);
-  predator_.vel =
-      limit_speed(par_p_.v_min_p, par_p_.v_max_p, predator_.vel + v_chase);
+  for (Boid& predator : predators_) {
+    std::vector<int> const preys =
+        preys_control(par_p_.d_chase, predator, boids_, space_);
+    Velocity const v_chase =
+        chase(par_p_.c_p, predator, preys, boids_, space_);
+    predator.vel =
+        limit_speed(par_p_.v_min_p, par_p_.v_max_p, predator.vel + v_chase);
 
-  // calcolo nuova posizione predatore
-  Position const newp_p = {predator_.pos.x + par_b_.dt * predator_.vel.v_x,
-                           predator_.pos.y + par_b_.dt * predator_.vel.v_y};
-  predator_.pos = toroidal_space(newp_p, space_);
+    // calcolo nuova posizione predatore
+    Position const newp_p = {predator.pos.x + par_b_.dt * predator.vel.v_x,
+                             predator.pos.y + par_b_.dt * predator.vel.v_y};
+    predator.pos = toroidal_space(newp_p, space_);
+  }
 }
 
 }  // namespace pf

@@ -21,12 +21,12 @@ struct Parameters {
 
 struct Predator_parameters {
   int n_predators;
-  double s_p;       // fattore di separazione dal predatore
-  double c_p;       // fattore di coesione del predatore
-  double d_chase;   // raggio di azione del predatore
-  double d_escape;  // raggio di percezione dei boid del predatore
-  double v_min_p;   // velocita' minima predatore
-  double v_max_p;   // velocita' massima predatore
+  double s_p;
+  double c_p;
+  double d_chase;
+  double d_escape;
+  double v_min_p;
+  double v_max_p;
 };
 
 void check_parameters(Parameters const& par, Space const& space);
@@ -55,7 +55,7 @@ std::vector<int> preys_control(double d_chase, Boid const& predator,
 Velocity chase(double c_p, Boid const& predator, std::vector<int> const& preys,
                std::vector<Boid> const& boids, Space const& space);
 Velocity escape(double s_p, double d_escape, Boid const& boid,
-                Boid const& predator, Space const& space);
+                std::vector<Boid> const& predators, Space const& space);
 
 Velocity limit_speed(double v_min, double v_max, Velocity v_tot);
 
@@ -65,14 +65,17 @@ class Flock {
   Predator_parameters par_p_;
   Space space_;
   std::vector<Boid> boids_;
-  Boid predator_;
+  std::vector<Boid> predators_;
 
  public:
+  Flock(Parameters const& par, Space const& space);
+  // with predator
   Flock(Parameters const& par, Space const& space,
-        Predator_parameters const& par_p = Predator_parameters{});
+        Predator_parameters const& par_p);
 
   std::vector<Boid> const& boids() const;
-  Boid const& predator() const;
+  std::vector<Boid> const& predators() const;
+  bool has_predator() const;
   Parameters const& parameters() const;
   Predator_parameters const& predator_parameters() const;
   Space const& space() const;

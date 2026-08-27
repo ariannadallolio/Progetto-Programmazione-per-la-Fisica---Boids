@@ -11,7 +11,7 @@ x_min: 0.0
 x_max: 1200.0
 y_min: 0.0
 y_max: 1000.0
-predators: 1
+predators: 3
 separation_predator: 0.3
 cohesion_predator: 0.007
 chase_distance: 200.0

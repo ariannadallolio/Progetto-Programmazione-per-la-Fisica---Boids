@@ -40,7 +40,7 @@ int main() {
 
     bool const has_predator=(answer_predator == "Y" || answer_predator == "y");
 
-    std::cout << "Do you wanto to insert the parameters manually? (Y/n) ";
+    std::cout << "Do you wanto to insert the parameters manually? (Y/n)";
 
     std::string answer{};
     if (!(std::cin >> answer)) {

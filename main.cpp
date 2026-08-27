@@ -7,7 +7,6 @@
 #include "boids.hpp"
 #include "flock.hpp"
 #include "histogram.hpp"
-#include "histogram.hpp"
 #include "sfml_rendering.hpp"
 
 int main() {
@@ -148,7 +147,6 @@ int main() {
     pf::simulation(simulation_flock);
     pf::graph();
 
-  } catch (std::exception const& e) {
   } catch (std::exception const& e) {
     std::cerr << e.what() << '\n';
     return EXIT_FAILURE;

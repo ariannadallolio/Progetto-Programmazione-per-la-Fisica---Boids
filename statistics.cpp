@@ -65,7 +65,7 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
 }
 
 void print(Statistics const& stats, int seconds) {
-  std::cout <<seconds << " s"<<'\n'
+  std::cout << seconds << " s" << '\n'
             << "Mean distance: " << stats.mean_distance << " +/- "
             << stats.std_dev_distance << '\n'
             << "Mean Velocity:" << stats.mean_velocity << " +/- "
@@ -73,7 +73,8 @@ void print(Statistics const& stats, int seconds) {
 }
 void save_for_root(Statistics const& stats, std::ofstream& file,
                    int frame_count) {
-  file << frame_count <<'\t'<< stats.mean_distance << '\t' << stats.std_dev_distance
-       << '\t' << stats.mean_velocity << '\t' << stats.std_dev_velocity << '\n';
+  file << frame_count << '\t' << stats.mean_distance << '\t'
+       << stats.std_dev_distance << '\t' << stats.mean_velocity << '\t'
+       << stats.std_dev_velocity << '\n';
 }
 }  // namespace pf

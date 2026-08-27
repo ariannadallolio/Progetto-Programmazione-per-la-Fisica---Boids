@@ -59,9 +59,9 @@ void simulation(Flock& simulation_flock) {
 
     if (frame_count % (print_every) == 0) {
       int seconds = frame_count / print_every;
-      print(history, seconds);  // printing datas just 1 time per second, while we save
-                       // datas on a txt document for every frame to create
-                       // reliable histograms
+      print(history, seconds);  // printing datas just 1 time per second, while
+                                // we save datas on a txt document for every
+                                // frame to create reliable histograms
     }
 
     std::vector<pf::Boid> const& boids = simulation_flock.boids();

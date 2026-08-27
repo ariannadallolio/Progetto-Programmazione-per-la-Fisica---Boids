@@ -1,24 +1,26 @@
 #include "histogram.hpp"
-#include <iostream>
+
 #include <fstream>
+#include <iostream>
+
 #include "TCanvas.h"
 #include "TH1F.h"
 
 namespace pf {
 void graph() {
-  TH1F *h_dist =
-      new TH1F("h_dist", "History of Boids' Mean Distance;Distance;Frequency (numbers of frame)", 50,
-               0.0, 700.0);
-  TH1F *h_vel =
-      new TH1F("h_vel", "History of Flock's Mean Velocity;Velocity;Frequency (numbers of frame)", 50,
-               0.0, 50.0);
+  TH1F *h_dist = new TH1F(
+      "h_dist",
+      "History of Boids' Mean Distance;Distance;Frequency (numbers of frame)",
+      50, 0.0, 700.0);
+  TH1F *h_vel = new TH1F(
+      "h_vel",
+      "History of Flock's Mean Velocity;Velocity;Frequency (numbers of frame)",
+      50, 0.0, 50.0);
 
-  // 2. Apriamo il file
   std::ifstream file("statistics.txt");
   if (!file.is_open()) {
-    std::runtime_error {"Impossible to read statistics.txt"};
+    throw std::runtime_error{"Impossible to read statistics.txt"};
   }
-
 
   double time, mean_d, std_d, mean_v, std_v;
   while (file >> time >> mean_d >> std_d >> mean_v >> std_v) {
@@ -37,7 +39,7 @@ void graph() {
   h_vel->SetFillColor(kBlue);
   h_vel->Draw();
 
-c1->SaveAs("flock_statistics.png");
-file.close();
+  c1->SaveAs("flock_statistics.png");
+  file.close();
 }
 }  // namespace pf

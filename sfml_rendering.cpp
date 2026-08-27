@@ -3,8 +3,9 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <fstream>
+#include <stdexcept>
+#include <vector>
 
-#include "flock.hpp"
 #include "statistics.hpp"
 
 namespace pf {

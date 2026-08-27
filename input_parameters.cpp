@@ -1,6 +1,8 @@
 #include "input_parameters.hpp"
 
 #include <fstream>
+#include <iostream>
+#include <stdexcept>
 
 namespace pf {
 template <typename T>

@@ -1,7 +1,8 @@
 #include "histogram.hpp"
 
+#include <cstdio>
 #include <fstream>
-#include <iostream>
+#include <stdexcept>
 
 #include "TCanvas.h"
 #include "TH1F.h"
@@ -44,6 +45,5 @@ void graph() {
   file.close();
 
   std::remove("statistics.txt");
-
 }
 }  // namespace pf

@@ -1,7 +1,7 @@
 #ifndef INPUT_PARAMETERS_HPP
 #define INPUT_PARAMETERS_HPP
 
-#include <iostream>
+#include <string>
 
 #include "flock.hpp"
 

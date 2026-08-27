@@ -264,14 +264,8 @@ Velocity limit_speed(double v_min, double v_max, Velocity v_tot) {
   return v_tot;
 }
 
-<<<<<<< HEAD
 Flock::Flock(Parameters const& par, Space const& space)
     : par_b_{par}, par_p_{}, space_{space}{
-=======
-Flock::Flock(Parameters const& par, Space const& space,
-             Predator_parameters const& par_p)
-    : par_b_{par}, par_p_{par_p}, space_{space} {
->>>>>>> 4c927f4ef145cb45494ecc6e550548793796cbcb
   check_parameters(par_b_, space_);
 
   boids_ = generate_boid(par_b_.n_boids, par_b_.v_min, par_b_.v_max, space_);

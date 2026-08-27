@@ -39,11 +39,11 @@ int main() {
       }
 
       std::string label;
-      if (!(file >> label >> n >> label >> par.s >> label >> par.a >> label >>
+      if (!(file >> label >> par.n_boids >> label >> par.s >> label >> par.a >> label >>
             par.c >> label >> par.d >> label >> par.d_s >> label >> par.v_min >>
             label >> par.v_max >> label >> par.dt >> label >> space.x_min >>
             label >> space.x_max >> label >> space.y_min >> label >>
-            space.y_max >> label >> par_p.s_p >> label >> par_p.c_p >> label >>
+            space.y_max >> label >> par_p.n_predators>> par_p.s_p >> label >> par_p.c_p >> label >>
             par_p.d_chase >> label >> par_p.d_escape >> label >>
             par_p.v_min_p >> label >> par_p.v_max_p)) {
         throw std::runtime_error{
@@ -143,7 +143,7 @@ int main() {
       }
     }
 
-    pf::Flock simulation_flock(n, par, space, par_p);
+    pf::Flock simulation_flock(par, space, par_p);
     pf::simulation(simulation_flock);
     pf::graph();
 

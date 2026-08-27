@@ -15,6 +15,6 @@ predators: 1
 separation_predator: 0.3
 cohesion_predator: 0.007
 chase_distance: 300.0
-escape_distance: 100.0
+escape_distance: 150.0
 v_min_predator: 30.0
 v_max_predator: 60.0

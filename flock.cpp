@@ -115,7 +115,7 @@ std::vector<int> neighbours_control(int boid_to_check, double d,
                                   // the equivalent position in "boids" vector
                                   // of a boid_to_check's neighbour
   if (n > 1) {
-    neighbours.reserve(n - 1);
+    neighbours.reserve(boids.size() - 1);
   }
 
   double d_squared = d * d;
@@ -202,10 +202,10 @@ std::vector<int> preys_control(double d_chase, Boid const& predator,
                                std::vector<Boid> const& boids,
                                Space const& space) {
   std::vector<int> preys{};
-  int const n = static_cast<int>(boids.size());
-  preys.reserve(n);
-  
+  preys.reserve(boids.size());
+
   double const d_chase_double = d_chase * d_chase;
+  int const n = static_cast<int>(boids.size());
   for (int i = 0; i != n; ++i) {
     if (toroidal_distance_squared(boids[static_cast<std::size_t>(i)].pos,
                                   predator.pos, space) < d_chase_double) {

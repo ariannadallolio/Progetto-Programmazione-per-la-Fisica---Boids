@@ -267,7 +267,9 @@ Flock::Flock(int n, Parameters const& par, Space const& space,
 // getter per prendere il vettore di boid e usarlo x esempio per media e
 // dev std
 std::vector<Boid> const& Flock::boids() const { return boids_; }
+Boid const& Flock::predator() const { return predator_; }
 Parameters const& Flock::parameters() const { return par_; }
+Predator_parameters const& Flock::predator_parameters() const { return par_p_; }
 Space const& Flock::space() const { return space_; }
 
 void Flock::movement() {
@@ -289,13 +291,6 @@ void Flock::movement() {
     new_velocities.push_back(limit_speed(par_.v_min, par_.v_max,
                                          boids_[i_sz].vel + v1 + v2 + v3 + v4));
   }
-  // il predatore insegue il centro di massa delle prede in raggio,
-  // calcolato sulle posizioni attuali (prima dell'aggiornamento)
-  std::vector<int> const preys =
-      preys_control(par_p_.d_chase, predator_, boids_, space_);
-  Velocity const v_chase = chase(par_p_.c_p, predator_, preys, boids_, space_);
-  predator_.vel =
-      limit_speed(par_p_.v_min_p, par_p_.v_max_p, predator_.vel + v_chase);
 
   for (int j = 0; j != n; ++j) {
     auto const j_sz = static_cast<std::size_t>(j);
@@ -307,6 +302,15 @@ void Flock::movement() {
 
     boids_[j_sz].pos = toroidal_space(newp, space_);
   }
+
+  // predator
+  std::vector<int> const preys =
+      preys_control(par_p_.d_chase, predator_, boids_, space_);
+  Velocity const v_chase = chase(par_p_.c_p, predator_, preys, boids_, space_);
+  predator_.vel =
+      limit_speed(par_p_.v_min_p, par_p_.v_max_p, predator_.vel + v_chase);
+
+  // calcolo nuova posizione predatore
   Position const newp_p = {predator_.pos.x + par_.dt * predator_.vel.v_x,
                            predator_.pos.y + par_.dt * predator_.vel.v_y};
   predator_.pos = toroidal_space(newp_p, space_);

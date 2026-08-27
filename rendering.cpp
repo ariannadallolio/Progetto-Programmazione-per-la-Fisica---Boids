@@ -39,7 +39,7 @@ void simulation(Flock& simulation_flock) {
   }
 
   int frame_count = 0;
-  int const print_every = 60;  // frame
+  int const print_every = 60;  // frames
 
   while (window.isOpen()) {
     sf::Event event{};
@@ -58,7 +58,8 @@ void simulation(Flock& simulation_flock) {
     save_for_root(history, file, frame_count);
 
     if (frame_count % (print_every) == 0) {
-      print(history);  // printing datas just 1 time per second, while we save
+      int seconds = frame_count / print_every;
+      print(history, seconds);  // printing datas just 1 time per second, while we save
                        // datas on a txt document for every frame to create
                        // reliable histograms
     }

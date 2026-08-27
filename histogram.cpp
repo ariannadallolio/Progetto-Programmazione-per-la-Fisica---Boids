@@ -7,10 +7,10 @@
 namespace pf {
 void graph() {
   TH1F *h_dist =
-      new TH1F("h_dist", "History of Boids' Mean Distance;Distance;Frequency", 50,
-               0.0, 300.0);
+      new TH1F("h_dist", "History of Boids' Mean Distance;Distance;Frequency (numbers of frame)", 50,
+               0.0, 600.0);
   TH1F *h_vel =
-      new TH1F("h_vel", "History of Flock's Mean Velocity;Velocity;Frequency", 50,
+      new TH1F("h_vel", "History of Flock's Mean Velocity;Velocity;Frequency (numbers of frame)", 50,
                0.0, 15.0);
 
   // 2. Apriamo il file

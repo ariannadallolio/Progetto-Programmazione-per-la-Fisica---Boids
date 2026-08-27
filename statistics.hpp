@@ -14,7 +14,7 @@ struct Statistics {
 };
 
 Statistics statistics(std::vector<Boid> const& boid, Space const& space);
-void print(Statistics const& stats);
+void print(Statistics const& stats, int seconds);
 void save_for_root(Statistics const& stats, std::ofstream& file,
                    int frame_count);
 

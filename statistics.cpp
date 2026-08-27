@@ -64,8 +64,9 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
   return {mean_distance, std_dev_distance, mean_velocity, std_dev_velocity};
 }
 
-void print(Statistics const& stats) {
-  std::cout << "Mean distance: " << stats.mean_distance << " +/- "
+void print(Statistics const& stats, int seconds) {
+  std::cout <<seconds << " s"<<'\n'
+            << "Mean distance: " << stats.mean_distance << " +/- "
             << stats.std_dev_distance << '\n'
             << "Mean Velocity:" << stats.mean_velocity << " +/- "
             << stats.std_dev_velocity << "\n \n \n";

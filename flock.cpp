@@ -229,7 +229,7 @@ Velocity chase(double c_p, Boid const& predator, std::vector<int> const& preys,
                                predator.pos, space);
   }
   double const n = static_cast<int>(preys.size());
-  Position const cm = ((1.0 / n)*sum);
+  Position const cm = ((1.0 / n) * sum);
   Position const v3_pos = c_p * cm;
   v_c = {v3_pos.x, v3_pos.y};
   return v_c;
@@ -245,7 +245,7 @@ Velocity escape(double s_p, double d_escape, Boid const& boid,
       Position const diff = toroidal_difference(predator.pos, boid.pos, space);
       Position const v_pos = -s_p * diff;
       v4 += Velocity{v_pos.x,
-                     v_pos.y};  // sommo le velocità legate a più predatori
+                     v_pos.y}; 
     }
   }
   return v4;
@@ -266,17 +266,15 @@ Velocity limit_speed(double v_min, double v_max, Velocity v_tot) {
 }
 
 Flock::Flock(Parameters const& par, Space const& space)
-    : par_b_{par}, par_p_{}, space_{space}{
+    : par_b_{par}, par_p_{}, space_{space} {
   check_parameters(par_b_, space_);
 
   boids_ = generate_boid(par_b_.n_boids, par_b_.v_min, par_b_.v_max, space_);
 }
 
-// costruttore di questo Flock crea uno stormo con predatore utilizzando il
-// primo costruttore
 Flock::Flock(Parameters const& par, Space const& space,
              Predator_parameters const& par_p)
-    : Flock(par, space) {  // costruttore delegante
+    : Flock(par, space) {  // delegating constructor
   check_predator_parameters(par_p, space_);
 
   par_p_ = par_p;
@@ -306,7 +304,6 @@ void Flock::movement() {
     Velocity const v2 = alignment(par_b_.a, i, neighbours, boids_);
     Velocity const v3 = cohesion(par_b_.c, i, neighbours, boids_, space_);
     auto const i_sz = static_cast<std::size_t>(i);
-    // se predators_ e' vuoto il ciclo non parte e il contributo e' nullo
     Velocity const v4 =
         escape(par_p_.s_p, par_p_.d_escape, boids_[i_sz], predators_, space_);
 
@@ -329,8 +326,7 @@ void Flock::movement() {
   for (Boid& predator : predators_) {
     std::vector<int> const preys =
         preys_control(par_p_.d_chase, predator, boids_, space_);
-    Velocity const v_chase =
-        chase(par_p_.c_p, predator, preys, boids_, space_);
+    Velocity const v_chase = chase(par_p_.c_p, predator, preys, boids_, space_);
     predator.vel =
         limit_speed(par_p_.v_min_p, par_p_.v_max_p, predator.vel + v_chase);
 

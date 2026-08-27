@@ -18,9 +18,8 @@ void simulation(Flock& simulation_flock) {
     throw std::runtime_error{"Errore: impossibile aprire la finestra SFML"};
   }
   window.setFramerateLimit(60);
-  std::vector<sf::ConvexShape> triangles;
-  triangles.reserve(simulation_flock.boids()
-                        .size());  // serve a preparare lo spazio nel vettore
+  std::vector<sf::ConvexShape> boids_shapes;
+  boids_shapes.reserve(simulation_flock.boids().size());
   int const n = static_cast<int>(simulation_flock.boids().size());
   for (int i = 0; i != n; ++i) {
     sf::ConvexShape triangle;
@@ -30,24 +29,23 @@ void simulation(Flock& simulation_flock) {
     triangle.setPoint(2, sf::Vector2f(-8.f, 6.f));
     triangle.setFillColor(sf::Color::Green);
     triangle.setOrigin({0.f, 0.f});
-    triangles.push_back(triangle);
+    boids_shapes.push_back(triangle);
   }
-  // predators: triangoli rossi, piu' grandi di quelli dei boid
+
   std::vector<sf::ConvexShape> predator_shapes;
   predator_shapes.reserve(simulation_flock.predators().size());
   int const n_p = static_cast<int>(simulation_flock.predators().size());
   for (int i = 0; i != n_p; ++i) {
-    sf::ConvexShape predator_shape;
-    predator_shape.setPointCount(3);
-    predator_shape.setPoint(0, sf::Vector2f(20.f, 0.f));
-    predator_shape.setPoint(1, sf::Vector2f(-13.f, -10.f));
-    predator_shape.setPoint(2, sf::Vector2f(-13.f, 10.f));
-    predator_shape.setFillColor(sf::Color::Red);
-    predator_shape.setOrigin({0.f, 0.f});
-    predator_shapes.push_back(predator_shape);
+    sf::ConvexShape triangle;
+    triangle.setPointCount(3);
+    triangle.setPoint(0, sf::Vector2f(20.f, 0.f));
+    triangle.setPoint(1, sf::Vector2f(-13.f, -10.f));
+    triangle.setPoint(2, sf::Vector2f(-13.f, 10.f));
+    triangle.setFillColor(sf::Color::Red);
+    triangle.setOrigin({0.f, 0.f});
+    predator_shapes.push_back(triangle);
   }
 
-  // GAME LOOP
   std::ofstream file("statistics.txt");
   if (!file) {
     throw std::runtime_error{"Impossible to create file!"};
@@ -84,17 +82,16 @@ void simulation(Flock& simulation_flock) {
     for (std::size_t i = 0; i != boids.size(); ++i) {
       Boid const& boid = boids[i];
       // Posizione del boid
-      triangles[i].setPosition(static_cast<float>(boid.pos.x),
-                               static_cast<float>(boid.pos.y));
+      boids_shapes[i].setPosition(static_cast<float>(boid.pos.x),
+                                  static_cast<float>(boid.pos.y));
 
       double const angle_rad = std::atan2(boid.vel.v_y, boid.vel.v_x);
 
       double const angle_deg = angle_rad * 180.0 / std::acos(-1.0);
 
-      triangles[i].setRotation(static_cast<float>(angle_deg));
+      boids_shapes[i].setRotation(static_cast<float>(angle_deg));
     }
 
-    // update predators, con la stessa logica dei boid
     for (int i = 0; i != n_p; ++i) {
       auto const i_sz = static_cast<std::size_t>(i);
       pf::Boid const& pred = simulation_flock.predators()[i_sz];
@@ -107,15 +104,14 @@ void simulation(Flock& simulation_flock) {
 
       predator_shapes[i_sz].setRotation(static_cast<float>(pred_angle_deg));
     }
-    
 
     window.clear(sf::Color(20, 20, 30));
-    for (sf::ConvexShape const& triangle : triangles) {
+    for (sf::ConvexShape const& triangle : boids_shapes) {
       window.draw(triangle);
     }
 
-    for (sf::ConvexShape const& predator_shape : predator_shapes) {
-      window.draw(predator_shape);
+    for (sf::ConvexShape const& triangle : predator_shapes) {
+      window.draw(triangle);
     }
 
     window.display();

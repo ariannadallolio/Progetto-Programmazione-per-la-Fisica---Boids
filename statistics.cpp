@@ -19,9 +19,7 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
   double const n_pairs = n * (n - 1.0) / 2.0;
 
   std::vector<double>
-      distances;  // temporary vector to save distances and use them for
-                  // standard deviation, so we optimize the function by
-                  // calculating sqrt::toroidal_distance just one time
+      distances;
   distances.reserve(static_cast<std::size_t>(n_pairs));
   for (int i = 0; i != n; ++i) {
     for (int j = i + 1; j != n; j++) {
@@ -43,11 +41,10 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
   }
   double const std_dev_distance = sqrt(std_dev_distance_sum / n_pairs);
 
-  // mean velocity and std deviation
+  
+  
   std::vector<double>
-      speeds;  // temporary vector to save distances and use them for
-               //  standard deviation, so we optimize the function by
-               //  calculating speeds just one time
+      speeds;
   speeds.reserve(boid.size());
   for (int i = 0; i != n; ++i) {
     double modulus = speed_modulus(boid[static_cast<std::size_t>(i)].vel);

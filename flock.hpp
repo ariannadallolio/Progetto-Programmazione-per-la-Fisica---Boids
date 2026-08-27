@@ -1,7 +1,6 @@
 #ifndef FLOCK_HPP
 #define FLOCK_HPP
 
-#include <random>
 #include <vector>
 
 #include "boids.hpp"

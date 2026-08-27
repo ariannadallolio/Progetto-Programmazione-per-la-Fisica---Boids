@@ -1,4 +1,3 @@
-
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -7,6 +6,7 @@
 
 #include "boids.hpp"
 #include "flock.hpp"
+#include "histogram.hpp"
 #include "histogram.hpp"
 #include "sfml_rendering.hpp"
 
@@ -55,6 +55,7 @@ int main() {
     if (answer == "y" || answer == "Y") {
       std::cout << "Number of boids: ";
       if (!(std::cin >> n)) {
+        throw std::runtime_error{"Error: The parameter has to be an integer"};
         throw std::runtime_error{"Error: The parameter has to be an integer"};
       }
 
@@ -147,6 +148,7 @@ int main() {
     pf::simulation(simulation_flock);
     pf::graph();
 
+  } catch (std::exception const& e) {
   } catch (std::exception const& e) {
     std::cerr << e.what() << '\n';
     return EXIT_FAILURE;

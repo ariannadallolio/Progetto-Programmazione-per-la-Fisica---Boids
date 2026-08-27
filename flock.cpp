@@ -4,7 +4,7 @@
 #include <cassert>
 #include <cmath>
 #include <iterator>
-#include <numeric>
+#include <random>
 #include <stdexcept>
 
 namespace pf {

@@ -229,8 +229,9 @@ Velocity chase(double c_p, Boid const& predator, std::vector<int> const& preys,
                                predator.pos, space);
   }
   double const n = static_cast<int>(preys.size());
-  Position const center_direction = (sum * (1.0 / n));
-  v_c = {c_p * center_direction.x, c_p * center_direction.y};
+  Position const cm = ((1.0 / n)*sum);
+  Position const v3_pos = c_p * cm;
+  v_c = {v3_pos.x, v3_pos.y};
   return v_c;
 }
 
@@ -243,7 +244,7 @@ Velocity escape(double s_p, double d_escape, Boid const& boid,
     return v4;
   }
 
-  // Stessa struttura di separation, ma con un solo "vicino": il predatore.
+  // Same structure of separation, just one neighbour: the predator
   Position const diff = toroidal_difference(predator.pos, boid.pos, space);
   Position const v_pos = -s_p * diff;
   v4 = {v_pos.x, v_pos.y};
@@ -273,11 +274,9 @@ Flock::Flock(Parameters const& par, Space const& space,
   boids_ = generate_boid(par_b_.n_boids, par_b_.v_min, par_b_.v_max, space_);
   // per generare il predatore
   predator_ = generate_boid(par_p_.n_predators, par_p_.v_min_p, par_p_.v_max_p,
-                            space_)[0];  // da mettere il numero di predatori
+                            space_)[0];  
 }
 
-// getter per prendere il vettore di boid e usarlo x esempio per media e
-// dev std
 std::vector<Boid> const& Flock::boids() const { return boids_; }
 Boid const& Flock::predator() const { return predator_; }
 Parameters const& Flock::parameters() const { return par_b_; }

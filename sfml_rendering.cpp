@@ -32,6 +32,15 @@ void simulation(Flock& simulation_flock) {
     triangles.push_back(triangle);
   }
 
+  // predator: triangolo rosso, piu' grande di quelli dei boid
+  sf::ConvexShape predator_shape;
+  predator_shape.setPointCount(3);
+  predator_shape.setPoint(0, sf::Vector2f(20.f, 0.f));
+  predator_shape.setPoint(1, sf::Vector2f(-13.f, -10.f));
+  predator_shape.setPoint(2, sf::Vector2f(-13.f, 10.f));
+  predator_shape.setFillColor(sf::Color::Red);
+  predator_shape.setOrigin({0.f, 0.f});
+
   // GAME LOOP
   std::ofstream file("statistics.txt");
   if (!file) {
@@ -79,10 +88,23 @@ void simulation(Flock& simulation_flock) {
       triangles[i].setRotation(static_cast<float>(angle_deg));
     }
 
+    // update predator, con la stessa logica dei boid
+    pf::Boid const& pred = simulation_flock.predator();
+
+    predator_shape.setPosition(static_cast<float>(pred.pos.x),
+                               static_cast<float>(pred.pos.y));
+
+    double const pred_angle_deg =
+        std::atan2(pred.vel.v_y, pred.vel.v_x) * 180.0 / std::acos(-1.0);
+
+    predator_shape.setRotation(static_cast<float>(pred_angle_deg));
+
     window.clear(sf::Color(20, 20, 30));
     for (sf::ConvexShape const& triangle : triangles) {
       window.draw(triangle);
     }
+
+    window.draw(predator_shape);
 
     window.display();
   }

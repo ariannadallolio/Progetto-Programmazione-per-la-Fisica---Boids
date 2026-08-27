@@ -19,12 +19,12 @@ struct Parameters {
 };
 
 struct Predator_parameters {
-  double s_p = 0.10;        // fattore di separazione dal predatore
-  double c_p = 0.005;       // fattore di coesione del predatore
-  double d_chase = 300.0;   // raggio di azione del predatore
-  double d_escape = 120.0;  // raggio di percezione dei boid del predatore
-  double v_min_p = 7.0;     // velocita' minima predatore
-  double v_max_p = 14.0;    // velocita' massima predatore
+  double s_p;       // fattore di separazione dal predatore
+  double c_p;       // fattore di coesione del predatore
+  double d_chase;   // raggio di azione del predatore
+  double d_escape;  // raggio di percezione dei boid del predatore
+  double v_min_p;   // velocita' minima predatore
+  double v_max_p;   // velocita' massima predatore
 };
 
 void check_parameters(Parameters const& par, Space const& space);

@@ -12,6 +12,7 @@
 int main() {
   try {
     pf::Parameters par;
+    pf::Predator_parameters par_p;
     pf::Space space;
     int n{};
 
@@ -42,7 +43,9 @@ int main() {
             par.c >> label >> par.d >> label >> par.d_s >> label >> par.v_min >>
             label >> par.v_max >> label >> par.dt >> label >> space.x_min >>
             label >> space.x_max >> label >> space.y_min >> label >>
-            space.y_max)) {
+            space.y_max >> label >> par_p.s_p >> label >> par_p.c_p >> label >>
+            par_p.d_chase >> label >> par_p.d_escape >> label >>
+            par_p.v_min_p >> label >> par_p.v_max_p)) {
         throw std::runtime_error{
             "Error: Missing parameters or wrong file format"};
       }
@@ -51,6 +54,7 @@ int main() {
     if (answer == "y" || answer == "Y") {
       std::cout << "Number of boids: ";
       if (!(std::cin >> n)) {
+        throw std::runtime_error{"Error: The parameter has to be an integer"};
         throw std::runtime_error{"Error: The parameter has to be an integer"};
       }
 
@@ -113,9 +117,33 @@ int main() {
       if (!(std::cin >> space.y_max)) {
         throw std::runtime_error{"Error: Invalid input"};
       }
+      std::cout << "Predator separation factor s_p: ";
+      if (!(std::cin >> par_p.s_p)) {
+        throw std::runtime_error{"Error: Invalid input"};
+      }
+      std::cout << "Predator separation factor c_p: ";
+      if (!(std::cin >> par_p.c_p)) {
+        throw std::runtime_error{"Error: Invalid input"};
+      }
+      std::cout << "Predator separation factor d_chase: ";
+      if (!(std::cin >> par_p.d_chase)) {
+        throw std::runtime_error{"Error: Invalid input"};
+      }
+      std::cout << "Predator separation factor d_escape: ";
+      if (!(std::cin >> par_p.d_escape)) {
+        throw std::runtime_error{"Error: Invalid input"};
+      }
+      std::cout << "Predator separation factor v_min_p: ";
+      if (!(std::cin >> par_p.v_min_p)) {
+        throw std::runtime_error{"Error: Invalid input"};
+      }
+      std::cout << "Predator separation factor v_max_p: ";
+      if (!(std::cin >> par_p.v_max_p)) {
+        throw std::runtime_error{"Error: Invalid input"};
+      }
     }
 
-    pf::Flock simulation_flock(n, par, space);
+    pf::Flock simulation_flock(n, par, space, par_p);
     pf::simulation(simulation_flock);
     pf::graph();
 

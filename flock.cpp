@@ -334,7 +334,6 @@ void Flock::movement() {
     predator.vel =
         limit_speed(par_p_.v_min_p, par_p_.v_max_p, predator.vel + v_chase);
 
-    // calcolo nuova posizione predatore
     Position const newp_p = {predator.pos.x + par_b_.dt * predator.vel.v_x,
                              predator.pos.y + par_b_.dt * predator.vel.v_y};
     predator.pos = toroidal_space(newp_p, space_);

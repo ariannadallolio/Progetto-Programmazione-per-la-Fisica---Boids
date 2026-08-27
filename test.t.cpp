@@ -6,7 +6,11 @@
 
 #include "boids.hpp"
 #include "doctest.h"
+#include <cstdio>
+#include <fstream>
+
 #include "flock.hpp"
+#include "input_parameters.hpp"
 #include "statistics.hpp"
 
 // TEST 1: Position struct operators
@@ -658,7 +662,7 @@ TEST_CASE("Testing Flock Construction and Getters") {
   pf::Flock flock(par, space);
 
   // Constructor must populate the flock with exactly n boids.
-  CHECK(flock.boids().size() == 25);
+  CHECK(flock.boids().size() == static_cast<std::size_t>(par.n_boids));
 
   // Getters return the input parameters and domain.
   CHECK(flock.parameters().n_boids == doctest::Approx(par.n_boids));
@@ -699,8 +703,13 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
 
   // n <= 0 -> runtime_error (checked before check_parameters).
   SUBCASE("Invalid number of boids") {
-    CHECK_THROWS_AS(pf::Flock(valid_par, space), std::invalid_argument);
-    CHECK_THROWS_AS(pf::Flock(valid_par, space), std::invalid_argument);
+    pf::Parameters par_zero = valid_par;
+    par_zero.n_boids = 0;
+    CHECK_THROWS_AS(pf::Flock(par_zero, space), std::invalid_argument);
+
+    pf::Parameters par_neg = valid_par;
+    par_neg.n_boids = -5;
+    CHECK_THROWS_AS(pf::Flock(par_neg, space), std::invalid_argument);
   }
 
   // Degenerate domain.
@@ -818,7 +827,7 @@ TEST_CASE("Testing Time Evolution (movement)") {
 
     std::vector<pf::Boid> const& boids_after = flock.boids();
 
-    CHECK(boids_after.size() == 20);
+    CHECK(boids_after.size() == static_cast<std::size_t>(par.n_boids));
 
     for (pf::Boid const& b : boids_after) {
       CHECK(b.pos.x >= space.x_min);
@@ -855,7 +864,9 @@ TEST_CASE("Testing Time Evolution (movement)") {
 
   // An isolated boid has no neighbours, so velocity is unchanged.
   SUBCASE("A single boid keeps its velocity") {
-    pf::Flock flock(par, space);
+    pf::Parameters par_one = par;
+    par_one.n_boids = 1;
+    pf::Flock flock(par_one, space);
 
     pf::Velocity const v_before = flock.boids()[0].vel;
 
@@ -986,4 +997,670 @@ TEST_CASE("Testing Statistics Edge Cases (1 boid)") {
 
   CHECK(m_vel == doctest::Approx(5.0));
   CHECK(stats.std_dev_velocity == doctest::Approx(0.0));
+}
+// ===========================================================================
+// TEST 19: Validazione dei parametri del predatore
+// Funzione testata: check_predator_parameters.
+// Si parte da un set valido e si rompe un vincolo alla volta, come nel test
+// gemello su check_parameters.
+// ===========================================================================
+
+TEST_CASE("Testing check_predator_parameters") {
+  pf::Space const space{0.0, 1200.0, 0.0, 1000.0};
+
+  pf::Predator_parameters const valid_par_p{
+      1,      // n_predators
+      0.3,    // s_p
+      0.007,  // c_p
+      200.0,  // d_chase
+      70.0,   // d_escape
+      22.0,   // v_min_p
+      45.0    // v_max_p
+  };
+
+  SUBCASE("Valid parameters") {
+    CHECK_NOTHROW(pf::check_predator_parameters(valid_par_p, space));
+  }
+
+  SUBCASE("Non-positive number of predators") {
+    pf::Predator_parameters par_p = valid_par_p;
+    par_p.n_predators = 0;
+    CHECK_THROWS_AS(pf::check_predator_parameters(par_p, space),
+                    std::invalid_argument);
+
+    par_p.n_predators = -3;
+    CHECK_THROWS_AS(pf::check_predator_parameters(par_p, space),
+                    std::invalid_argument);
+  }
+
+  SUBCASE("Non-positive s_p or c_p") {
+    pf::Predator_parameters par_p = valid_par_p;
+    par_p.s_p = 0.0;
+    CHECK_THROWS_AS(pf::check_predator_parameters(par_p, space),
+                    std::invalid_argument);
+
+    par_p = valid_par_p;
+    par_p.c_p = -0.001;
+    CHECK_THROWS_AS(pf::check_predator_parameters(par_p, space),
+                    std::invalid_argument);
+  }
+
+  SUBCASE("Non-positive d_chase or d_escape") {
+    pf::Predator_parameters par_p = valid_par_p;
+    par_p.d_chase = 0.0;
+    CHECK_THROWS_AS(pf::check_predator_parameters(par_p, space),
+                    std::invalid_argument);
+
+    par_p = valid_par_p;
+    par_p.d_escape = -10.0;
+    CHECK_THROWS_AS(pf::check_predator_parameters(par_p, space),
+                    std::invalid_argument);
+  }
+
+  SUBCASE("Invalid predator speeds") {
+    pf::Predator_parameters par_p = valid_par_p;
+    par_p.v_min_p = 0.0;
+    CHECK_THROWS_AS(pf::check_predator_parameters(par_p, space),
+                    std::invalid_argument);
+
+    par_p = valid_par_p;
+    par_p.v_max_p = -1.0;
+    CHECK_THROWS_AS(pf::check_predator_parameters(par_p, space),
+                    std::invalid_argument);
+
+    par_p = valid_par_p;
+    par_p.v_min_p = 50.0;  // maggiore di v_max_p
+    CHECK_THROWS_AS(pf::check_predator_parameters(par_p, space),
+                    std::invalid_argument);
+  }
+
+  // d_chase piu' grande di meta' del lato minore renderebbe ambiguo il
+  // centro di massa sul toro: due prede possono trovarsi ai due lati
+  // opposti e la direzione di inseguimento non sarebbe piu' definita.
+  SUBCASE("d_chase larger than half the domain") {
+    pf::Predator_parameters par_p = valid_par_p;
+    par_p.d_chase = 501.0;  // meta' del lato minore e' 500
+    CHECK_THROWS_AS(pf::check_predator_parameters(par_p, space),
+                    std::invalid_argument);
+
+    par_p.d_chase = 500.0;  // esattamente al limite: accettato
+    CHECK_NOTHROW(pf::check_predator_parameters(par_p, space));
+  }
+
+  // Il dominio entra nel controllo: gli stessi parametri possono essere
+  // validi in uno spazio grande e invalidi in uno piccolo.
+  SUBCASE("The same parameters depend on the space") {
+    pf::Space const small_space{0.0, 300.0, 0.0, 300.0};
+    CHECK_THROWS_AS(pf::check_predator_parameters(valid_par_p, small_space),
+                    std::invalid_argument);
+  }
+}
+
+// ===========================================================================
+// TEST 20: Individuazione delle prede
+// Funzione testata: preys_control.
+// Analogo di neighbours_control, ma il centro e' il predatore e non un boid,
+// quindi nessun indice viene escluso a priori.
+// ===========================================================================
+
+TEST_CASE("Testing preys_control") {
+  pf::Space const space{0.0, 100.0, 0.0, 100.0};
+  pf::Boid const predator{{0.0, 0.0}, {50.0, 50.0}};
+
+  SUBCASE("Some boids inside, some outside") {
+    std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {55.0, 50.0}},   // dentro
+                                         {{0.0, 0.0}, {50.0, 70.0}},   // fuori
+                                         {{0.0, 0.0}, {40.0, 45.0}}};  // dentro
+    std::vector<int> const preys =
+        pf::preys_control(15.0, predator, boids, space);
+
+    REQUIRE(preys.size() == 2);
+    CHECK(preys[0] == 0);
+    CHECK(preys[1] == 2);
+  }
+
+  SUBCASE("No boid in range") {
+    std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {10.0, 10.0}},
+                                         {{0.0, 0.0}, {90.0, 90.0}}};
+    std::vector<int> const preys =
+        pf::preys_control(5.0, predator, boids, space);
+
+    CHECK(preys.empty());
+  }
+
+  SUBCASE("No boid at all") {
+    std::vector<pf::Boid> const boids{};
+    std::vector<int> const preys =
+        pf::preys_control(50.0, predator, boids, space);
+
+    CHECK(preys.empty());
+  }
+
+  // A differenza di neighbours_control, il predatore non sta dentro boids:
+  // nessun indice va escluso, nemmeno se coincide con la sua posizione.
+  SUBCASE("A boid at the same position as the predator is a prey") {
+    std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {50.0, 50.0}}};
+    std::vector<int> const preys =
+        pf::preys_control(15.0, predator, boids, space);
+
+    REQUIRE(preys.size() == 1);
+    CHECK(preys[0] == 0);
+  }
+
+  SUBCASE("Distance is toroidal") {
+    // Predatore in x = 95, preda in x = 5: sul toro distano 10, non 90.
+    pf::Boid const border_predator{{0.0, 0.0}, {95.0, 50.0}};
+    std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {5.0, 50.0}}};
+    std::vector<int> const preys =
+        pf::preys_control(20.0, border_predator, boids, space);
+
+    REQUIRE(preys.size() == 1);
+    CHECK(preys[0] == 0);
+  }
+
+  SUBCASE("A boid exactly at d_chase is excluded") {
+    // Il confronto e' stretto: a distanza esattamente d_chase sta fuori.
+    std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {60.0, 50.0}}};
+    std::vector<int> const preys =
+        pf::preys_control(10.0, predator, boids, space);
+
+    CHECK(preys.empty());
+  }
+}
+
+// ===========================================================================
+// TEST 21: Inseguimento del predatore
+// Funzione testata: chase.
+// Restituisce il contributo di velocita' diretto dal predatore verso il
+// centro di massa delle prede, con modulo c_p per la distanza da quel centro.
+// La differenza toroidale e' presa rispetto al predatore, quindi il risultato
+// resta corretto anche quando le prede stanno a cavallo del bordo.
+// ===========================================================================
+
+TEST_CASE("Testing chase") {
+  pf::Space const space{0.0, 100.0, 0.0, 100.0};
+  pf::Boid const predator{{0.0, 0.0}, {50.0, 50.0}};
+
+  SUBCASE("No preys: no contribution") {
+    std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {10.0, 10.0}}};
+    pf::Velocity const v = pf::chase(0.5, predator, {}, boids, space);
+
+    CHECK(v.v_x == doctest::Approx(0.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+
+  SUBCASE("Direction and magnitude") {
+    // Centro di massa delle prede in (70, 60): 20 a destra e 10 sotto.
+    std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {70.0, 50.0}},
+                                         {{0.0, 0.0}, {70.0, 70.0}}};
+    pf::Velocity const v = pf::chase(0.5, predator, {0, 1}, boids, space);
+
+    CHECK(v.v_x == doctest::Approx(10.0));
+    CHECK(v.v_y == doctest::Approx(5.0));
+  }
+
+  SUBCASE("Predator already on the centre of mass") {
+    std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {40.0, 50.0}},
+                                         {{0.0, 0.0}, {60.0, 50.0}}};
+    pf::Velocity const v = pf::chase(0.5, predator, {0, 1}, boids, space);
+
+    CHECK(v.v_x == doctest::Approx(0.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+
+  SUBCASE("Only the indexed preys count") {
+    // Il boid 1 non compare fra le prede: non deve pesare sul centro di massa.
+    std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {60.0, 50.0}},
+                                         {{0.0, 0.0}, {10.0, 10.0}},
+                                         {{0.0, 0.0}, {80.0, 50.0}}};
+    pf::Velocity const v = pf::chase(1.0, predator, {0, 2}, boids, space);
+
+    CHECK(v.v_x == doctest::Approx(20.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+
+  SUBCASE("Chase takes the short way around the torus") {
+    // Predatore in x = 95, preda in x = 5: deve andare a destra (+10) e
+    // uscire dal bordo, non tornare indietro di 90.
+    pf::Boid const border_predator{{0.0, 0.0}, {95.0, 50.0}};
+    std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {5.0, 50.0}}};
+    pf::Velocity const v = pf::chase(1.0, border_predator, {0}, boids, space);
+
+    CHECK(v.v_x == doctest::Approx(10.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+
+  SUBCASE("Preys across the border average correctly") {
+    // Prede in x = 95 e x = 5 con predatore in x = 0: il centro di massa
+    // e' in x = 0, quindi il contributo e' nullo. La media aritmetica
+    // ingenua darebbe 50 e una spinta sbagliata.
+    pf::Boid const border_predator{{0.0, 0.0}, {0.0, 50.0}};
+    std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {95.0, 50.0}},
+                                         {{0.0, 0.0}, {5.0, 50.0}}};
+    pf::Velocity const v =
+        pf::chase(1.0, border_predator, {0, 1}, boids, space);
+
+    CHECK(v.v_x == doctest::Approx(0.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+}
+
+// ===========================================================================
+// TEST 22: Fuga dai predatori
+// Funzione testata: escape.
+// Stessa forma della separazione, ma rispetto ai predatori e con raggio
+// proprio d_escape. I contributi dei singoli predatori si sommano.
+// Il controllo sul verso e' quello che protegge dallo scambio accidentale
+// degli argomenti boid/predator e dall'inversione del confronto sul raggio.
+// ===========================================================================
+
+TEST_CASE("Testing escape") {
+  pf::Space const space{0.0, 400.0, 0.0, 400.0};
+  pf::Boid const boid{{0.0, 0.0}, {200.0, 200.0}};
+
+  SUBCASE("No predators: no contribution") {
+    std::vector<pf::Boid> const predators{};
+    pf::Velocity const v = pf::escape(1.0, 60.0, boid, predators, space);
+
+    CHECK(v.v_x == doctest::Approx(0.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+
+  SUBCASE("Predator on the right: the boid flees to the left") {
+    std::vector<pf::Boid> const predators{{{0.0, 0.0}, {220.0, 200.0}}};
+    pf::Velocity const v = pf::escape(1.0, 60.0, boid, predators, space);
+
+    CHECK(v.v_x == doctest::Approx(-20.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+
+  SUBCASE("Predator out of range: no contribution") {
+    std::vector<pf::Boid> const predators{{{0.0, 0.0}, {380.0, 200.0}}};
+    pf::Velocity const v = pf::escape(1.0, 60.0, boid, predators, space);
+
+    CHECK(v.v_x == doctest::Approx(0.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+
+  SUBCASE("Predator exactly at d_escape: no contribution") {
+    // Il confronto e' stretto: sul bordo del raggio il boid non reagisce.
+    std::vector<pf::Boid> const predators{{{0.0, 0.0}, {260.0, 200.0}}};
+    pf::Velocity const v = pf::escape(1.0, 60.0, boid, predators, space);
+
+    CHECK(v.v_x == doctest::Approx(0.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+
+  SUBCASE("s_p scales the contribution") {
+    std::vector<pf::Boid> const predators{{{0.0, 0.0}, {210.0, 190.0}}};
+    pf::Velocity const v = pf::escape(0.2, 60.0, boid, predators, space);
+
+    CHECK(v.v_x == doctest::Approx(-2.0));
+    CHECK(v.v_y == doctest::Approx(2.0));
+  }
+
+  SUBCASE("Predators on the same side add up") {
+    std::vector<pf::Boid> const predators{{{0.0, 0.0}, {220.0, 200.0}},
+                                          {{0.0, 0.0}, {230.0, 200.0}}};
+    pf::Velocity const v = pf::escape(1.0, 60.0, boid, predators, space);
+
+    // -20 dal primo, -30 dal secondo
+    CHECK(v.v_x == doctest::Approx(-50.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+
+  SUBCASE("Predators from different directions turn the escape") {
+    // Uno a destra e uno sotto: la risultante punta in diagonale, lontano
+    // da entrambi.
+    std::vector<pf::Boid> const predators{{{0.0, 0.0}, {220.0, 200.0}},
+                                          {{0.0, 0.0}, {200.0, 240.0}}};
+    pf::Velocity const v = pf::escape(1.0, 60.0, boid, predators, space);
+
+    CHECK(v.v_x == doctest::Approx(-20.0));
+    CHECK(v.v_y == doctest::Approx(-40.0));
+  }
+
+  // Comportamento voluto del modello a somma vettoriale, lo stesso che ha
+  // separation: predatori disposti simmetricamente si annullano. Se un
+  // giorno si passa a "reagisci solo al piu' vicino", questo test cambia.
+  SUBCASE("Symmetric predators cancel out") {
+    std::vector<pf::Boid> const predators{{{0.0, 0.0}, {220.0, 200.0}},
+                                          {{0.0, 0.0}, {180.0, 200.0}}};
+    pf::Velocity const v = pf::escape(1.0, 60.0, boid, predators, space);
+
+    CHECK(v.v_x == doctest::Approx(0.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+
+  SUBCASE("Only predators within d_escape contribute") {
+    std::vector<pf::Boid> const predators{{{0.0, 0.0}, {220.0, 200.0}},
+                                          {{0.0, 0.0}, {380.0, 200.0}}};
+    pf::Velocity const v = pf::escape(1.0, 60.0, boid, predators, space);
+
+    CHECK(v.v_x == doctest::Approx(-20.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+
+  SUBCASE("Escape is toroidal") {
+    // Boid in x = 10, predatore in x = 390: sul toro distano 20 e il
+    // predatore e' a sinistra, quindi il boid deve fuggire a destra.
+    pf::Boid const border_boid{{0.0, 0.0}, {10.0, 200.0}};
+    std::vector<pf::Boid> const predators{{{0.0, 0.0}, {390.0, 200.0}}};
+    pf::Velocity const v = pf::escape(1.0, 60.0, border_boid, predators, space);
+
+    CHECK(v.v_x == doctest::Approx(20.0));
+    CHECK(v.v_y == doctest::Approx(0.0));
+  }
+}
+
+// ===========================================================================
+// TEST 23: Il predatore dentro Flock
+// Funzioni testate: i due costruttori, predators(), has_predator(),
+// predator_parameters(), movement().
+// E' la presenza dei Predator_parameters a decidere se i predatori esistono:
+// il costruttore a due argomenti non ne genera e non ne convalida i valori.
+// ===========================================================================
+
+TEST_CASE("Testing the optional predators inside Flock") {
+  pf::Space const space{0.0, 1200.0, 0.0, 1000.0};
+
+  pf::Parameters const par{
+      100,    // n_boids
+      0.2,    // s
+      0.1,    // a
+      0.01,   // c
+      100.0,  // d
+      40.0,   // d_s
+      20.0,   // v_min
+      42.0,   // v_max
+      0.2     // dt
+  };
+
+  pf::Predator_parameters const par_p{
+      1,      // n_predators
+      0.3,    // s_p
+      0.007,  // c_p
+      200.0,  // d_chase
+      70.0,   // d_escape
+      22.0,   // v_min_p
+      45.0    // v_max_p
+  };
+
+  SUBCASE("Two-argument constructor: no predators") {
+    pf::Flock flock(par, space);
+
+    CHECK(flock.has_predator() == false);
+    CHECK(flock.predators().empty());
+    CHECK(flock.boids().size() == static_cast<std::size_t>(par.n_boids));
+  }
+
+  SUBCASE("Three-argument constructor: predators present") {
+    pf::Flock flock(par, space, par_p);
+
+    CHECK(flock.has_predator() == true);
+    CHECK(flock.predators().size() ==
+          static_cast<std::size_t>(par_p.n_predators));
+    CHECK(flock.predator_parameters().d_chase ==
+          doctest::Approx(par_p.d_chase));
+
+    for (pf::Boid const& predator : flock.predators()) {
+      CHECK(predator.pos.x >= space.x_min);
+      CHECK(predator.pos.x <= space.x_max);
+      CHECK(predator.pos.y >= space.y_min);
+      CHECK(predator.pos.y <= space.y_max);
+
+      double const speed = pf::speed_modulus(predator.vel);
+      CHECK(speed >= par_p.v_min_p);
+      CHECK(speed <= par_p.v_max_p);
+    }
+  }
+
+  SUBCASE("n_predators governs how many are created") {
+    pf::Predator_parameters par_p_many = par_p;
+    par_p_many.n_predators = 5;
+
+    pf::Flock flock(par, space, par_p_many);
+
+    CHECK(flock.predators().size() == 5);
+  }
+
+  // Senza predatori i loro parametri non vengono nemmeno guardati: valori
+  // che col costruttore a tre argomenti farebbero lanciare un'eccezione
+  // qui devono passare senza problemi.
+  SUBCASE("Predator parameters are not validated when there are none") {
+    pf::Predator_parameters const bad_par_p{-1,   -1.0, -1.0, -1.0,
+                                            -1.0, 50.0, 10.0};
+
+    CHECK_THROWS_AS(pf::Flock(par, space, bad_par_p), std::invalid_argument);
+    CHECK_NOTHROW(pf::Flock(par, space));
+  }
+
+  // Il controllo decisivo sul ramo senza predatori: escape non viene mai
+  // applicata. Un boid isolato, con un raggio di percezione piu' grande
+  // dell'intero dominio, deve comunque mantenere la sua velocita'.
+  SUBCASE("Without predators escape is never applied") {
+    pf::Parameters par_one = par;
+    par_one.n_boids = 1;
+
+    pf::Flock flock(par_one, space);
+
+    pf::Velocity const v_before = flock.boids()[0].vel;
+    flock.movement();
+    pf::Velocity const v_after = flock.boids()[0].vel;
+
+    CHECK(v_after.v_x == doctest::Approx(v_before.v_x));
+    CHECK(v_after.v_y == doctest::Approx(v_before.v_y));
+  }
+
+  SUBCASE("With a predator in range the isolated boid does react") {
+    pf::Parameters par_one = par;
+    par_one.n_boids = 1;
+
+    pf::Predator_parameters par_p_wide = par_p;
+    par_p_wide.d_escape = 2000.0;  // copre tutto il dominio
+
+    pf::Flock flock(par_one, space, par_p_wide);
+
+    pf::Velocity const v_before = flock.boids()[0].vel;
+    flock.movement();
+    pf::Velocity const v_after = flock.boids()[0].vel;
+
+    bool const changed = v_after.v_x != doctest::Approx(v_before.v_x) ||
+                         v_after.v_y != doctest::Approx(v_before.v_y);
+    CHECK(changed);
+  }
+
+  SUBCASE("The flock evolves normally with no predators") {
+    pf::Flock flock(par, space);
+
+    for (int step = 0; step != 50; ++step) {
+      flock.movement();
+      CHECK(flock.has_predator() == false);
+    }
+
+    for (pf::Boid const& b : flock.boids()) {
+      CHECK(b.pos.x >= space.x_min);
+      CHECK(b.pos.x <= space.x_max);
+      CHECK(b.pos.y >= space.y_min);
+      CHECK(b.pos.y <= space.y_max);
+      CHECK(pf::speed_modulus(b.vel) <= doctest::Approx(par.v_max));
+    }
+  }
+
+  SUBCASE("Several predators all stay regular while moving") {
+    pf::Predator_parameters par_p_many = par_p;
+    par_p_many.n_predators = 4;
+
+    pf::Flock flock(par, space, par_p_many);
+
+    for (int step = 0; step != 50; ++step) {
+      flock.movement();
+    }
+
+    CHECK(flock.predators().size() == 4);
+
+    for (pf::Boid const& predator : flock.predators()) {
+      CHECK(predator.pos.x >= space.x_min);
+      CHECK(predator.pos.x <= space.x_max);
+      CHECK(predator.pos.y >= space.y_min);
+      CHECK(predator.pos.y <= space.y_max);
+      CHECK(pf::speed_modulus(predator.vel) <=
+            doctest::Approx(par_p_many.v_max_p));
+    }
+  }
+}
+
+// ===========================================================================
+// TEST 24: Lettura dei parametri da file
+// Funzione testata: file_input.
+// I file di prova vengono scritti su disco dal test stesso e rimossi alla
+// fine, cosi' la suite non dipende da file esterni.
+// ===========================================================================
+
+TEST_CASE("Testing file_input") {
+  // Blocco dei soli parametri dello stormo e del dominio.
+  std::string const boids_block =
+      "boids: 150\n"
+      "separation: 0.2\n"
+      "alignment: 0.1\n"
+      "cohesion: 0.01\n"
+      "neighbours_distance: 100.0\n"
+      "separation_distance: 40.0\n"
+      "v_min: 20.0\n"
+      "v_max: 42.0\n"
+      "dt: 0.2\n"
+      "x_min: 0.0\n"
+      "x_max: 1200.0\n"
+      "y_min: 0.0\n"
+      "y_max: 1000.0\n";
+
+  std::string const predator_block =
+      "predators: 3\n"
+      "separation_predator: 0.3\n"
+      "cohesion_predator: 0.007\n"
+      "d_chase: 200.0\n"
+      "d_escape: 70.0\n"
+      "v_min_p: 22.0\n"
+      "v_max_p: 45.0\n";
+
+  auto write_file = [](std::string const& name, std::string const& content) {
+    std::ofstream out(name);
+    out << content;
+  };
+
+  pf::Parameters par{};
+  pf::Predator_parameters par_p{};
+  pf::Space space{};
+
+  SUBCASE("Complete file, predators requested") {
+    std::string name = "test_complete.txt";
+    write_file(name, boids_block + predator_block);
+
+    CHECK_NOTHROW(pf::file_input(name, par, space, par_p, true));
+
+    CHECK(par.n_boids == 150);
+    CHECK(par.s == doctest::Approx(0.2));
+    CHECK(par.a == doctest::Approx(0.1));
+    CHECK(par.c == doctest::Approx(0.01));
+    CHECK(par.d == doctest::Approx(100.0));
+    CHECK(par.d_s == doctest::Approx(40.0));
+    CHECK(par.v_min == doctest::Approx(20.0));
+    CHECK(par.v_max == doctest::Approx(42.0));
+    CHECK(par.dt == doctest::Approx(0.2));
+
+    CHECK(space.x_min == doctest::Approx(0.0));
+    CHECK(space.x_max == doctest::Approx(1200.0));
+    CHECK(space.y_min == doctest::Approx(0.0));
+    CHECK(space.y_max == doctest::Approx(1000.0));
+
+    CHECK(par_p.n_predators == 3);
+    CHECK(par_p.s_p == doctest::Approx(0.3));
+    CHECK(par_p.c_p == doctest::Approx(0.007));
+    CHECK(par_p.d_chase == doctest::Approx(200.0));
+    CHECK(par_p.d_escape == doctest::Approx(70.0));
+    CHECK(par_p.v_min_p == doctest::Approx(22.0));
+    CHECK(par_p.v_max_p == doctest::Approx(45.0));
+
+    std::remove(name.c_str());
+  }
+
+  // Le righe del predatore restano nel file ma non vanno lette.
+  SUBCASE("Complete file, predators not requested") {
+    std::string name = "test_complete_no_pred.txt";
+    write_file(name, boids_block + predator_block);
+
+    CHECK_NOTHROW(pf::file_input(name, par, space, par_p, false));
+
+    CHECK(par.n_boids == 150);
+    CHECK(par.v_max == doctest::Approx(42.0));
+    CHECK(space.y_max == doctest::Approx(1000.0));
+
+    // par_p non e' stato toccato
+    CHECK(par_p.n_predators == 0);
+    CHECK(par_p.d_chase == doctest::Approx(0.0));
+
+    std::remove(name.c_str());
+  }
+
+  SUBCASE("File without predator lines, predators not requested") {
+    std::string name = "test_short.txt";
+    write_file(name, boids_block);
+
+    CHECK_NOTHROW(pf::file_input(name, par, space, par_p, false));
+    CHECK(par.n_boids == 150);
+
+    std::remove(name.c_str());
+  }
+
+  SUBCASE("File without predator lines, predators requested") {
+    std::string name = "test_short_pred.txt";
+    write_file(name, boids_block);
+
+    CHECK_THROWS_AS(pf::file_input(name, par, space, par_p, true),
+                    std::runtime_error);
+
+    std::remove(name.c_str());
+  }
+
+  SUBCASE("Missing file") {
+    std::string name = "questo_file_non_esiste_12345.txt";
+    CHECK_THROWS_AS(pf::file_input(name, par, space, par_p, false),
+                    std::runtime_error);
+  }
+
+  SUBCASE("Truncated file") {
+    std::string name = "test_truncated.txt";
+    write_file(name,
+               "boids: 150\n"
+               "separation: 0.2\n"
+               "alignment: 0.1\n");
+
+    CHECK_THROWS_AS(pf::file_input(name, par, space, par_p, false),
+                    std::runtime_error);
+
+    std::remove(name.c_str());
+  }
+
+  // Una lettera dove serve un numero manda in fallimento lo stream.
+  SUBCASE("Wrong format") {
+    std::string name = "test_wrong.txt";
+    write_file(name,
+               "boids: molti\n"
+               "separation: 0.2\n");
+
+    CHECK_THROWS_AS(pf::file_input(name, par, space, par_p, false),
+                    std::runtime_error);
+
+    std::remove(name.c_str());
+  }
+
+  SUBCASE("Empty file") {
+    std::string name = "test_empty.txt";
+    write_file(name, "");
+
+    CHECK_THROWS_AS(pf::file_input(name, par, space, par_p, false),
+                    std::runtime_error);
+
+    std::remove(name.c_str());
+  }
 }

@@ -15,18 +15,19 @@ int main() {
     pf::Predator_parameters par_p;
     pf::Space space;
 
-    std::cout <<"Do you want any predator? (Y/n) ";
+    std::cout << "Do you want any predator? (Y/n) ";
     std::string answer_predator{};
     if (!(std::cin >> answer_predator)) {
       throw std::runtime_error{"Error: The input is not valid"};
     }
 
-    if (answer_predator != "Y" && answer_predator != "y" && answer_predator != "N" && answer_predator != "n") {
+    if (answer_predator != "Y" && answer_predator != "y" &&
+        answer_predator != "N" && answer_predator != "n") {
       throw std::runtime_error{"Error: insert only Y, y, N or n"};
     }
 
-    bool const has_predator=(answer_predator == "Y" || answer_predator == "y");
-
+    bool const has_predator =
+        (answer_predator == "Y" || answer_predator == "y");
 
     std::cout << "Do you wanto to insert the parameters manually? (Y/n)";
     std::string answer{};
@@ -47,12 +48,13 @@ int main() {
 
     if (answer == "y" || answer == "Y") {
       pf::manual_input_boids(par, space);
-      if (has_predator){
+      if (has_predator) {
         pf::manual_input_predator(par_p);
       }
     }
 
-    pf::Flock simulation_flock(par, space, par_p);
+    pf::Flock simulation_flock =
+        has_predator ? pf::Flock(par, space, par_p) : pf::Flock(par, space);
     pf::simulation(simulation_flock);
     pf::graph();
 

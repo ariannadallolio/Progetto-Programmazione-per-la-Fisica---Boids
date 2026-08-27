@@ -57,12 +57,7 @@ Position toroidal_space(Position newp, Space const& space) {
   double const Lx = space.x_max - space.x_min;
   double const Ly = space.y_max - space.y_min;
 
-  // Si porta la coordinata nell'intervallo [0, L) e poi la si ritrasla:
-  // fmod da' il resto con il segno del dividendo, quindi per i valori
-  // negativi serve una sola aggiunta di L.
-  double x = std::fmod(newp.x - space.x_min,
-                       Lx);  // agloritmo che ti ritorna il resto della
-                             // divisione tra il primo fattore e il secondo
+  double x = std::fmod(newp.x - space.x_min, Lx);
   if (x < 0.0) {
     x += Lx;
   }

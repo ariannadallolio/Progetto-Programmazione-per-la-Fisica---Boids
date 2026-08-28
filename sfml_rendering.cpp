@@ -17,9 +17,7 @@ void simulation(Flock& simulation_flock) {
   sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(Lx),
                                         static_cast<unsigned int>(Ly)),
                           "Boids");
-  if (!window.isOpen()) {
-    throw std::runtime_error{"Error: impossible to open the SFML window"};
-  }
+
   window.setView(
       sf::View(sf::FloatRect(static_cast<float>(space.x_min),
                              static_cast<float>(space.y_min), Lx, Ly)));

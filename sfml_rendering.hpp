@@ -1,5 +1,6 @@
 #ifndef RENDERING_HPP
 #define RENDERING_HPP
+#include <SFML/Graphics.hpp>
 #include "flock.hpp"
 
 namespace pf {

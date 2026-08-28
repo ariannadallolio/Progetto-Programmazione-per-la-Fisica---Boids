@@ -1,6 +1,5 @@
 #include "sfml_rendering.hpp"
 
-#include <SFML/Graphics.hpp>
 #include <cmath>
 #include <fstream>
 #include <stdexcept>

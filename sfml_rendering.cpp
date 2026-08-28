@@ -10,13 +10,20 @@
 
 namespace pf {
 void simulation(Flock& simulation_flock) {
-  sf::RenderWindow window(
-      sf::VideoMode(static_cast<unsigned int>(simulation_flock.space().x_max),
-                    static_cast<unsigned int>(simulation_flock.space().y_max)),
-      "Boids");
+  Space const& space = simulation_flock.space();
+  auto const Lx = static_cast<float>(space.x_max - space.x_min);
+  auto const Ly = static_cast<float>(space.y_max - space.y_min);
+
+  sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(Lx),
+                                        static_cast<unsigned int>(Ly)),
+                          "Boids");
   if (!window.isOpen()) {
     throw std::runtime_error{"Error: impossible to open the SFML window"};
   }
+  window.setView(
+      sf::View(sf::FloatRect(static_cast<float>(space.x_min),
+                             static_cast<float>(space.y_min), Lx, Ly)));
+
   window.setFramerateLimit(60);
   std::vector<sf::ConvexShape> boids_shapes;
   boids_shapes.reserve(simulation_flock.boids().size());

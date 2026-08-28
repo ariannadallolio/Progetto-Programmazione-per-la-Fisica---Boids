@@ -56,7 +56,7 @@ int main() {
     pf::Flock simulation_flock =
         has_predator ? pf::Flock(par, space, par_p) : pf::Flock(par, space);
     pf::simulation(simulation_flock);
-    pf::graph();
+    pf::draw_graphs();
 
   } catch (std::exception const& e) {
     std::cerr << e.what() << '\n';

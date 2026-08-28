@@ -1,49 +1,94 @@
 #include "histogram.hpp"
 
+#include <algorithm>
 #include <cstdio>
 #include <fstream>
 #include <stdexcept>
+#include <vector>
 
 #include "TCanvas.h"
+#include "TError.h"
+#include "TGraphErrors.h"
 #include "TH1F.h"
+#include "TROOT.h"
 
 namespace pf {
-void graph() {
-  TH1F h_dist{
-      "h_dist",
-      "History of Boids' Mean Distance;Distance;Frequency (numbers of frame)",
-      50, 0.0, 700.0};
 
-  TH1F h_vel{
-      "h_vel",
-      "History of Flock's Mean Velocity;Velocity;Frequency (numbers of frame)",
-      50, 0.0, 50.0};
+void draw_graphs() {
+  gROOT->SetBatch(kTRUE);
+  gErrorIgnoreLevel = kWarning;  // to ignore messages on the shell
 
-  std::ifstream file("statistics.txt");
+  std::ifstream file{"statistics.txt"};
   if (!file.is_open()) {
-    throw std::runtime_error{"Impossible to read statistics.txt"};
+    throw std::runtime_error{"Error: cannot read statistics.txt"};
   }
 
-  double time, mean_d, std_d, mean_v, std_v;
-  while (file >> time >> mean_d >> std_d >> mean_v >> std_v) {
-    h_dist.Fill(mean_d);
-    h_vel.Fill(mean_v);
+  std::vector<double> time;
+  std::vector<double> mean_dist;
+  std::vector<double> std_dist;
+  std::vector<double> mean_vel;
+  std::vector<double> std_vel;
+
+  double t, md, sd, mv, sv;
+  while (file >> t >> md >> sd >> mv >> sv) {
+    time.push_back(t);
+    mean_dist.push_back(md);
+    std_dist.push_back(sd);
+    mean_vel.push_back(mv);
+    std_vel.push_back(sv);
   }
 
-  TCanvas c1{"c1", "Flock's Statistics", 1200, 500};
-  c1.Divide(2, 1);
+  int const n = static_cast<int>(time.size());
+  if (n == 0) throw std::runtime_error{"Error: no data found in file"};
 
-  c1.cd(1);
+  // to center histograms
+  auto dist_bounds = std::minmax_element(mean_dist.begin(), mean_dist.end());
+  auto vel_bounds = std::minmax_element(mean_vel.begin(), mean_vel.end());
+
+  TH1F h_dist{"h_dist", "Distribution of mean distance;distance;frames", 50,
+              *dist_bounds.first - 100.0, *dist_bounds.second + 100.0};
+  TH1F h_vel{"h_vel", "Distribution of mean speed;speed;frames", 50,
+             *vel_bounds.first - 20.0, *vel_bounds.second + 20.0};
+
+  for (int i = 0; i < n; ++i) {
+    h_dist.Fill(mean_dist[static_cast<std::size_t>(i)]);
+    h_vel.Fill(mean_vel[static_cast<std::size_t>(i)]);
+  }
+
   h_dist.SetFillColor(kRed);
+  h_vel.SetFillColor(kBlue);
+
+  TGraphErrors g_dist{n, time.data(), mean_dist.data(), nullptr,
+                      std_dist.data()};
+  g_dist.SetTitle("Mean distance over time;time [frames];distance");
+  g_dist.SetFillColor(kRed - 9);
+  g_dist.SetLineColor(kRed);
+  g_dist.SetLineWidth(2);
+
+  TGraphErrors g_vel{n, time.data(), mean_vel.data(), nullptr, std_vel.data()};
+  g_vel.SetTitle("Mean speed over time;time [frames];speed");
+  g_vel.SetFillColor(kBlue - 9);
+  g_vel.SetLineColor(kBlue);
+  g_vel.SetLineWidth(2);
+
+  TCanvas canvas{"canvas", "Flock statistics", 1200, 900};
+  canvas.Divide(2, 2);
+
+  canvas.cd(1);
+  g_dist.Draw("A3");
+  g_dist.Draw("LX");
+
+  canvas.cd(2);
+  g_vel.Draw("A3");
+  g_vel.Draw("LX");
+
+  canvas.cd(3);
   h_dist.Draw();
 
-  c1.cd(2);
-  h_vel.SetFillColor(kBlue);
+  canvas.cd(4);
   h_vel.Draw();
 
-  c1.SaveAs("flock_statistics.png");
-  file.close();
-
-  std::remove("statistics.txt");
+  canvas.SaveAs("flock_statistics.png");
 }
+
 }  // namespace pf

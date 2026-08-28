@@ -67,6 +67,9 @@ class Flock {
   std::vector<Boid> boids_;
   std::vector<Boid> predators_;
 
+  void move_boids();
+  void move_predators();
+
  public:
   Flock(Parameters const& par, Space const& space);
   // with predator

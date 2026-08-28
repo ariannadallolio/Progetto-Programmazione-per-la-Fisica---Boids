@@ -303,7 +303,7 @@ Parameters const& Flock::parameters() const { return par_b_; }
 Predator_parameters const& Flock::predator_parameters() const { return par_p_; }
 Space const& Flock::space() const { return space_; }
 
-void Flock::movement() {
+void Flock::move_boids() {
   std::vector<Velocity> new_velocities;
   new_velocities.reserve(boids_.size());
 
@@ -335,8 +335,9 @@ void Flock::movement() {
 
     boids_[j_sz].pos = toroidal_space(newp, space_);
   }
+}
 
-  // predator
+void Flock::move_predators() {
   for (Boid& predator : predators_) {
     std::vector<int> const preys =
         preys_control(par_p_.d_chase, predator, boids_, space_);
@@ -348,6 +349,11 @@ void Flock::movement() {
                              predator.pos.y + par_b_.dt * predator.vel.v_y};
     predator.pos = toroidal_space(newp_p, space_);
   }
+}
+
+void Flock::movement() {
+  move_boids();
+  move_predators();
 }
 
 }  // namespace pf

@@ -1,6 +1,6 @@
 #ifndef HISTOGRAM_HPP
 #define HISTOGRAM_HPP
 namespace pf{
-void graph();
+void draw_graphs();
 }
 #endif

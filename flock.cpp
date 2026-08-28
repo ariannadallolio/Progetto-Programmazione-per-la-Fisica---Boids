@@ -238,13 +238,14 @@ Velocity chase(double c_p, Boid const& predator, std::vector<int> const& preys,
   if (preys.empty()) {
     return v_c;
   }
-
-  Position sum{0.0, 0.0};
-
-  for (int m : preys) {
-    sum += toroidal_difference(boids[static_cast<std::size_t>(m)].pos,
-                               predator.pos, space);
-  }
+  Position const pos_predator = predator.pos;
+  Position const sum = std::accumulate(
+      preys.begin(), preys.end(), Position{0.0, 0.0},
+      [&boids, &space, pos_predator](Position accumulator, int m) {
+        return accumulator +
+               toroidal_difference(boids[static_cast<std::size_t>(m)].pos,
+                                   pos_predator, space);
+      });
   int const n = static_cast<int>(preys.size());
   Position const cm = ((1.0 / n) * sum);
   Position const v3_pos = c_p * cm;

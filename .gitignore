@@ -4,4 +4,4 @@ GNinja*/
 boids
 boids.t
 statistics.txt
-*.png
+flock_statistics.png

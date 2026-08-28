@@ -55,7 +55,7 @@ void draw_graphs() {
   TH1F h_dist{"h_dist", "Distribution of mean distance; distance [px] ;frames",
               50, *dist_bounds.first - dist_margin,
               *dist_bounds.second + dist_margin};
-  TH1F h_vel{"h_vel", "Distribution of mean speed;speed [px/s];frames", 50,
+  TH1F h_vel{"h_vel", "Distribution of mean speed; speed [px/s];frames", 50,
              *vel_bounds.first - vel_margin, *vel_bounds.second + vel_margin};
 
   for (int i = 0; i < n; ++i) {

@@ -1,9 +1,9 @@
-boids: 150
+boids: 100
 separation: 0.3
 alignment: 0.1
 cohesion: 0.01
 neighbours_distance: 120.0
-separation_distance: 55.0
+separation_distance: 45.0
 v_min: 25.0
 v_max: 40.0
 dt: 0.2

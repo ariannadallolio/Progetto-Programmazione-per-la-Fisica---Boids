@@ -42,7 +42,6 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
   double const std_dev_distance = sqrt(std_dev_distance_sum / n_pairs);
 
   
-  
   std::vector<double>
       speeds;
   speeds.reserve(boid.size());
@@ -63,7 +62,7 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
   return {mean_distance, std_dev_distance, mean_velocity, std_dev_velocity};
 }
 
-void print(Statistics const& stats, int seconds) {
+void print(Statistics const& stats, double seconds) {
   std::cout << seconds << " s" << '\n'
             << "Mean distance: " << stats.mean_distance << " +/- "
             << stats.std_dev_distance << '\n'

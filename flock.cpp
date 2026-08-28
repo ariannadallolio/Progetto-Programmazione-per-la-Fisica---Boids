@@ -231,7 +231,7 @@ Velocity chase(double c_p, Boid const& predator, std::vector<int> const& preys,
     sum += toroidal_difference(boids[static_cast<std::size_t>(m)].pos,
                                predator.pos, space);
   }
-  double const n = static_cast<int>(preys.size());
+  int const n = static_cast<int>(preys.size());
   Position const cm = ((1.0 / n) * sum);
   Position const v3_pos = c_p * cm;
   v_c = {v3_pos.x, v3_pos.y};

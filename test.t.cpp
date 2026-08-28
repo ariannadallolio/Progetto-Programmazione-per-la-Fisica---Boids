@@ -10,7 +10,6 @@
 #include "boids.hpp"
 #include "doctest.h"
 #include "flock.hpp"
-#include "input_parameters.hpp"
 #include "statistics.hpp"
 
 // TEST 1: Position struct operators

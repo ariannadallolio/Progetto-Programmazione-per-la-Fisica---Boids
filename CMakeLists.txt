@@ -58,7 +58,7 @@ target_link_libraries(
 if (BUILD_TESTING)
 
   
-add_executable(boids.t test.t.cpp boids.cpp flock.cpp statistics.cpp input_parameters.cpp)
+add_executable(boids.t test.t.cpp boids.cpp flock.cpp statistics.cpp)
  
   add_test(NAME boids.t COMMAND boids.t)
 

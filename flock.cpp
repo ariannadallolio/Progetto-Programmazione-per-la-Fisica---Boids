@@ -149,8 +149,8 @@ Velocity separation(double s, double d_s, int boid_to_check,
   Position const pos_check = boids[static_cast<std::size_t>(boid_to_check)].pos;
   for (int m : neighbours) {
     Position const pos_m = boids[static_cast<std::size_t>(m)].pos;
-    if (toroidal_distance_squared(pos_m, pos_check, space) < d_s_squared) {
-      Position const diff = toroidal_difference(pos_m, pos_check, space);
+    Position const diff = toroidal_difference(boids[m].pos, pos_check, space);
+    if (diff.x * diff.x + diff.y * diff.y < d_s_squared) {
       sum += diff;
     }
   }

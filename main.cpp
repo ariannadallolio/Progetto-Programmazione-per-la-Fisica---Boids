@@ -29,7 +29,7 @@ int main() {
     bool const has_predator =
         (answer_predator == "Y" || answer_predator == "y");
 
-    std::cout << "Do you want to insert the parameters manually? (Y/n)";
+    std::cout << "Do you want to insert the parameters manually? (Y/n) ";
     std::string answer{};
     if (!(std::cin >> answer)) {
       throw std::runtime_error{"Error: The input is not valid"};

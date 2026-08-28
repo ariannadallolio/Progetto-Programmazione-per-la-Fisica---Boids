@@ -4,6 +4,22 @@
 #include <stdexcept>
 
 namespace pf {
+
+bool ask_yes_no(std::string const& question) {
+  std::cout << question << " (y/n) ";
+  std::string answer;
+  if (!(std::cin >> answer)) {
+    throw std::runtime_error{"Error: invalid input"};
+  }
+  if (answer == "y" || answer == "Y") {
+    return true;
+  }
+  if (answer == "n" || answer == "N") {
+    return false;
+  }
+  throw std::runtime_error{"Error: please answer with y or n"};
+}
+
 void manual_input_boids(Parameters& par, Space& space) {
   read_parameters("Number of boids: ", par.n_boids);
   read_parameters("Separation factor s: ", par.s);

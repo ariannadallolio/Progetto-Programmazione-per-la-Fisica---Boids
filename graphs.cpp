@@ -51,10 +51,10 @@ void draw_graphs() {
   double const vel_margin =
       0.05 * (*vel_bounds.second - *vel_bounds.first) + 1e-6;
 
-  TH1F h_dist{"h_dist", "Distribution of mean distance;distance;frames", 50,
-              *dist_bounds.first - dist_margin,
+  TH1F h_dist{"h_dist", "Distribution of mean distance; distance [px] ;frames",
+              50, *dist_bounds.first - dist_margin,
               *dist_bounds.second + dist_margin};
-  TH1F h_vel{"h_vel", "Distribution of mean speed;speed;frames", 50,
+  TH1F h_vel{"h_vel", "Distribution of mean speed;speed [px];frames", 50,
              *vel_bounds.first - vel_margin, *vel_bounds.second + vel_margin};
 
   for (int i = 0; i < n; ++i) {

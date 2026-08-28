@@ -144,16 +144,20 @@ Velocity separation(double s, double d_s, int boid_to_check,
   if (neighbours.empty()) {
     return v1;
   }
-  Position sum{0.0, 0.0};
+
   double d_s_squared = d_s * d_s;
   Position const pos_check = boids[static_cast<std::size_t>(boid_to_check)].pos;
-  for (int m : neighbours) {
-    Position const pos_m = boids[static_cast<std::size_t>(m)].pos;
-    Position const diff = toroidal_difference(boids[m].pos, pos_check, space);
-    if (diff.x * diff.x + diff.y * diff.y < d_s_squared) {
-      sum += diff;
-    }
-  }
+
+  Position const sum = std::accumulate(
+      neighbours.begin(), neighbours.end(), Position{0.0, 0.0},
+      [&boids, &space, pos_check, d_s_squared](Position accumulator, int m) {
+        Position const pos_m = boids[static_cast<std::size_t>(m)].pos;
+        if (toroidal_distance_squared(pos_m, pos_check, space) < d_s_squared) {
+          return accumulator + toroidal_difference(pos_m, pos_check, space);
+        }
+        return accumulator;
+      });
+
   Position const pos_v1 = -s * sum;
   v1 = {pos_v1.x, pos_v1.y};
   return v1;
@@ -168,11 +172,14 @@ Velocity alignment(double a, int boid_to_check,
   if (neighbours.empty()) {
     return v2;
   }
-  Velocity sum{0.0, 0.0};
-  for (int m : neighbours) {
-    sum += (boids[static_cast<std::size_t>(m)].vel -
-            boids[static_cast<std::size_t>(boid_to_check)].vel);
-  }
+  Velocity const vel_check = boids[static_cast<std::size_t>(boid_to_check)].vel;
+
+  Velocity const sum = std::accumulate(
+      neighbours.begin(), neighbours.end(), Velocity{0.0, 0.0},
+      [&boids, vel_check](Velocity accumulator, int m) {
+        return accumulator + boids[static_cast<std::size_t>(m)].vel - vel_check;
+      });
+
   int const n = static_cast<int>(neighbours.size());
   v2 = a * ((1.0 / n) * sum);
 
@@ -188,12 +195,17 @@ Velocity cohesion(double c, int boid_to_check,
   if (neighbours.empty()) {
     return v3;
   }
-  Position sum{0.0, 0.0};
-  for (int m : neighbours) {
-    sum += toroidal_difference(
-        boids[static_cast<std::size_t>(m)].pos,
-        boids[static_cast<std::size_t>(boid_to_check)].pos, space);
-  }
+
+  Position const pos_check = boids[static_cast<std::size_t>(boid_to_check)].pos;
+
+  Position const sum = std::accumulate(
+      neighbours.begin(), neighbours.end(), Position{0.0, 0.0},
+      [&boids, &space, pos_check](Position accumulator, int m) {
+        return accumulator +
+               toroidal_difference(boids[static_cast<std::size_t>(m)].pos,
+                                   pos_check, space);
+      });
+
   int const n = static_cast<int>(neighbours.size());
   Position const cm = ((1.0 / n) * sum);
   Position const v3_pos = c * cm;

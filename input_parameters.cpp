@@ -4,8 +4,6 @@
 #include <stdexcept>
 
 namespace pf {
-template <typename T>
-
 void manual_input_boids(Parameters& par, Space& space) {
   read_parameters("Number of boids: ", par.n_boids);
   read_parameters("Separation factor s: ", par.s);

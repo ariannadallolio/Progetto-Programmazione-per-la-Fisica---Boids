@@ -67,13 +67,13 @@ void draw_graphs() {
 
   TGraphErrors g_dist{n, time.data(), mean_dist.data(), nullptr,
                       std_dist.data()};
-  g_dist.SetTitle("Mean distance over time;time [s];distance");
+  g_dist.SetTitle("Mean distance over time;time [s]; distance [px]");
   g_dist.SetFillColor(kRed - 9);
   g_dist.SetLineColor(kRed);
   g_dist.SetLineWidth(2);
 
   TGraphErrors g_vel{n, time.data(), mean_vel.data(), nullptr, std_vel.data()};
-  g_vel.SetTitle("Mean speed over time;time [s];speed");
+  g_vel.SetTitle("Mean speed over time;time [s]; speed [px/s]");
   g_vel.SetFillColor(kBlue - 9);
   g_vel.SetLineColor(kBlue);
   g_vel.SetLineWidth(2);

@@ -16,7 +16,7 @@ void update_simulation(Flock& simulation_flock, int& frame_count,
 
   int const print_every = 60;  // frames
   if (frame_count % print_every == 0) {
-    print(history, time);
+    print(history);
   }
 }
 }  // namespace pf

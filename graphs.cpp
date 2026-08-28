@@ -42,14 +42,15 @@ void draw_graphs() {
     throw std::runtime_error{"Error: no data found in file"};
   }
 
-  // to center histograms
+  // centering histograms using the difference between mininum and maximum
+  // values and adding a percentage of it to boundaries
   auto dist_bounds = std::minmax_element(mean_dist.begin(), mean_dist.end());
   auto vel_bounds = std::minmax_element(mean_vel.begin(), mean_vel.end());
 
   double const dist_margin =
-      0.05 * (*dist_bounds.second - *dist_bounds.first) + 1e-6;
+      0.2 * (*dist_bounds.second - *dist_bounds.first) + 1e-6;
   double const vel_margin =
-      0.05 * (*vel_bounds.second - *vel_bounds.first) + 1e-6;
+      0.2 * (*vel_bounds.second - *vel_bounds.first) + 1e-6;
 
   TH1F h_dist{"h_dist", "Distribution of mean distance;distance;frames", 50,
               *dist_bounds.first - dist_margin,

@@ -10,6 +10,9 @@ namespace pf {
 
 bool ask_yes_no(std::string const& question);
 
+void manual_input_boids(Parameters& par, Space& space);
+void manual_input_predators(Predator_parameters& par_p);
+
 template <typename T>
 void read_parameters(std::string const& prompt, T& par) {
   std::cout << prompt;
@@ -17,12 +20,8 @@ void read_parameters(std::string const& prompt, T& par) {
     throw std::runtime_error{"Error: Invalid input"};
   }
 }
-
-void manual_input_boids(Parameters& par, Space& space);
-void manual_input_predators(Predator_parameters& par_p);
-
 void file_input(std::string const& file_name, Parameters& par, Space& space,
                 Predator_parameters& par_p, bool has_predator);
-}  // namespace pf
 
+}  // namespace pf
 #endif

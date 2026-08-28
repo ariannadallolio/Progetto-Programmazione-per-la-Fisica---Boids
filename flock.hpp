@@ -33,7 +33,7 @@ void check_parameters(Parameters const& par, Space const& space);
 void check_predator_parameters(Predator_parameters const& par_p,
                                Space const& space);
 std::vector<Boid> generate_boids(int n, double v_min, double v_max,
-                                Space const& space);
+                                 Space const& space);
 
 std::vector<int> neighbours_control(int boid_to_check, double d,
                                     std::vector<Boid> const& boids,

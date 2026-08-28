@@ -71,10 +71,9 @@ void print(Statistics const& stats, double seconds) {
             << "Mean Velocity:" << stats.mean_velocity << " +/- "
             << stats.std_dev_velocity << "\n \n \n";
 }
-void save_for_root(Statistics const& stats, std::ofstream& file,
-                   int frame_count) {
-  file << frame_count << '\t' << stats.mean_distance << '\t'
-       << stats.std_dev_distance << '\t' << stats.mean_velocity << '\t'
-       << stats.std_dev_velocity << '\n';
+void save_for_root(Statistics const& stats, std::ofstream& file, double time) {
+  file << time << '\t' << stats.mean_distance << '\t' << stats.std_dev_distance
+       << '\t' << stats.mean_velocity << '\t' << stats.std_dev_velocity << '\n';
 }
+
 }  // namespace pf

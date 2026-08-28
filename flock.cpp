@@ -4,7 +4,7 @@
 #include <cassert>
 #include <cmath>
 #include <iterator>
-#include <numeric>     
+#include <numeric>
 #include <random>
 #include <stdexcept>
 
@@ -28,7 +28,7 @@ void check_parameters(Parameters const& par, Space const& space) {
   }
   if (par.d <= 0.0 || par.d_s <= 0.0) {
     throw std::invalid_argument{
-        "Error: the parameters d e d_s must be positive"};
+        "Error: the parameters d and d_s must be positive"};
   }
   if (par.d_s >= par.d) {
     throw std::invalid_argument{
@@ -62,15 +62,15 @@ void check_predator_parameters(Predator_parameters const& par_p,
   }
   if (par_p.d_chase <= 0.0 || par_p.d_escape <= 0.0) {
     throw std::invalid_argument{
-        "Error: the parameters d_chase e d_escape must be positive"};
+        "Error: the parameters d_chase and d_escape must be positive"};
   }
   if (par_p.v_min_p <= 0.0) {
     throw std::invalid_argument{
-        "Error: The minimum speed of the predatore must be positive"};
+        "Error: The minimum speed of the predator must be positive"};
   }
   if (par_p.v_max_p <= 0.0) {
     throw std::invalid_argument{
-        "Error: The maximum speed of the predatore must be positive"};
+        "Error: The maximum speed of the predator must be positive"};
   }
   if (par_p.v_min_p >= par_p.v_max_p) {
     throw std::invalid_argument{
@@ -87,7 +87,7 @@ void check_predator_parameters(Predator_parameters const& par_p,
 }
 
 std::vector<Boid> generate_boids(int n, double v_min, double v_max,
-                                Space const& space) {
+                                 Space const& space) {
   assert(n > 0);
   std::vector<Boid> boids;
   boids.reserve(static_cast<std::size_t>(n));
@@ -152,9 +152,10 @@ Velocity separation(double s, double d_s, int boid_to_check,
   Position const sum = std::accumulate(
       neighbours.begin(), neighbours.end(), Position{0.0, 0.0},
       [&boids, &space, pos_check, d_s_squared](Position accumulator, int m) {
-        Position const pos_m = boids[static_cast<std::size_t>(m)].pos;
-        if (toroidal_distance_squared(pos_m, pos_check, space) < d_s_squared) {
-          return accumulator + toroidal_difference(pos_m, pos_check, space);
+        Position const diff = toroidal_difference(
+            boids[static_cast<std::size_t>(m)].pos, pos_check, space);
+        if (diff.x * diff.x + diff.y * diff.y < d_s_squared) {
+          return accumulator + diff;
         }
         return accumulator;
       });
@@ -293,8 +294,8 @@ Flock::Flock(Parameters const& par, Space const& space,
   check_predator_parameters(par_p, space_);
 
   par_p_ = par_p;
-  predators_ =
-      generate_boids(par_p_.n_predators, par_p_.v_min_p, par_p_.v_max_p, space_);
+  predators_ = generate_boids(par_p_.n_predators, par_p_.v_min_p,
+                              par_p_.v_max_p, space_);
 }
 
 std::vector<Boid> const& Flock::boids() const { return boids_; }

@@ -16,8 +16,7 @@ struct Statistics {
 
 Statistics statistics(std::vector<Boid> const& boids, Space const& space);
 void print(Statistics const& stats, double seconds);
-void save_for_root(Statistics const& stats, std::ofstream& file,
-                   int frame_count);
+void save_for_root(Statistics const& stats, std::ofstream& file, double time);
 
 }  // namespace pf
 

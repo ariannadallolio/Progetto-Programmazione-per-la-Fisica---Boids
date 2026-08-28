@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <string>
 
-#include "boids.hpp"
 #include "flock.hpp"
 #include "graphs.hpp"
 #include "input_parameters.hpp"

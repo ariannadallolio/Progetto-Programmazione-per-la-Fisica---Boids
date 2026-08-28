@@ -1,7 +1,6 @@
 #include "graphs.hpp"
 
 #include <algorithm>
-#include <cstdio>
 #include <fstream>
 #include <stdexcept>
 #include <vector>
@@ -39,16 +38,22 @@ void draw_graphs() {
   }
 
   int const n = static_cast<int>(time.size());
-  if (n == 0) throw std::runtime_error{"Error: no data found in file"};
+  if (n == 0) {
+    throw std::runtime_error{"Error: no data found in file"};
+  }
 
   // to center histograms
   auto dist_bounds = std::minmax_element(mean_dist.begin(), mean_dist.end());
   auto vel_bounds = std::minmax_element(mean_vel.begin(), mean_vel.end());
 
+  double const dist_margin =
+      0.05 * (*dist_bounds.second - *dist_bounds.first) + 1e-6;
+
   TH1F h_dist{"h_dist", "Distribution of mean distance;distance;frames", 50,
-              *dist_bounds.first - 100.0, *dist_bounds.second + 100.0};
+              *dist_bounds.first - dist_margin,
+              *dist_bounds.second + dist_margin};
   TH1F h_vel{"h_vel", "Distribution of mean speed;speed;frames", 50,
-             *vel_bounds.first - 20.0, *vel_bounds.second + 20.0};
+             *vel_bounds.first - dist_margin, *vel_bounds.second + dist_margin};
 
   for (int i = 0; i < n; ++i) {
     h_dist.Fill(mean_dist[static_cast<std::size_t>(i)]);
@@ -60,13 +65,13 @@ void draw_graphs() {
 
   TGraphErrors g_dist{n, time.data(), mean_dist.data(), nullptr,
                       std_dist.data()};
-  g_dist.SetTitle("Mean distance over time;time [frames];distance");
+  g_dist.SetTitle("Mean distance over time;time [s];distance");
   g_dist.SetFillColor(kRed - 9);
   g_dist.SetLineColor(kRed);
   g_dist.SetLineWidth(2);
 
   TGraphErrors g_vel{n, time.data(), mean_vel.data(), nullptr, std_vel.data()};
-  g_vel.SetTitle("Mean speed over time;time [frames];speed");
+  g_vel.SetTitle("Mean speed over  time;time [s];speed");
   g_vel.SetFillColor(kBlue - 9);
   g_vel.SetLineColor(kBlue);
   g_vel.SetLineWidth(2);

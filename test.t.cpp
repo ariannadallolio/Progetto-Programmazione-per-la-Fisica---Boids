@@ -576,7 +576,7 @@ TEST_CASE("Testing Speed Limits") {
 }
 
 // TEST 12: Random boid generation
-// Tested function: generate_boid.
+// Tested function: generate_boids.
 
 TEST_CASE("Testing Boid Generation") {
   // Generation draws a uniform magnitude in [v_min, v_max] and a uniform
@@ -586,7 +586,7 @@ TEST_CASE("Testing Boid Generation") {
     double const v_min = 3.0;
     double const v_max = 10.0;
 
-    std::vector<pf::Boid> boids = pf::generate_boid(100, v_min, v_max, space);
+    std::vector<pf::Boid> boids = pf::generate_boids(100, v_min, v_max, space);
 
     CHECK(boids.size() == 100);
 
@@ -608,7 +608,7 @@ TEST_CASE("Testing Boid Generation") {
     double const v_min = 1.0;
     double const v_max = 5.0;
 
-    std::vector<pf::Boid> boids = pf::generate_boid(50, v_min, v_max, space);
+    std::vector<pf::Boid> boids = pf::generate_boids(50, v_min, v_max, space);
 
     CHECK(boids.size() == 50);
 
@@ -628,7 +628,7 @@ TEST_CASE("Testing Boid Generation") {
   SUBCASE("Degenerate speed range (v_min == v_max)") {
     pf::Space space{0.0, 100.0, 0.0, 100.0};
 
-    std::vector<pf::Boid> boids = pf::generate_boid(20, 5.0, 5.0, space);
+    std::vector<pf::Boid> boids = pf::generate_boids(20, 5.0, 5.0, space);
 
     for (pf::Boid const& b : boids) {
       CHECK(pf::speed_modulus(b.vel) == doctest::Approx(5.0));

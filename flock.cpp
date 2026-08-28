@@ -85,7 +85,7 @@ void check_predator_parameters(Predator_parameters const& par_p,
   }
 }
 
-std::vector<Boid> generate_boid(int n, double v_min, double v_max,
+std::vector<Boid> generate_boids(int n, double v_min, double v_max,
                                 Space const& space) {
   assert(n > 0);
   std::vector<Boid> boids;
@@ -283,7 +283,7 @@ Flock::Flock(Parameters const& par, Space const& space)
     : par_b_{par}, par_p_{}, space_{space} {
   check_parameters(par_b_, space_);
 
-  boids_ = generate_boid(par_b_.n_boids, par_b_.v_min, par_b_.v_max, space_);
+  boids_ = generate_boids(par_b_.n_boids, par_b_.v_min, par_b_.v_max, space_);
 }
 
 Flock::Flock(Parameters const& par, Space const& space,
@@ -293,7 +293,7 @@ Flock::Flock(Parameters const& par, Space const& space,
 
   par_p_ = par_p;
   predators_ =
-      generate_boid(par_p_.n_predators, par_p_.v_min_p, par_p_.v_max_p, space_);
+      generate_boids(par_p_.n_predators, par_p_.v_min_p, par_p_.v_max_p, space_);
 }
 
 std::vector<Boid> const& Flock::boids() const { return boids_; }

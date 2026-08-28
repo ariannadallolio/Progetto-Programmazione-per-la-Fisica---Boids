@@ -7,26 +7,27 @@
 
 namespace pf {
 
-Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
-  assert(!boid.empty());
+Statistics statistics(std::vector<Boid> const& boids, Space const& space) {
+  if (boids.empty()) {
+    throw std::invalid_argument{"Error: statistics require at least one boid"};
+  }
 
-  int n = static_cast<int>(boid.size());
+  int n = static_cast<int>(boids.size());
 
   if (n < 2) {
-    return {0.0, 0.0, speed_modulus(boid[0].vel), 0.0};
+    return {0.0, 0.0, speed_modulus(boids[0].vel), 0.0};
   }
 
   double const n_pairs = n * (n - 1.0) / 2.0;
 
-  std::vector<double>
-      distances;
+  std::vector<double> distances;
   distances.reserve(static_cast<std::size_t>(n_pairs));
   for (int i = 0; i != n; ++i) {
     for (int j = i + 1; j != n; j++) {
       auto const i_sz = static_cast<std::size_t>(i);
       auto const j_sz = static_cast<std::size_t>(j);
       double const distance_ij = std::sqrt(
-          toroidal_distance_squared(boid[i_sz].pos, boid[j_sz].pos, space));
+          toroidal_distance_squared(boids[i_sz].pos, boids[j_sz].pos, space));
       distances.push_back(distance_ij);
     }
   }
@@ -41,12 +42,10 @@ Statistics statistics(std::vector<Boid> const& boid, Space const& space) {
   }
   double const std_dev_distance = sqrt(std_dev_distance_sum / n_pairs);
 
-  
-  std::vector<double>
-      speeds;
-  speeds.reserve(boid.size());
+  std::vector<double> speeds;
+  speeds.reserve(boids.size());
   for (int i = 0; i != n; ++i) {
-    double modulus = speed_modulus(boid[static_cast<std::size_t>(i)].vel);
+    double modulus = speed_modulus(boids[static_cast<std::size_t>(i)].vel);
     speeds.push_back(modulus);
   }
   double mean_velocity_sum = std::accumulate(speeds.begin(), speeds.end(), 0.0);

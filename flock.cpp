@@ -126,10 +126,9 @@ std::vector<int> neighbours_control(int boid_to_check, double d,
 
   for (int i = 0; i != n; ++i) {
     if (i != boid_to_check &&
-        toroidal_distance_squared(boids[static_cast<std::size_t>(boid_to_check)]
-                                      .pos,  // distanza toroidale
-                                  boids[static_cast<std::size_t>(i)].pos,
-                                  space) < d_squared) {
+        toroidal_distance_squared(
+            boids[static_cast<std::size_t>(boid_to_check)].pos,
+            boids[static_cast<std::size_t>(i)].pos, space) < d_squared) {
       neighbours.push_back(i);
     }
   }
@@ -175,7 +174,7 @@ Velocity alignment(double a, int boid_to_check,
             boids[static_cast<std::size_t>(boid_to_check)].vel);
   }
   int const n = static_cast<int>(neighbours.size());
-  v2 = a * ((1.0 / n) * sum);  // const?
+  v2 = a * ((1.0 / n) * sum);
 
   return v2;
 }
@@ -277,7 +276,7 @@ Flock::Flock(Parameters const& par, Space const& space)
 
 Flock::Flock(Parameters const& par, Space const& space,
              Predator_parameters const& par_p)
-    : Flock(par, space) {  // delegating constructor
+    : Flock(par, space) {
   check_predator_parameters(par_p, space_);
 
   par_p_ = par_p;

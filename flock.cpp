@@ -256,14 +256,17 @@ Velocity escape(double s_p, double d_escape, Boid const& boid,
                 std::vector<Boid> const& predators, Space const& space) {
   Velocity v4{};
   double const d_escape_squared = d_escape * d_escape;
-  for (Boid const& predator : predators) {
-    if (toroidal_distance_squared(boid.pos, predator.pos, space) <
-        d_escape_squared) {
-      Position const diff = toroidal_difference(predator.pos, boid.pos, space);
-      Position const v_pos = -s_p * diff;
-      v4 += Velocity{v_pos.x, v_pos.y};
-    }
-  }
+  Position const sum = std::accumulate(
+      predators.begin(), predators.end(), Position{0.0, 0.0},
+      [&boid, &space, d_escape_squared](Position accumulator,
+                                        Boid const& predator) {
+        Position const diff =
+            toroidal_difference(predator.pos, boid.pos, space);
+        if (diff.x * diff.x + diff.y * diff.y < d_escape_squared) {
+          return accumulator + diff;
+        }
+        return accumulator;
+      });
   return v4;
 }
 

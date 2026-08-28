@@ -15,7 +15,7 @@ void simulation(Flock& simulation_flock) {
                     static_cast<unsigned int>(simulation_flock.space().y_max)),
       "Boids");
   if (!window.isOpen()) {
-    throw std::runtime_error{"Errore: impossibile aprire la finestra SFML"};
+    throw std::runtime_error{"Error: impossible to open the SFML window"};
   }
   window.setFramerateLimit(60);
   std::vector<sf::ConvexShape> boids_shapes;
@@ -81,7 +81,6 @@ void simulation(Flock& simulation_flock) {
 
     for (std::size_t i = 0; i != boids.size(); ++i) {
       Boid const& boid = boids[i];
-      // Posizione del boid
       boids_shapes[i].setPosition(static_cast<float>(boid.pos.x),
                                   static_cast<float>(boid.pos.y));
 

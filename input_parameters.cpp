@@ -16,7 +16,7 @@ void read_parameters(std::string const& prompt, T& par) {
 void manual_input_boids(Parameters& par, Space& space) {
   read_parameters("Number of boids: ", par.n_boids);
   read_parameters("Separation factor s: ", par.s);
-  read_parameters("ALignment factor a: ", par.a);
+  read_parameters("Alignment factor a: ", par.a);
   read_parameters("Cohesion factor c: ", par.c);
   read_parameters("Perception radius d: ", par.d);
   read_parameters("Separation radius d_s: ", par.d_s);

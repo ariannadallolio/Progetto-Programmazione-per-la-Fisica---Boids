@@ -71,7 +71,7 @@ void simulation(Flock& simulation_flock) {
     save_for_root(history, file, frame_count);
 
     if (frame_count % (print_every) == 0) {
-      int seconds = frame_count / print_every;
+      double seconds = frame_count * simulation_flock.parameters().dt;
       print(history, seconds);  // printing datas just 1 time per second, while
                                 // we save datas on a txt document for every
                                 // frame to create reliable histograms

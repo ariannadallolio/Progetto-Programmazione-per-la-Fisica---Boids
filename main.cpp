@@ -11,9 +11,9 @@
 
 int main() {
   try {
-    pf::Parameters par;
-    pf::Predator_parameters par_p;
-    pf::Space space;
+    pf::Parameters par{};
+    pf::Predator_parameters par_p{};
+    pf::Space space{};
 
     std::cout << "Do you want any predator? (Y/n) ";
     std::string answer_predator{};

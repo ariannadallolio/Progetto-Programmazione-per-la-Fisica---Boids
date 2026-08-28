@@ -21,6 +21,10 @@ void check_parameters(Parameters const& par, Space const& space) {
     throw std::invalid_argument{
         "Error: the parameters s, a, c must be positive"};
   }
+  if (par.a >= 1.0) {
+    throw std::invalid_argument{
+        "Error: the alignment factor a must be smaller than 1"};
+  }
   if (par.d <= 0.0 || par.d_s <= 0.0) {
     throw std::invalid_argument{
         "Error: the parameters d e d_s must be positive"};
@@ -244,8 +248,7 @@ Velocity escape(double s_p, double d_escape, Boid const& boid,
         d_escape_squared) {
       Position const diff = toroidal_difference(predator.pos, boid.pos, space);
       Position const v_pos = -s_p * diff;
-      v4 += Velocity{v_pos.x,
-                     v_pos.y}; 
+      v4 += Velocity{v_pos.x, v_pos.y};
     }
   }
   return v4;

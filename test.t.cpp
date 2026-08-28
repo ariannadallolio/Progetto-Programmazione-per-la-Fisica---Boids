@@ -736,6 +736,12 @@ TEST_CASE("Testing Flock Invariants (Exceptions)") {
     CHECK_THROWS_AS(pf::Flock(par_c, space), std::invalid_argument);
   }
 
+  SUBCASE("Parameter a bigger than 1") {
+    pf::Parameters par_s = valid_par;
+    par_s.a = 1.3;
+    CHECK_THROWS_AS(pf::Flock(par_s, space), std::invalid_argument);
+  }
+
   // Radii must be positive.
   SUBCASE("Non-positive radii") {
     pf::Parameters par_d = valid_par;
@@ -920,7 +926,8 @@ TEST_CASE("Testing Velocity Statistics") {
     CHECK(stats.std_dev_velocity == doctest::Approx(1.632993).epsilon(0.001));
   }
 
-  // Magnitude is always non-negative: opposite velocities yield the same mean.
+  // Magnitude is always non-negative: opposite velocities yield the same
+  // mean.
   SUBCASE("Opposite velocities have the same modulus") {
     std::vector<pf::Boid> boids = {{{3.0, 4.0}, {0.0, 0.0}},
                                    {{-3.0, -4.0}, {10.0, 0.0}}};
@@ -1490,4 +1497,3 @@ TEST_CASE("Testing the optional predators inside Flock") {
     }
   }
 }
-

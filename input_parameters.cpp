@@ -43,7 +43,7 @@ void file_input(std::string& file_name, Parameters& par, Space& space,
                 Predator_parameters& par_p, bool has_predator) {
   std::ifstream file(file_name);
   if (!file.is_open()) {
-    throw std::runtime_error{"Impossibile aprire il file: " + file_name};
+    throw std::runtime_error{"Impossible to open the file: " + file_name};
   }
   std::string label;
       if (!(file >> label >> par.n_boids >> label >> par.s >> label >> par.a >>

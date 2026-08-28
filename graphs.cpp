@@ -1,4 +1,4 @@
-#include "histogram.hpp"
+#include "graphs.hpp"
 
 #include <algorithm>
 #include <cstdio>

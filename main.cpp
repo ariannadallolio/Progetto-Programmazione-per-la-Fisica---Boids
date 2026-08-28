@@ -5,7 +5,7 @@
 
 #include "boids.hpp"
 #include "flock.hpp"
-#include "histogram.hpp"
+#include "graphs.hpp"
 #include "input_parameters.hpp"
 #include "sfml_rendering.hpp"
 

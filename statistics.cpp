@@ -31,16 +31,18 @@ Statistics statistics(std::vector<Boid> const& boids, Space const& space) {
       distances.push_back(distance_ij);
     }
   }
-  double mean_distance_sum =
+  double const mean_distance_sum =
       std::accumulate(distances.begin(), distances.end(), 0.0);
   double const mean_distance = mean_distance_sum * (1.0 / n_pairs);
 
-  double std_dev_distance_sum{0.0};
-  for (double d : distances) {
-    double const difference = d - mean_distance;
-    std_dev_distance_sum += difference * difference;
-  }
-  double const std_dev_distance = sqrt(std_dev_distance_sum / n_pairs);
+  double const std_dev_distance_sum =
+      std::accumulate(distances.begin(), distances.end(), 0.0,
+                      [mean_distance](double accumulator, double d) {
+                        double const difference = d - mean_distance;
+                        return accumulator + difference * difference;
+                      });
+
+  double const std_dev_distance = std::sqrt(std_dev_distance_sum / n_pairs);
 
   std::vector<double> speeds;
   speeds.reserve(boids.size());
@@ -51,12 +53,13 @@ Statistics statistics(std::vector<Boid> const& boids, Space const& space) {
   double mean_velocity_sum = std::accumulate(speeds.begin(), speeds.end(), 0.0);
   double const mean_velocity = mean_velocity_sum / n;
 
-  double std_dev_velocity_sum{0.0};
-  for (double s : speeds) {
-    double const difference = s - mean_velocity;
-    std_dev_velocity_sum += difference * difference;
-  }
-  double const std_dev_velocity = sqrt(std_dev_velocity_sum / n);
+  double const std_dev_velocity_sum =
+      std::accumulate(speeds.begin(), speeds.end(), 0.0,
+                      [mean_velocity](double accumulator, double s) {
+                        double const difference = s - mean_velocity;
+                        return accumulator + difference * difference;
+                      });
+  double const std_dev_velocity = std::sqrt(std_dev_velocity_sum / n);
 
   return {mean_distance, std_dev_distance, mean_velocity, std_dev_velocity};
 }

@@ -7,6 +7,9 @@
 #include "flock.hpp"
 
 namespace pf {
+
+bool ask_yes_no(std::string const& question);
+
 template <typename T>
 void read_parameters(std::string const& prompt, T& par) {
   std::cout << prompt;

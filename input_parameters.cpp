@@ -35,7 +35,7 @@ void manual_input_boids(Parameters& par, Space& space) {
   read_parameters("Coordinate y min of the screen: ", space.y_min);
   read_parameters("Coordinate y max of the screen: ", space.y_max);
 }
-void manual_input_predator(Predator_parameters& par_p) {
+void manual_input_predators(Predator_parameters& par_p) {
   read_parameters("Number of predators: ", par_p.n_predators);
   read_parameters("Predator separation factor s_p: ", par_p.s_p);
   read_parameters("Predator cohesion factor c_p: ", par_p.c_p);

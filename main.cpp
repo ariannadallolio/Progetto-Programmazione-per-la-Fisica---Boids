@@ -21,7 +21,7 @@ int main() {
     if (manual) {
       pf::manual_input_boids(par, space);
       if (has_predator) {
-        pf::manual_input_predator(par_p);
+        pf::manual_input_predators(par_p);
       }
     } else {
       std::string input_file;

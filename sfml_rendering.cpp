@@ -6,10 +6,44 @@
 #include <stdexcept>
 #include <vector>
 
-#include "statistics.hpp"
+#include "simulation.hpp"
 
 namespace pf {
-void simulation(Flock& simulation_flock) {
+
+void sync_graphics(Flock& simulation_flock,
+                   std::vector<sf::ConvexShape>& boids_shapes,
+                   std::vector<sf::ConvexShape>& predator_shapes) {
+  int const n_boids = simulation_flock.parameters().n_boids;
+
+  for (int i = 0; i != n_boids; ++i) {
+    auto const i_sz = static_cast<std::size_t>(i);
+    Boid const& boid = simulation_flock.boids()[i_sz];
+    boids_shapes[i_sz].setPosition(static_cast<float>(boid.pos.x),
+                                   static_cast<float>(boid.pos.y));
+
+    double const angle_rad = std::atan2(boid.vel.v_y, boid.vel.v_x);
+
+    double const angle_deg = angle_rad * 180.0 / std::acos(-1.0);
+
+    boids_shapes[i_sz].setRotation(static_cast<float>(angle_deg));
+  }
+
+  int const n_predators = simulation_flock.predator_parameters().n_predators;
+  for (int i = 0; i != n_predators; ++i) {
+    auto const i_sz = static_cast<std::size_t>(i);
+    Boid const& pred = simulation_flock.predators()[i_sz];
+
+    predator_shapes[i_sz].setPosition(static_cast<float>(pred.pos.x),
+                                      static_cast<float>(pred.pos.y));
+
+    double const pred_angle_deg =
+        std::atan2(pred.vel.v_y, pred.vel.v_x) * 180.0 / std::acos(-1.0);
+
+    predator_shapes[i_sz].setRotation(static_cast<float>(pred_angle_deg));
+  }
+}
+
+void run_sfml(Flock& simulation_flock) {
   Space const& space = simulation_flock.space();
   auto const Lx = static_cast<float>(space.x_max - space.x_min);
   auto const Ly = static_cast<float>(space.y_max - space.y_min);
@@ -57,7 +91,6 @@ void simulation(Flock& simulation_flock) {
   }
 
   int frame_count = 0;
-  int const print_every = 60;  // frames
 
   while (window.isOpen()) {
     sf::Event event{};
@@ -68,46 +101,8 @@ void simulation(Flock& simulation_flock) {
       }
     }
 
-    simulation_flock.movement();
-    Statistics history =
-        statistics(simulation_flock.boids(), simulation_flock.space());
-
-    ++frame_count;
-    save_for_root(history, file, frame_count);
-
-    if (frame_count % (print_every) == 0) {
-      double seconds = frame_count * simulation_flock.parameters().dt;
-      print(history, seconds);  // printing datas just 1 time per second, while
-                                // we save datas on a "statistics.txt" for every
-                                // frame to create reliable graphics
-    }
-
-    std::vector<Boid> const& boids = simulation_flock.boids();
-
-    for (std::size_t i = 0; i != boids.size(); ++i) {
-      Boid const& boid = boids[i];
-      boids_shapes[i].setPosition(static_cast<float>(boid.pos.x),
-                                  static_cast<float>(boid.pos.y));
-
-      double const angle_rad = std::atan2(boid.vel.v_y, boid.vel.v_x);
-
-      double const angle_deg = angle_rad * 180.0 / std::acos(-1.0);
-
-      boids_shapes[i].setRotation(static_cast<float>(angle_deg));
-    }
-
-    for (int i = 0; i != n_p; ++i) {
-      auto const i_sz = static_cast<std::size_t>(i);
-      pf::Boid const& pred = simulation_flock.predators()[i_sz];
-
-      predator_shapes[i_sz].setPosition(static_cast<float>(pred.pos.x),
-                                        static_cast<float>(pred.pos.y));
-
-      double const pred_angle_deg =
-          std::atan2(pred.vel.v_y, pred.vel.v_x) * 180.0 / std::acos(-1.0);
-
-      predator_shapes[i_sz].setRotation(static_cast<float>(pred_angle_deg));
-    }
+    update_simulation(simulation_flock, frame_count, file);
+    sync_graphics(simulation_flock, boids_shapes, predator_shapes);
 
     window.clear(sf::Color(20, 20, 30));
     for (sf::ConvexShape const& triangle : boids_shapes) {

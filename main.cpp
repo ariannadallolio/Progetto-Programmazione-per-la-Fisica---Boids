@@ -33,7 +33,7 @@ int main() {
 
     pf::Flock simulation_flock =
         has_predator ? pf::Flock(par, space, par_p) : pf::Flock(par, space);
-    pf::simulation(simulation_flock);
+    pf::run_sfml(simulation_flock);
     pf::draw_graphs();
 
   } catch (std::exception const& e) {

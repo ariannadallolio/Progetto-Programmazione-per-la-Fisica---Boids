@@ -3,6 +3,6 @@
 #include "flock.hpp"
 
 namespace pf {
-void simulation(Flock& simulation_flock);
+void run_sfml(Flock& simulation_flock);
 }
 #endif

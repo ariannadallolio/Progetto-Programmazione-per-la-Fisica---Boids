@@ -1,11 +1,11 @@
 #include "simulation.hpp"
-
 #include "statistics.hpp"
+
 namespace pf {
-void update_simulation(Flock& simulation_flock, int frame_count,
+void update_simulation(Flock& simulation_flock, int& frame_count,
                        std::ofstream& file) {
   simulation_flock.movement();
-  Statistics history =
+  Statistics const history =
       statistics(simulation_flock.boids(), simulation_flock.space());
 
   ++frame_count;

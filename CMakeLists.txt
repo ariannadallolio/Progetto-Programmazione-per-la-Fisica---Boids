@@ -43,6 +43,7 @@ add_executable(boids
     flock.cpp
     statistics.cpp
     sfml_rendering.cpp
+    simulation.cpp
     graphs.cpp
     input_parameters.cpp)
 

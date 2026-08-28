@@ -1,9 +1,9 @@
 #include "statistics.hpp"
 
-#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <numeric>
+#include <stdexcept>
 
 namespace pf {
 

@@ -29,7 +29,7 @@ void manual_input_predator(Predator_parameters& par_p) {
   read_parameters("Predator maximum velocity v_max_p: ", par_p.v_max_p);
 }
 
-void file_input(std::string& file_name, Parameters& par, Space& space,
+void file_input(std::string const& file_name, Parameters& par, Space& space,
                 Predator_parameters& par_p, bool has_predator) {
   std::ifstream file(file_name);
   if (!file.is_open()) {

@@ -18,7 +18,7 @@ void read_parameters(std::string const& prompt, T& par) {
 void manual_input_boids(Parameters& par, Space& space);
 void manual_input_predator(Predator_parameters& par_p);
 
-void file_input(std::string& file_name, Parameters& par, Space& space,
+void file_input(std::string const& file_name, Parameters& par, Space& space,
                 Predator_parameters& par_p, bool has_predator);
 }  // namespace pf
 

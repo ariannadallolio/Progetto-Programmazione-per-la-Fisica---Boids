@@ -1254,9 +1254,6 @@ TEST_CASE("Testing chase") {
   }
 
   SUBCASE("Preys across the border average correctly") {
-    // Prede in x = 95 e x = 5 con predatore in x = 0: il centro di massa
-    // e' in x = 0, quindi il contributo e' nullo. La media aritmetica
-    // ingenua darebbe 50 e una spinta sbagliata.
     pf::Boid const border_predator{{0.0, 0.0}, {0.0, 50.0}};
     std::vector<pf::Boid> const boids = {{{0.0, 0.0}, {95.0, 50.0}},
                                          {{0.0, 0.0}, {5.0, 50.0}}};

@@ -268,7 +268,8 @@ Velocity escape(double s_p, double d_escape, Boid const& boid,
         }
         return accumulator;
       });
-  Position const v4 = -s_p * sum;
+  Position const pos_v4 = -s_p * sum;
+  v4 = {pos_v4.x, pos_v4.y};
   return v4;
 }
 

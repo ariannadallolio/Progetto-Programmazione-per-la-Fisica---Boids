@@ -48,12 +48,14 @@ void draw_graphs() {
 
   double const dist_margin =
       0.05 * (*dist_bounds.second - *dist_bounds.first) + 1e-6;
+  double const vel_margin =
+      0.05 * (*vel_bounds.second - *vel_bounds.first) + 1e-6;
 
   TH1F h_dist{"h_dist", "Distribution of mean distance;distance;frames", 50,
               *dist_bounds.first - dist_margin,
               *dist_bounds.second + dist_margin};
   TH1F h_vel{"h_vel", "Distribution of mean speed;speed;frames", 50,
-             *vel_bounds.first - dist_margin, *vel_bounds.second + dist_margin};
+             *vel_bounds.first - vel_margin, *vel_bounds.second + vel_margin};
 
   for (int i = 0; i < n; ++i) {
     h_dist.Fill(mean_dist[static_cast<std::size_t>(i)]);
@@ -71,7 +73,7 @@ void draw_graphs() {
   g_dist.SetLineWidth(2);
 
   TGraphErrors g_vel{n, time.data(), mean_vel.data(), nullptr, std_vel.data()};
-  g_vel.SetTitle("Mean speed over  time;time [s];speed");
+  g_vel.SetTitle("Mean speed over time;time [s];speed");
   g_vel.SetFillColor(kBlue - 9);
   g_vel.SetLineColor(kBlue);
   g_vel.SetLineWidth(2);

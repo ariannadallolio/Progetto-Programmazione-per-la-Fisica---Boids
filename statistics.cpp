@@ -46,7 +46,7 @@ Statistics statistics(std::vector<Boid> const& boids, Space const& space) {
 
   std::vector<double> speeds;
   speeds.reserve(boids.size());
-  for (Boid b : boids) {
+  for (Boid const& b : boids) {
     double modulus = speed_modulus(b.vel);
     speeds.push_back(modulus);
   }

@@ -2,3 +2,5 @@ build/
 GNinja*/
 boids
 boids.t
+flock_statistics.png
+statistics.txt

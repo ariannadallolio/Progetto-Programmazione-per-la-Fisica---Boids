@@ -46,8 +46,8 @@ Statistics statistics(std::vector<Boid> const& boids, Space const& space) {
 
   std::vector<double> speeds;
   speeds.reserve(boids.size());
-  for (int i = 0; i != n; ++i) {
-    double modulus = speed_modulus(boids[static_cast<std::size_t>(i)].vel);
+  for (Boid b : boids) {
+    double modulus = speed_modulus(b.vel);
     speeds.push_back(modulus);
   }
   double mean_velocity_sum = std::accumulate(speeds.begin(), speeds.end(), 0.0);
